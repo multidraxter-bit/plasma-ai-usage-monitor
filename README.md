@@ -135,6 +135,65 @@ kf6-ki18n-devel
 kf6-knotifications-devel
 ```
 
+## Development Workflow
+
+Install [`just`](https://github.com/casey/just) to use the unified `Justfile` recipes:
+
+```bash
+sudo dnf install just   # Fedora
+# or: cargo install just
+```
+
+| Recipe | Description |
+|--------|-------------|
+| `just build` | Configure + build (Release) |
+| `just build-debug` | Configure + build (Debug, enables tests) |
+| `just test` | Build debug + run unit tests via ctest |
+| `just check` | Version consistency + no-hardcoded-versions checks |
+| `just versions` | Show repo / user-local / system installed versions |
+| `just clean` | Remove the `build/` directory |
+| **System-wide (sudo)** | |
+| `just install` | Build then `sudo cmake --install build` |
+| `just reinstall` | Uninstall + install |
+| `just uninstall` | Remove via `build/install_manifest.txt` |
+| **User-local (no sudo)** | |
+| `just dev` | Install user-local QML + reload plasmashell (fastest dev loop) |
+| `just install-user` | `kpackagetool6 --upgrade package/` |
+| `just uninstall-user` | Remove user-local QML package |
+| `just reload` | Restart plasmashell |
+| **COPR / DNF** | |
+| `just copr-install` | Enable COPR + `dnf install` |
+| `just copr-update` | `dnf upgrade` from COPR |
+| `just copr-remove` | Remove package + COPR repo |
+| **Version** | |
+| `just bump VERSION=3.3.0` | Bump version in all 4 files atomically |
+
+**Typical dev loop (QML changes):**
+
+```bash
+# Edit package/contents/ui/*.qml, then:
+just dev
+```
+
+**Typical dev loop (C++ plugin changes):**
+
+```bash
+# Edit plugin/*.cpp, then:
+just install   # sudo required; rebuilds and installs to /usr
+just reload
+```
+
+**Release a new version:**
+
+```bash
+just bump VERSION=3.3.0
+# Update CHANGELOG.md, then:
+git commit -am "chore: bump version to v3.3.0"
+git tag v3.3.0 && git push --tags
+```
+
+---
+
 ## Installation
 
 ### Install from COPR (Recommended)
