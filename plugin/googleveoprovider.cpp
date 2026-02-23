@@ -107,30 +107,13 @@ void GoogleVeoProvider::applyKnownLimits()
     // Known rate limits for Veo models (as of 2025-2026)
     bool isPaid = (m_tier == QStringLiteral("paid"));
 
-    if (m_model.contains(QStringLiteral("veo-3"))) {
-        if (isPaid) {
-            setRateLimitRequests(100);
-            setRateLimitRequestsRemaining(100);
-        } else {
-            setRateLimitRequests(5);
-            setRateLimitRequestsRemaining(5);
-        }
-    } else if (m_model.contains(QStringLiteral("veo-2"))) {
-        if (isPaid) {
-            setRateLimitRequests(200);
-            setRateLimitRequestsRemaining(200);
-        } else {
-            setRateLimitRequests(10);
-            setRateLimitRequestsRemaining(10);
-        }
+    if (m_model.contains(QStringLiteral("veo-2"))) {
+        setRateLimitRequests(isPaid ? 200 : 10);
+        setRateLimitRequestsRemaining(isPaid ? 200 : 10);
     } else {
-        if (isPaid) {
-            setRateLimitRequests(100);
-            setRateLimitRequestsRemaining(100);
-        } else {
-            setRateLimitRequests(5);
-            setRateLimitRequestsRemaining(5);
-        }
+        // veo-3 and all other Veo models share the same limits
+        setRateLimitRequests(isPaid ? 100 : 5);
+        setRateLimitRequestsRemaining(isPaid ? 100 : 5);
     }
 
     setRateLimitResetTime(isPaid ? QStringLiteral("N/A (paid tier limits)")
