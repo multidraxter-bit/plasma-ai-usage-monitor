@@ -1,6 +1,0 @@
-set(__QT_DEPLOY_TARGET_test_usagedatabase_series_FILE /home/loofi/Dokument/plasma43/plasma-ai-usage-monitor/build-local/plugin/tests/test_usagedatabase_series)
-set(__QT_DEPLOY_TARGET_test_usagedatabase_series_TYPE EXECUTABLE)
-set(__QT_DEPLOY_TARGET_test_history_mapping_regression_FILE /home/loofi/Dokument/plasma43/plasma-ai-usage-monitor/build-local/plugin/tests/test_history_mapping_regression)
-set(__QT_DEPLOY_TARGET_test_history_mapping_regression_TYPE EXECUTABLE)
-set(__QT_DEPLOY_TARGET_aiusagemonitorplugin_FILE /home/loofi/Dokument/plasma43/plasma-ai-usage-monitor/build-local/plugin/libaiusagemonitorplugin.so)
-set(__QT_DEPLOY_TARGET_aiusagemonitorplugin_TYPE SHARED_LIBRARY)
