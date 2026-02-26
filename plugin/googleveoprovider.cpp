@@ -93,8 +93,25 @@ void GoogleVeoProvider::onModelInfoReply(QNetworkReply *reply)
         return;
     }
 
-    // A successful response confirms the key and model are valid.
-    applyKnownLimits();
+    const QByteArray data = reply->readAll();
+    const QJsonDocument doc = QJsonDocument::fromJson(data);
+    if (doc.isNull() || !doc.isObject()) {
+        setError(i18n("Unexpected API response format"));
+        setLoading(false);
+        setConnected(false);
+        updateLastRefreshed();
+        Q_EMIT dataUpdated();
+        return;
+    }
+
+    // Prefer provider-provided rate-limit headers when available.
+    parseRateLimitHeaders(reply);
+    if (rateLimitRequests() <= 0) {
+        applyKnownLimits();
+    }
+
+    // The model endpoint call itself counts as one API request in this refresh cycle.
+    setRequestCount(1);
 
     setConnected(true);
     setLoading(false);
@@ -115,6 +132,10 @@ void GoogleVeoProvider::applyKnownLimits()
         setRateLimitRequests(isPaid ? 100 : 5);
         setRateLimitRequestsRemaining(isPaid ? 100 : 5);
     }
+
+    // Veo APIs are not token-centric in the same way text LLM APIs are.
+    setRateLimitTokens(0);
+    setRateLimitTokensRemaining(0);
 
     setRateLimitResetTime(isPaid ? QStringLiteral("N/A (paid tier limits)")
                                  : QStringLiteral("N/A (free tier limits)"));

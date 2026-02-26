@@ -10,6 +10,7 @@
 #include "anthropicprovider.h"
 #include "cohereprovider.h"
 #include "deepseekprovider.h"
+#include "googleveoprovider.h"
 #include "openaiprovider.h"
 #include "openrouterprovider.h"
 #include "togetherprovider.h"
@@ -117,6 +118,9 @@ private Q_SLOTS:
     void openAiAuthError();
     void anthropicRateLimitHeaders();
     void deepSeekUsageAndBalance();
+    void googleVeoKnownLimitsByTier();
+    void googleVeoUsesHeaderLimitsWhenPresent();
+    void googleVeoAuthError();
     void openRouterUsageAndCredits();
     void togetherAiUsageAndHeaders();
     void cohereUsageAndHeaders();
@@ -297,6 +301,112 @@ void ProvidersMockedHttpTest::deepSeekUsageAndBalance()
     QCOMPARE(provider.rateLimitTokensRemaining(), 5800);
     QCOMPARE(provider.balance(), 13.0);
     QVERIFY(provider.isConnected());
+}
+
+void ProvidersMockedHttpTest::googleVeoKnownLimitsByTier()
+{
+    HttpStubServer server;
+    QVERIFY(server.listen());
+
+    const QByteArray modelInfoBody = R"JSON({
+        "name": "models/veo-2",
+        "displayName": "Veo 2"
+    })JSON";
+
+    server.setResponse(
+        QStringLiteral("GET"),
+        QStringLiteral("/v1beta/models/veo-2"),
+        200,
+        modelInfoBody);
+
+    GoogleVeoProvider provider;
+    provider.setApiKey(QStringLiteral("test-key"));
+    provider.setCustomBaseUrl(server.baseUrl() + QStringLiteral("/v1beta"));
+    provider.setModel(QStringLiteral("veo-2"));
+    provider.setTier(QStringLiteral("free"));
+
+    QSignalSpy dataSpy(&provider, &ProviderBackend::dataUpdated);
+    provider.refresh();
+
+    QTRY_VERIFY_WITH_TIMEOUT(dataSpy.count() >= 1, 3000);
+
+    QCOMPARE(provider.rateLimitRequests(), 10);
+    QCOMPARE(provider.rateLimitRequestsRemaining(), 10);
+    QCOMPARE(provider.rateLimitTokens(), 0);
+    QCOMPARE(provider.rateLimitTokensRemaining(), 0);
+    QCOMPARE(provider.requestCount(), 1);
+    QVERIFY(provider.isConnected());
+}
+
+void ProvidersMockedHttpTest::googleVeoUsesHeaderLimitsWhenPresent()
+{
+    HttpStubServer server;
+    QVERIFY(server.listen());
+
+    const QByteArray modelInfoBody = R"JSON({
+        "name": "models/veo-3",
+        "displayName": "Veo 3"
+    })JSON";
+
+    server.setResponse(
+        QStringLiteral("GET"),
+        QStringLiteral("/v1beta/models/veo-3"),
+        200,
+        modelInfoBody,
+        {
+            {"x-ratelimit-limit-requests", "77"},
+            {"x-ratelimit-remaining-requests", "66"},
+            {"x-ratelimit-limit-tokens", "12345"},
+            {"x-ratelimit-remaining-tokens", "12000"},
+            {"x-ratelimit-reset-requests", "45s"},
+        });
+
+    GoogleVeoProvider provider;
+    provider.setApiKey(QStringLiteral("test-key"));
+    provider.setCustomBaseUrl(server.baseUrl() + QStringLiteral("/v1beta"));
+    provider.setModel(QStringLiteral("veo-3"));
+    provider.setTier(QStringLiteral("paid"));
+
+    QSignalSpy dataSpy(&provider, &ProviderBackend::dataUpdated);
+    provider.refresh();
+
+    QTRY_VERIFY_WITH_TIMEOUT(dataSpy.count() >= 1, 3000);
+
+    QCOMPARE(provider.rateLimitRequests(), 77);
+    QCOMPARE(provider.rateLimitRequestsRemaining(), 66);
+    QCOMPARE(provider.rateLimitTokens(), 12345);
+    QCOMPARE(provider.rateLimitTokensRemaining(), 12000);
+    QCOMPARE(provider.rateLimitResetTime(), QStringLiteral("45s"));
+    QCOMPARE(provider.requestCount(), 1);
+    QVERIFY(provider.isConnected());
+}
+
+void ProvidersMockedHttpTest::googleVeoAuthError()
+{
+    HttpStubServer server;
+    QVERIFY(server.listen());
+
+    const QByteArray authError = R"JSON({"error":"unauthorized"})JSON";
+    server.setResponse(
+        QStringLiteral("GET"),
+        QStringLiteral("/v1beta/models/veo-3"),
+        404,
+        authError);
+
+    GoogleVeoProvider provider;
+    provider.setApiKey(QStringLiteral("bad-key"));
+    provider.setCustomBaseUrl(server.baseUrl() + QStringLiteral("/v1beta"));
+    provider.setModel(QStringLiteral("veo-3"));
+
+    QSignalSpy errorSpy(&provider, &ProviderBackend::errorChanged);
+    QSignalSpy dataSpy(&provider, &ProviderBackend::dataUpdated);
+    provider.refresh();
+
+    QTRY_VERIFY_WITH_TIMEOUT(dataSpy.count() >= 1, 3000);
+    QVERIFY(errorSpy.count() >= 1);
+    QVERIFY(provider.errorCount() >= 1);
+    QVERIFY(!provider.errorString().isEmpty());
+    QVERIFY(!provider.isConnected());
 }
 
 void ProvidersMockedHttpTest::openRouterUsageAndCredits()

@@ -12,11 +12,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add minimal Flatpak scaffold under `packaging/flatpak/` for distribution kickoff
 - Add deterministic local packaging scripts for source tarball and `.plasmoid` archive generation
 - Add Flatpak scaffold validation script for CI and local checks
+- Add mocked HTTP coverage for `GoogleVeoProvider` (tier fallback, header limits, auth failure)
 
 ### Changed
 
 - Update build workflow to run packaging validation checks
 - Update release workflow to generate source/plasmoid artifacts via packaging scripts
+- Improve `GoogleVeoProvider` success-path handling with response validation and request counting
+- Prefer API-provided rate-limit headers for Google Veo when available, with known-limit fallback
 
 ## [3.4.0] — 2026-02-26
 
