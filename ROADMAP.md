@@ -1,6 +1,6 @@
 # Roadmap — Plasma AI Usage Monitor
 
-> **Current version:** v3.6.0 (Azure OpenAI provider backend + UI wiring)
+> **Current version:** v3.7.0 (Azure OpenAI dedicated provider + wiring hardening)
 > **Last updated:** 2026-02-26
 
 ---
@@ -9,13 +9,14 @@
 
 | Version | Codename | Theme | Status |
 |---------|----------|-------|--------|
+| v3.7.0 | **Pulse** | Azure OpenAI Dedicated Provider (no OpenAI aliasing) | Released |
 | v3.6.0 | **Pulse** | Azure OpenAI Provider Wiring | Released |
 | v3.5.3 | **Pulse** | Release Plasmoid Packaging Stability Hotfix (ZIP timestamp clamp) | Released |
 | v3.5.2 | **Pulse** | Release Packaging Stability Hotfix (deterministic tarballing) | Released |
 | v3.5.1 | **Pulse** | Release Workflow Hotfix (AppStream icon validation) | Released |
 | v3.5.0 | **Pulse** | Packaging Consistency Hardening | Released |
 | v3.4.0 | **Pulse** | Subscription Cost Aggregation + Copilot Activity Detection | Released |
-| v4.0.0 | **Horizon** | UX Polish + Provider Expansion | Planned |
+| v4.0.0 | **Horizon** | UX Polish + Provider Expansion | Active |
 | v5.0.0 | **Lighthouse** | Intelligence + Forecasting | Planned |
 | v6.0.0 | **Nexus** | Team + Multi-User | Planned |
 | v7.0.0 | **Forge** | Extensibility + Ecosystem | Planned |
@@ -33,7 +34,7 @@
 |---------|-------------|----------|
 | **Google Veo** | Video generation API monitoring — token/frame usage, cost estimation (provider file already scaffolded as `googleveoprovider.cpp`) | High |
 | **AWS Bedrock** | Monitor cross-model usage via Bedrock billing API (Claude, Llama, Mistral, Titan on AWS) | High |
-| **Azure OpenAI** | Track Azure-hosted OpenAI deployments — separate from openai.com billing, uses Azure metering API *(Backend + UI wiring completed in 3.5.x; metering endpoint refinements pending)* | Medium |
+| **Azure OpenAI** | Track Azure-hosted OpenAI deployments — separate from openai.com billing, uses Azure metering API *(Dedicated provider backend, deploymentId UI wiring, and Azure test coverage completed in 3.7.0; metering endpoint refinements pending)* | Medium |
 | **Perplexity AI** | OpenAI-compatible API with search credits tracking | Medium |
 | **Fireworks AI** | Serverless inference — OpenAI-compatible, credit balance endpoint | Low |
 

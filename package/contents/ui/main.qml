@@ -89,7 +89,7 @@ PlasmoidItem {
     AzureOpenAIProvider {
         id: azureBackend
         model: plasmoid.configuration.azureModel
-        projectId: plasmoid.configuration.azureDeploymentId
+        deploymentId: plasmoid.configuration.azureDeploymentId
         customBaseUrl: plasmoid.configuration.azureCustomBaseUrl
         dailyBudget: plasmoid.configuration.azureDailyBudget / 100.0
         monthlyBudget: plasmoid.configuration.azureMonthlyBudget / 100.0
@@ -876,7 +876,7 @@ PlasmoidItem {
         function onXaiModelChanged() { xaiBackend.model = plasmoid.configuration.xaiModel; }
         function onGoogleveoModelChanged() { googleveoBackend.model = plasmoid.configuration.googleveoModel; }
         function onAzureModelChanged() { azureBackend.model = plasmoid.configuration.azureModel; }
-        function onAzureDeploymentIdChanged() { azureBackend.projectId = plasmoid.configuration.azureDeploymentId; }
+        function onAzureDeploymentIdChanged() { azureBackend.deploymentId = plasmoid.configuration.azureDeploymentId; }
 
         function onRefreshIntervalChanged() {
             // The per-provider Timer declarations use declarative bindings

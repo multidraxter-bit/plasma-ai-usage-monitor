@@ -11,11 +11,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Add dedicated Azure OpenAI backend class `AzureOpenAIProvider` with Azure-specific request/auth semantics
+- Add provider registration/build wiring for `AzureOpenAIProvider` in plugin targets
+- Add Azure provider mocked HTTP test coverage for success and auth-failure paths
+- Add Azure provider alias/auth-slot mapping coverage in ProviderBackend unit tests
 - Add Horizon dashboard overview strip in full view with KPI tiles for providers, connectivity, total cost, and tool monitors
 - Add provider section header with connected/enabled status badge and targeted empty-state guidance when providers are enabled but disconnected
 
 ### Changed
 
+- Replace Azure aliasing to `OpenAIProvider` with first-class `AzureOpenAIProvider` registration
+- Switch Azure QML/runtime wiring from `projectId` aliasing to `deploymentId`
 - Redesign full dashboard live layout grouping for clearer scanability before provider and subscription cards
 - Improve theme-awareness of provider and subscription cards by using adaptive tinted surfaces and state-aware borders (connected/error/limit)
 

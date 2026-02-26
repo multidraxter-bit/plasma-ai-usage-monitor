@@ -45,6 +45,7 @@ class ProviderBackendTest : public QObject
 
 private Q_SLOTS:
     void testProviderKeyEnumConversionAzure();
+    void testProviderKeyEnumConversionAzureAliases();
     void testProviderConfigFallbackUnknownDeterministic();
     void testExistingProviderMappingsUnchanged();
     void testBudgetWarningSignal();
@@ -103,6 +104,16 @@ void ProviderBackendTest::testProviderKeyEnumConversionAzure()
     QCOMPARE(azureConfig.providerId, ProviderBackend::ProviderId::AzureOpenAI);
     QCOMPARE(azureConfig.providerKey, QStringLiteral("azure-openai"));
     QCOMPARE(azureConfig.authKeySlot, QStringLiteral("azure_openai_api_key"));
+}
+
+void ProviderBackendTest::testProviderKeyEnumConversionAzureAliases()
+{
+    QCOMPARE(ProviderBackend::providerIdFromKey(QStringLiteral("AZURE_OPENAI")),
+             ProviderBackend::ProviderId::AzureOpenAI);
+    QCOMPARE(ProviderBackend::providerIdFromKey(QStringLiteral(" Azure ")),
+             ProviderBackend::ProviderId::AzureOpenAI);
+    QCOMPARE(ProviderBackend::defaultAuthKeySlotForProvider(ProviderBackend::ProviderId::AzureOpenAI),
+             QStringLiteral("azure_openai_api_key"));
 }
 
 void ProviderBackendTest::testProviderConfigFallbackUnknownDeterministic()

@@ -5,6 +5,7 @@ set(aiusagemonitor_SRCS
     providerbackend.cpp
     openaicompatibleprovider.cpp
     openaiprovider.cpp
+    azureopenaiprovider.cpp
     anthropicprovider.cpp
     googleprovider.cpp
     mistralprovider.cpp
@@ -31,6 +32,7 @@ set(aiusagemonitor_HDRS
     providerbackend.h
     openaicompatibleprovider.h
     openaiprovider.h
+    azureopenaiprovider.h
     anthropicprovider.h
     googleprovider.h
     mistralprovider.h

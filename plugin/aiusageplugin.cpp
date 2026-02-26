@@ -3,6 +3,7 @@
 #include "secretsmanager.h"
 #include "providerbackend.h"
 #include "openaiprovider.h"
+#include "azureopenaiprovider.h"
 #include "anthropicprovider.h"
 #include "googleprovider.h"
 #include "mistralprovider.h"
@@ -37,7 +38,7 @@ void AiUsagePlugin::registerTypes(const char *uri)
     // Register C++ types for use in QML
     qmlRegisterType<SecretsManager>(uri, 1, 0, "SecretsManager");
     qmlRegisterType<OpenAIProvider>(uri, 1, 0, "OpenAIProvider");
-    qmlRegisterType<OpenAIProvider>(uri, 1, 0, "AzureOpenAIProvider");
+    qmlRegisterType<AzureOpenAIProvider>(uri, 1, 0, "AzureOpenAIProvider");
     qmlRegisterType<AnthropicProvider>(uri, 1, 0, "AnthropicProvider");
     qmlRegisterType<GoogleProvider>(uri, 1, 0, "GoogleProvider");
     qmlRegisterType<MistralProvider>(uri, 1, 0, "MistralProvider");

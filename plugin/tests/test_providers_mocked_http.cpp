@@ -12,6 +12,7 @@
 #include "cohereprovider.h"
 #include "deepseekprovider.h"
 #include "googleveoprovider.h"
+#include "azureopenaiprovider.h"
 #include "openaiprovider.h"
 #include "openrouterprovider.h"
 #include "providerbackend.h"
@@ -126,6 +127,8 @@ private Q_SLOTS:
     void openRouterUsageAndCredits();
     void togetherAiUsageAndHeaders();
     void cohereUsageAndHeaders();
+    void azureProviderSuccess();
+    void azureProviderAuthError();
     void azureNormalizeHappyPath();
     void azureNormalizeFailurePath();
 };
@@ -556,6 +559,86 @@ void ProvidersMockedHttpTest::cohereUsageAndHeaders()
     QCOMPARE(provider.rateLimitTokens(), 8000);
     QCOMPARE(provider.rateLimitTokensRemaining(), 7700);
     QVERIFY(provider.isConnected());
+}
+
+void ProvidersMockedHttpTest::azureProviderSuccess()
+{
+    HttpStubServer server;
+    QVERIFY(server.listen());
+
+    const QByteArray usageBody = R"JSON({
+        "id": "chatcmpl-azure-test",
+        "object": "chat.completion",
+        "usage": {
+            "prompt_tokens": 42,
+            "completion_tokens": 8,
+            "total_tokens": 50
+        }
+    })JSON";
+
+    server.setResponse(
+        QStringLiteral("POST"),
+        QStringLiteral("/openai/deployments/my-deployment/chat/completions"),
+        200,
+        usageBody,
+        {
+            {"x-ratelimit-limit-requests", "90"},
+            {"x-ratelimit-remaining-requests", "70"},
+            {"x-ratelimit-limit-tokens", "9000"},
+            {"x-ratelimit-remaining-tokens", "8750"},
+            {"x-ratelimit-reset-requests", "25s"},
+        });
+
+    AzureOpenAIProvider provider;
+    provider.setApiKey(QStringLiteral("test-key"));
+    provider.setDeploymentId(QStringLiteral("my-deployment"));
+    provider.setModel(QStringLiteral("gpt-4o"));
+    provider.setCustomBaseUrl(server.baseUrl());
+
+    QSignalSpy dataSpy(&provider, &ProviderBackend::dataUpdated);
+    provider.refresh();
+
+    QTRY_VERIFY_WITH_TIMEOUT(dataSpy.count() >= 1, 3000);
+
+    QCOMPARE(provider.inputTokens(), 42);
+    QCOMPARE(provider.outputTokens(), 8);
+    QCOMPARE(provider.requestCount(), 1);
+    QCOMPARE(provider.rateLimitRequests(), 90);
+    QCOMPARE(provider.rateLimitRequestsRemaining(), 70);
+    QCOMPARE(provider.rateLimitTokens(), 9000);
+    QCOMPARE(provider.rateLimitTokensRemaining(), 8750);
+    QCOMPARE(provider.rateLimitResetTime(), QStringLiteral("25s"));
+    QVERIFY(provider.isConnected());
+
+    QVERIFY(server.hitCount(QStringLiteral("/openai/deployments/my-deployment/chat/completions")) >= 1);
+}
+
+void ProvidersMockedHttpTest::azureProviderAuthError()
+{
+    HttpStubServer server;
+    QVERIFY(server.listen());
+
+    const QByteArray authError = R"JSON({"error":"unauthorized"})JSON";
+    server.setResponse(
+        QStringLiteral("POST"),
+        QStringLiteral("/openai/deployments/my-deployment/chat/completions"),
+        401,
+        authError);
+
+    AzureOpenAIProvider provider;
+    provider.setApiKey(QStringLiteral("bad-key"));
+    provider.setDeploymentId(QStringLiteral("my-deployment"));
+    provider.setCustomBaseUrl(server.baseUrl());
+
+    QSignalSpy errorSpy(&provider, &ProviderBackend::errorChanged);
+    QSignalSpy dataSpy(&provider, &ProviderBackend::dataUpdated);
+    provider.refresh();
+
+    QTRY_VERIFY_WITH_TIMEOUT(dataSpy.count() >= 1, 3000);
+    QVERIFY(errorSpy.count() >= 1);
+    QVERIFY(provider.errorCount() >= 1);
+    QVERIFY(!provider.errorString().isEmpty());
+    QVERIFY(!provider.isConnected());
 }
 
 void ProvidersMockedHttpTest::azureNormalizeHappyPath()
