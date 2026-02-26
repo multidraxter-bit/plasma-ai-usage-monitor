@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.5.3] — 2026-02-26
+
+### Fixed
+
+- Fix `.plasmoid` archive generation in release CI by clamping `SOURCE_DATE_EPOCH` to ZIP's minimum supported timestamp (1980-01-01)
+
 ## [3.5.2] — 2026-02-26
 
 ### Fixed
@@ -340,7 +346,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - KWallet integration for secure API key storage
 - KDE notifications for rate limit warnings
 
-[Unreleased]: https://github.com/loofitheboss/plasma-ai-usage-monitor/compare/v3.5.2...HEAD
+[Unreleased]: https://github.com/loofitheboss/plasma-ai-usage-monitor/compare/v3.5.3...HEAD
+[3.5.3]: https://github.com/loofitheboss/plasma-ai-usage-monitor/compare/v3.5.2...v3.5.3
 [3.5.2]: https://github.com/loofitheboss/plasma-ai-usage-monitor/compare/v3.5.1...v3.5.2
 [3.5.1]: https://github.com/loofitheboss/plasma-ai-usage-monitor/compare/v3.5.0...v3.5.1
 [3.5.0]: https://github.com/loofitheboss/plasma-ai-usage-monitor/compare/v3.4.0...v3.5.0

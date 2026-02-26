@@ -36,6 +36,12 @@ mkdir -p "$OUTPUT_DIR"
 OUTPUT_PATH="${OUTPUT_DIR%/}/com.github.loofi.aiusagemonitor.plasmoid"
 SOURCE_DATE_EPOCH="${SOURCE_DATE_EPOCH:-0}"
 
+# ZIP format cannot encode timestamps before 1980-01-01.
+# Clamp SOURCE_DATE_EPOCH to avoid struct packing failures in Python's zipfile.
+if [[ "$SOURCE_DATE_EPOCH" -lt 315532800 ]]; then
+  SOURCE_DATE_EPOCH=315532800
+fi
+
 python3 - "$ROOT_DIR" "$OUTPUT_PATH" "$SOURCE_DATE_EPOCH" <<'PY'
 import os
 import stat

@@ -1,6 +1,6 @@
 # Roadmap — Plasma AI Usage Monitor
 
-> **Current version:** v3.5.2 (Release tarball packaging stability hotfix)
+> **Current version:** v3.5.3 (Release plasmoid packaging stability hotfix)
 > **Last updated:** 2026-02-26
 
 ---
@@ -9,6 +9,7 @@
 
 | Version | Codename | Theme | Status |
 |---------|----------|-------|--------|
+| v3.5.3 | **Pulse** | Release Plasmoid Packaging Stability Hotfix (ZIP timestamp clamp) | Released |
 | v3.5.2 | **Pulse** | Release Packaging Stability Hotfix (deterministic tarballing) | Released |
 | v3.5.1 | **Pulse** | Release Workflow Hotfix (AppStream icon validation) | Released |
 | v3.5.0 | **Pulse** | Packaging Consistency Hardening | Released |
