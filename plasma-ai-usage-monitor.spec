@@ -1,5 +1,5 @@
 Name:           plasma-ai-usage-monitor
-Version:        3.5.1
+Version:        3.5.2
 Release:        1%{?dist}
 Summary:        KDE Plasma 6 widget to monitor AI API token usage, rate limits, and costs
 License:        GPL-3.0-or-later

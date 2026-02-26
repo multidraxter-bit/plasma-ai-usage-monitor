@@ -1,6 +1,6 @@
 # Roadmap — Plasma AI Usage Monitor
 
-> **Current version:** v3.5.1 (AppStream release workflow hotfix + packaging consistency baseline)
+> **Current version:** v3.5.2 (Release tarball packaging stability hotfix)
 > **Last updated:** 2026-02-26
 
 ---
@@ -9,6 +9,7 @@
 
 | Version | Codename | Theme | Status |
 |---------|----------|-------|--------|
+| v3.5.2 | **Pulse** | Release Packaging Stability Hotfix (deterministic tarballing) | Released |
 | v3.5.1 | **Pulse** | Release Workflow Hotfix (AppStream icon validation) | Released |
 | v3.5.0 | **Pulse** | Packaging Consistency Hardening | Released |
 | v3.4.0 | **Pulse** | Subscription Cost Aggregation + Copilot Activity Detection | Released |
@@ -290,6 +291,7 @@
 
 | Version | Date | Highlights |
 |---------|------|------------|
+| v3.5.2 | 2026-02-26 | Source tarball packaging switched to tracked-file archiving to prevent CI tar race failures in release workflow |
 | v3.5.1 | 2026-02-26 | AppStream metainfo icon validation hotfix to unblock GitHub release workflow |
 | v3.5.0 | 2026-02-26 | Flatpak scaffold validation hardening, packaging consistency checks added to build/release workflows, deterministic packaging check baseline documented |
 | v3.4.0 | 2026-02-26 | Subscription-tool cost aggregation in totals, Copilot IDE activity auto-detection, Firefox-only Browser Sync clarification, onboarding flow update, Copilot detection regression test |

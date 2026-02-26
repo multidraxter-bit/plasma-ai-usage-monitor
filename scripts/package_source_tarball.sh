@@ -50,21 +50,46 @@ mkdir -p "$OUTPUT_DIR"
 ARCHIVE_NAME="plasma-ai-usage-monitor-${VERSION}.tar.gz"
 ARCHIVE_PATH="${OUTPUT_DIR%/}/${ARCHIVE_NAME}"
 SOURCE_DATE_EPOCH="${SOURCE_DATE_EPOCH:-0}"
+TMP_DIR="$(mktemp -d)"
+TMP_ARCHIVE_PATH="${TMP_DIR}/${ARCHIVE_NAME}"
 
-# Deterministic tarball: stable order, stable timestamps, numeric ownership.
-tar \
-  --sort=name \
-  --mtime="@${SOURCE_DATE_EPOCH}" \
-  --owner=0 \
-  --group=0 \
-  --numeric-owner \
-  --pax-option=delete=atime,delete=ctime \
-  -czf "$ARCHIVE_PATH" \
-  --exclude=.git \
-  --exclude=build \
-  --exclude=build-* \
-  --exclude=dist \
-  --exclude=*.tar.gz \
-  .
+cleanup() {
+  rm -rf "$TMP_DIR"
+}
+trap cleanup EXIT
+
+if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+  # Deterministic tarball from tracked files only.
+  git -c core.quotepath=off ls-files -z | tar \
+    --null \
+    --no-recursion \
+    --sort=name \
+    --mtime="@${SOURCE_DATE_EPOCH}" \
+    --owner=0 \
+    --group=0 \
+    --numeric-owner \
+    --pax-option=delete=atime,delete=ctime \
+    -czf "$TMP_ARCHIVE_PATH" \
+    --files-from=-
+else
+  # Fallback mode for non-git environments.
+  tar \
+    --sort=name \
+    --mtime="@${SOURCE_DATE_EPOCH}" \
+    --owner=0 \
+    --group=0 \
+    --numeric-owner \
+    --pax-option=delete=atime,delete=ctime \
+    --warning=no-file-changed \
+    -czf "$TMP_ARCHIVE_PATH" \
+    --exclude=.git \
+    --exclude=build \
+    --exclude=build-* \
+    --exclude=dist \
+    --exclude=*.tar.gz \
+    .
+fi
+
+mv "$TMP_ARCHIVE_PATH" "$ARCHIVE_PATH"
 
 echo "Created ${ARCHIVE_PATH}"
