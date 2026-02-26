@@ -11,6 +11,17 @@ ColumnLayout {
     id: costCard
 
     property var providers: []
+    property var subscriptionTools: []
+
+    readonly property double subscriptionTotalCost: {
+        var total = 0;
+        for (var i = 0; i < subscriptionTools.length; i++) {
+            var tool = subscriptionTools[i];
+            if (tool.enabled && tool.monitor && tool.monitor.hasSubscriptionCost)
+                total += tool.monitor.subscriptionCost;
+        }
+        return total;
+    }
 
     readonly property double totalCost: {
         var total = 0;
@@ -18,7 +29,7 @@ ColumnLayout {
             if (providers[i].enabled && providers[i].backend && providers[i].backend.connected)
                 total += providers[i].backend.cost;
         }
-        return total;
+        return total + subscriptionTotalCost;
     }
 
     readonly property double totalDailyCost: {
@@ -150,6 +161,42 @@ ColumnLayout {
 
                     PlasmaComponents.Label {
                         text: "$" + parent.providerCost.toFixed(parent.providerCost < 1 ? 4 : 2)
+                        font.pointSize: Kirigami.Theme.smallFont.pointSize
+                    }
+                }
+            }
+
+            Repeater {
+                model: costCard.subscriptionTools
+
+                RowLayout {
+                    Layout.fillWidth: true
+                    readonly property double toolCost: {
+                        if (!modelData.monitor || !modelData.monitor.hasSubscriptionCost) return 0;
+                        return modelData.monitor.subscriptionCost ?? 0;
+                    }
+                    visible: costCard.costViewMode === 0 && modelData.enabled && toolCost > 0
+                    spacing: Kirigami.Units.smallSpacing
+
+                    Rectangle {
+                        width: 8
+                        height: 8
+                        radius: 4
+                        color: modelData.monitor?.toolColor ?? Kirigami.Theme.highlightColor
+                    }
+
+                    PlasmaComponents.Label {
+                        Layout.fillWidth: true
+                        elide: Text.ElideRight
+                        text: i18n("%1 (subscription)", modelData.name)
+                        font.pointSize: Kirigami.Theme.smallFont.pointSize
+                        opacity: 0.7
+                    }
+
+                    Item { Layout.fillWidth: true }
+
+                    PlasmaComponents.Label {
+                        text: "$" + parent.toolCost.toFixed(parent.toolCost < 1 ? 4 : 2)
                         font.pointSize: Kirigami.Theme.smallFont.pointSize
                     }
                 }

@@ -6,6 +6,7 @@
 #include <QJsonObject>
 #include <QJsonArray>
 #include <QNetworkRequest>
+#include <QDirIterator>
 #include <QDebug>
 
 CopilotMonitor::CopilotMonitor(QObject *parent)
@@ -58,13 +59,81 @@ void CopilotMonitor::checkToolInstalled()
 
 void CopilotMonitor::detectActivity()
 {
-    // GitHub Copilot activity is tracked by the IDE
-    // Since there's no simple file to watch, usage is self-tracked
-    // via the incrementUsage() method called from QML or other triggers.
-    //
-    // For the initial implementation, this is a no-op — the user
-    // manually tracks premium request usage or relies on the
-    // organization API if available.
+    const QString home = QDir::homePath();
+    const QStringList candidatePaths = {
+        home + QStringLiteral("/.config/Code/User/globalStorage/github.copilot"),
+        home + QStringLiteral("/.config/Code/User/globalStorage/github.copilot-chat"),
+        home + QStringLiteral("/.config/Code/User/workspaceStorage"),
+        home + QStringLiteral("/.config/Code/logs"),
+        home + QStringLiteral("/.config/VSCodium/User/globalStorage/github.copilot"),
+        home + QStringLiteral("/.config/VSCodium/User/globalStorage/github.copilot-chat"),
+        home + QStringLiteral("/.config/VSCodium/User/workspaceStorage"),
+        home + QStringLiteral("/.config/VSCodium/logs"),
+        home + QStringLiteral("/.config/Code - OSS/User/globalStorage/github.copilot"),
+        home + QStringLiteral("/.config/Code - OSS/User/globalStorage/github.copilot-chat"),
+        home + QStringLiteral("/.config/Code - OSS/User/workspaceStorage"),
+        home + QStringLiteral("/.config/Code - OSS/logs")
+    };
+
+    QDateTime newestTimestamp;
+    QString newestPath;
+
+    for (const QString &path : candidatePaths) {
+        const QDateTime modified = latestModification(path);
+        if (modified.isValid() && (!newestTimestamp.isValid() || modified > newestTimestamp)) {
+            newestTimestamp = modified;
+            newestPath = path;
+        }
+    }
+
+    if (!newestTimestamp.isValid()) {
+        if (!m_loggedDetectionFallback) {
+            m_loggedDetectionFallback = true;
+            qInfo() << "CopilotMonitor: detectActivity fallback active; no Copilot state/log paths found."
+                    << "Manual tracking and org metrics remain available.";
+        }
+        return;
+    }
+
+    if (!m_lastDetectedActivity.isValid()) {
+        m_lastDetectedActivity = newestTimestamp;
+        qInfo() << "CopilotMonitor: detectActivity baseline initialized at" << newestTimestamp
+                << "from" << newestPath;
+        return;
+    }
+
+    if (newestTimestamp > m_lastDetectedActivity) {
+        m_lastDetectedActivity = newestTimestamp;
+        qInfo() << "CopilotMonitor: activity detected from" << newestPath
+                << "at" << newestTimestamp;
+        incrementUsage();
+    }
+}
+
+QDateTime CopilotMonitor::latestModification(const QString &path, int maxEntries) const
+{
+    QFileInfo info(path);
+    if (!info.exists()) {
+        return QDateTime();
+    }
+
+    if (info.isFile()) {
+        return info.lastModified();
+    }
+
+    QDateTime newest = info.lastModified();
+    QDirIterator it(path, QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot, QDirIterator::Subdirectories);
+    int scanned = 0;
+    while (it.hasNext() && scanned < maxEntries) {
+        it.next();
+        const QFileInfo entry = it.fileInfo();
+        if (entry.lastModified().isValid() && entry.lastModified() > newest) {
+            newest = entry.lastModified();
+        }
+        scanned++;
+    }
+
+    return newest;
 }
 
 // --- GitHub API ---

@@ -1,6 +1,7 @@
 #include <QtTest>
 
 #include <QDir>
+#include <QFile>
 #include <QSignalSpy>
 #include <QTemporaryDir>
 
@@ -41,6 +42,7 @@ private Q_SLOTS:
     void planDefaults();
     void installDetectionWithTemporaryHome();
     void usageIncrementAndReset();
+    void copilotDetectActivityIncrementsUsage();
     void browserSyncEmptyCookieDiagnostics();
 };
 
@@ -112,6 +114,45 @@ void SubscriptionToolsTest::usageIncrementAndReset()
     codex.resetUsage();
     QCOMPARE(codex.usageCount(), 0);
     QVERIFY(!codex.isLimitReached());
+}
+
+void SubscriptionToolsTest::copilotDetectActivityIncrementsUsage()
+{
+    QTemporaryDir tempHome;
+    QVERIFY(tempHome.isValid());
+
+    EnvVarGuard homeGuard("HOME");
+    qputenv("HOME", tempHome.path().toUtf8());
+
+    const QString stateDir = tempHome.path() + QStringLiteral("/.config/Code/User/globalStorage/github.copilot-chat");
+    QVERIFY(QDir().mkpath(stateDir));
+    const QString stateFilePath = stateDir + QStringLiteral("/state.json");
+
+    QFile stateFile(stateFilePath);
+    QVERIFY(stateFile.open(QIODevice::WriteOnly | QIODevice::Text));
+    stateFile.write("{\"status\":\"idle\"}\n");
+    stateFile.close();
+
+    CopilotMonitor copilot;
+    copilot.setUsageLimit(10);
+
+    QSignalSpy activitySpy(&copilot, &SubscriptionToolBackend::activityDetected);
+    QSignalSpy usageSpy(&copilot, &SubscriptionToolBackend::usageUpdated);
+
+    // Baseline only — first pass should not increment usage.
+    copilot.detectActivity();
+    QCOMPARE(copilot.usageCount(), 0);
+
+    QTest::qWait(1100);
+    QVERIFY(stateFile.open(QIODevice::WriteOnly | QIODevice::Text | QIODevice::Truncate));
+    stateFile.write("{\"status\":\"active\"}\n");
+    stateFile.close();
+
+    copilot.detectActivity();
+
+    QCOMPARE(copilot.usageCount(), 1);
+    QCOMPARE(activitySpy.count(), 1);
+    QVERIFY(usageSpy.count() >= 1);
 }
 
 void SubscriptionToolsTest::browserSyncEmptyCookieDiagnostics()

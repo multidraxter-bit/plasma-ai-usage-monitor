@@ -175,7 +175,7 @@ sudo dnf install just   # Fedora
 | `just copr-update` | `dnf upgrade` from COPR |
 | `just copr-remove` | Remove package + COPR repo |
 | **Version** | |
-| `just bump VERSION=3.3.0` | Bump version in all 4 files atomically |
+| `just bump VERSION=3.4.0` | Bump version in all 4 files atomically |
 
 **Typical dev loop (QML changes):**
 
@@ -195,10 +195,10 @@ just reload
 **Release a new version:**
 
 ```bash
-just bump VERSION=3.3.0
+just bump VERSION=3.4.0
 # Update CHANGELOG.md, then:
-git commit -am "chore: bump version to v3.3.0"
-git tag v3.3.0 && git push --tags
+git commit -am "chore: bump version to v3.4.0"
+git tag v3.4.0 && git push --tags
 ```
 
 ---
@@ -381,7 +381,7 @@ Each provider has:
 
 ```text
 plasma-ai-usage-monitor/
-├── CMakeLists.txt                  # Root build system (v3.2.0)
+├── CMakeLists.txt                  # Root build system (v3.4.0)
 ├── install.sh                      # Build & install script
 ├── plasma-ai-usage-monitor.spec    # RPM packaging spec
 ├── plasma_applet_...notifyrc       # KDE notification events
@@ -550,6 +550,13 @@ Check that the History tab is enabled in configuration. Data is stored in `~/.lo
 | [CONTRIBUTING.md](CONTRIBUTING.md) | Development setup, coding standards, and contribution workflow |
 
 ## Changelog
+
+### v3.4.0 — Subscription Cost + Copilot Detection
+
+- Add Copilot activity auto-detection from local IDE state/log paths
+- Include subscription tool costs in compact and full total-cost summaries
+- Add Firefox-only Browser Sync guidance and onboarding step improvements
+- Add test coverage for Copilot activity increment detection
 
 ### v3.2.0 — AppStream & COPR Packaging
 

@@ -3,6 +3,7 @@
 
 #include "subscriptiontoolbackend.h"
 #include <QNetworkReply>
+#include <QDateTime>
 
 /**
  * Monitor for GitHub Copilot usage.
@@ -78,8 +79,12 @@ private Q_SLOTS:
     void onBillingReply(QNetworkReply *reply);
 
 private:
+    QDateTime latestModification(const QString &path, int maxEntries = 4000) const;
+
     QString m_githubToken;
     QString m_orgName;
+    QDateTime m_lastDetectedActivity;
+    bool m_loggedDetectionFallback = false;
 
     bool m_hasOrgMetrics = false;
     int m_orgActiveUsers = 0;

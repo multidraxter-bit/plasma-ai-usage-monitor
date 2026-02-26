@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.4.0] — 2026-02-26
+
+### Added
+
+- Add GitHub Copilot activity auto-detection from local IDE state/log paths (`Code`, `VSCodium`, `Code - OSS`) in `CopilotMonitor`
+- Add baseline + increment regression test for Copilot activity detection in `plugin/tests/test_subscription_tools.cpp`
+- Add subscription-tool cost rows to `CostSummaryCard.qml` for cumulative view transparency
+- Add explicit Firefox-only support guidance in Subscriptions config UI
+
+### Changed
+
+- Include enabled subscription tool costs in total cost aggregation (`main.qml`, `CompactRepresentation.qml`, `CostSummaryCard.qml`)
+- Expand onboarding flow from 3 to 4 steps and include subscription-tools setup guidance (`FullRepresentation.qml`)
+- Clarify browser-sync config schema label to reflect Firefox-only support (`package/contents/config/main.xml`)
+
 ## [3.3.0] — 2026-02-25
 
 ### Added
@@ -294,7 +309,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - KWallet integration for secure API key storage
 - KDE notifications for rate limit warnings
 
-[Unreleased]: https://github.com/loofitheboss/plasma-ai-usage-monitor/compare/v3.3.0...HEAD
+[Unreleased]: https://github.com/loofitheboss/plasma-ai-usage-monitor/compare/v3.4.0...HEAD
+[3.4.0]: https://github.com/loofitheboss/plasma-ai-usage-monitor/compare/v3.3.0...v3.4.0
 [3.3.0]: https://github.com/loofitheboss/plasma-ai-usage-monitor/compare/v3.2.0...v3.3.0
 [3.2.0]: https://github.com/loofitheboss/plasma-ai-usage-monitor/compare/v3.1.0...v3.2.0
 [3.1.0]: https://github.com/loofitheboss/plasma-ai-usage-monitor/compare/v3.0.0...v3.1.0

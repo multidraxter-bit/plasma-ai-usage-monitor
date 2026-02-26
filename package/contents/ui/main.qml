@@ -536,6 +536,13 @@ PlasmoidItem {
             if (allProviders[i].enabled && allProviders[i].backend.connected)
                 total += allProviders[i].backend.cost;
         }
+        for (var j = 0; j < allSubscriptionTools.length; j++) {
+            if (allSubscriptionTools[j].enabled
+                && allSubscriptionTools[j].monitor
+                && allSubscriptionTools[j].monitor.hasSubscriptionCost) {
+                total += allSubscriptionTools[j].monitor.subscriptionCost;
+            }
+        }
         return total;
     }
 

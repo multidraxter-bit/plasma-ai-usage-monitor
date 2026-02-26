@@ -105,7 +105,7 @@ PlasmaExtras.Representation {
                     }
 
                     PlasmaComponents.Label {
-                        text: i18n("Step %1 of 3", fullRoot.onboardingStep + 1)
+                        text: i18n("Step %1 of 4", fullRoot.onboardingStep + 1)
                         opacity: 0.7
                     }
 
@@ -118,6 +118,9 @@ PlasmaExtras.Representation {
                             }
                             if (fullRoot.onboardingStep === 1) {
                                 return i18n("Add your API key for that provider. Keys are stored in KWallet and are never saved in plain text config files.");
+                            }
+                            if (fullRoot.onboardingStep === 2) {
+                                return i18n("Optional: configure subscription tools (Claude Code, Codex CLI, GitHub Copilot) in Configure > Subscriptions to track fixed plan usage and monthly cost.");
                             }
                             return i18n("Return to this widget and use Refresh All. Once one provider is enabled, the live dashboard appears automatically.");
                         }
@@ -158,15 +161,15 @@ PlasmaExtras.Representation {
                         Item { Layout.fillWidth: true }
 
                         PlasmaComponents.Button {
-                            visible: fullRoot.onboardingStep < 2
+                            visible: fullRoot.onboardingStep < 3
                             text: i18n("Next")
                             onClicked: {
-                                fullRoot.onboardingStep = Math.min(2, fullRoot.onboardingStep + 1);
+                                fullRoot.onboardingStep = Math.min(3, fullRoot.onboardingStep + 1);
                             }
                         }
 
                         PlasmaComponents.Button {
-                            visible: fullRoot.onboardingStep === 2
+                            visible: fullRoot.onboardingStep === 3
                             text: i18n("Done")
                             onClicked: {
                                 plasmoid.configuration.setupWizardCompleted = true;
@@ -257,6 +260,7 @@ PlasmaExtras.Representation {
                             Layout.margins: Kirigami.Units.smallSpacing
                             visible: hasCostData()
                             providers: root.allProviders ?? []
+                            subscriptionTools: root.allSubscriptionTools ?? []
                         }
 
                         Repeater {
@@ -700,6 +704,13 @@ PlasmaExtras.Representation {
         for (var i = 0; i < providers.length; i++) {
             if (providers[i].enabled && providers[i].backend && providers[i].backend.cost > 0)
                 return true;
+        }
+        var tools = root.allSubscriptionTools ?? [];
+        for (var j = 0; j < tools.length; j++) {
+            if (tools[j].enabled && tools[j].monitor && tools[j].monitor.hasSubscriptionCost
+                && (tools[j].monitor.subscriptionCost ?? 0) > 0) {
+                return true;
+            }
         }
         return false;
     }

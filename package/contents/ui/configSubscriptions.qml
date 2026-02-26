@@ -563,8 +563,23 @@ KCM.SimpleKCM {
             Kirigami.FormData.label: i18n("Browser:")
             enabled: browserSyncSwitch.checked
             Layout.fillWidth: true
-            model: [i18n("Firefox"), i18n("Chrome (not yet supported)"), i18n("Chromium (not yet supported)")]
-            currentIndex: plasmoid.configuration.browserSyncBrowser
+            model: [i18n("Firefox (supported)")]
+            currentIndex: 0
+
+            Component.onCompleted: {
+                if (plasmoid.configuration.browserSyncBrowser !== 0) {
+                    cfg_browserSyncBrowser = 0;
+                }
+            }
+        }
+
+        QQC2.Label {
+            visible: browserSyncSwitch.checked
+            text: i18n("Browser Sync currently supports Firefox only. Chrome/Chromium are not available in this release.")
+            font.pointSize: Kirigami.Theme.smallFont.pointSize
+            opacity: 0.65
+            wrapMode: Text.WordWrap
+            Layout.fillWidth: true
         }
 
         RowLayout {

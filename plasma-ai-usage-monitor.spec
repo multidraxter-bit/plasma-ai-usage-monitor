@@ -1,5 +1,5 @@
 Name:           plasma-ai-usage-monitor
-Version:        3.3.0
+Version:        3.4.0
 Release:        1%{?dist}
 Summary:        KDE Plasma 6 widget to monitor AI API token usage, rate limits, and costs
 License:        GPL-3.0-or-later
@@ -67,6 +67,13 @@ appstream-util validate-relax --nonet %{buildroot}%{_datadir}/metainfo/com.githu
 %{_datadir}/metainfo/com.github.loofi.aiusagemonitor.metainfo.xml
 
 %changelog
+* Thu Feb 26 2026 Loofi <loofi@github.com> - 3.4.0-1
+- Add GitHub Copilot activity auto-detection using IDE state/log paths (Code, VSCodium, Code OSS)
+- Add Copilot activity baseline and incremental usage tracking tests
+- Include subscription tool monthly costs in compact/popup total cost summaries
+- Expand onboarding from 3 to 4 steps with subscription tools guidance
+- Restrict Browser Sync browser selection to Firefox and clarify unsupported options
+
 * Sun Feb 22 2026 Loofi <loofi@github.com> - 3.2.0-1
 - Add AppStream metainfo for KDE Discover and AppStream catalogs
 - Add COPR build infrastructure (.copr/Makefile, scripts/build_srpm.sh)

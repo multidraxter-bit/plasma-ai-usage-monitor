@@ -1,7 +1,7 @@
 # Roadmap — Plasma AI Usage Monitor
 
-> **Current version:** v3.2.0 (10 providers, 3 subscription tools, browser sync, compare analytics, AppStream/COPR packaging)
-> **Last updated:** 2026-02-22
+> **Current version:** v3.4.0 (10 providers, 3 subscription tools, browser sync, compare analytics, AppStream/COPR packaging)
+> **Last updated:** 2026-02-26
 
 ---
 
@@ -9,6 +9,7 @@
 
 | Version | Codename | Theme | Status |
 |---------|----------|-------|--------|
+| v3.4.0 | **Pulse** | Subscription Cost Aggregation + Copilot Activity Detection | Released |
 | v4.0.0 | **Horizon** | UX Polish + Provider Expansion | Planned |
 | v5.0.0 | **Lighthouse** | Intelligence + Forecasting | Planned |
 | v6.0.0 | **Nexus** | Team + Multi-User | Planned |
@@ -287,6 +288,8 @@
 
 | Version | Date | Highlights |
 |---------|------|------------|
+| v3.4.0 | 2026-02-26 | Subscription-tool cost aggregation in totals, Copilot IDE activity auto-detection, Firefox-only Browser Sync clarification, onboarding flow update, Copilot detection regression test |
+| v3.3.0 | 2026-02-25 | Guided install/doctor UX, first-run setup wizard, Browser Sync profile persistence |
 | v3.2.0 | 2026-02-22 | AppStream metainfo, COPR build infra, release artifact and packaging validation |
 | v3.1.0 | 2026-02-20 | OpenRouter, Together AI, Cohere providers |
 | v3.0.0 | 2026-02-19 | 2026 pricing update, new models for all providers |

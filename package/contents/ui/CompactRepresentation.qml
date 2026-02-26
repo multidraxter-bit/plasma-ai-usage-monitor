@@ -9,6 +9,21 @@ MouseArea {
     id: compactRoot
 
     readonly property var providers: root.allProviders ?? []
+    readonly property var subscriptionTools: root.allSubscriptionTools ?? []
+    readonly property double compactTotalCost: {
+        var total = 0;
+        for (var i = 0; i < providers.length; i++) {
+            var provider = providers[i];
+            if (provider && provider.enabled && provider.backend && provider.backend.connected)
+                total += provider.backend.cost ?? 0;
+        }
+        for (var j = 0; j < subscriptionTools.length; j++) {
+            var tool = subscriptionTools[j];
+            if (tool && tool.enabled && tool.monitor && tool.monitor.hasSubscriptionCost)
+                total += tool.monitor.subscriptionCost ?? 0;
+        }
+        return total;
+    }
 
     Accessible.role: Accessible.Button
     Accessible.name: i18n("AI Usage Monitor: %1 providers connected", root.connectedCount ?? 0)
@@ -101,7 +116,7 @@ MouseArea {
         id: costLabel
         anchors.fill: parent
         visible: compactRoot.displayMode === "cost"
-        text: "$" + (root.totalCost ?? 0).toFixed(2)
+        text: "$" + compactRoot.compactTotalCost.toFixed(2)
         horizontalAlignment: Text.AlignHCenter
         verticalAlignment: Text.AlignVCenter
         font.bold: true
@@ -109,7 +124,7 @@ MouseArea {
         minimumPointSize: Kirigami.Theme.smallFont.pointSize
         fontSizeMode: Text.Fit
         color: {
-            var cost = root.totalCost ?? 0;
+            var cost = compactRoot.compactTotalCost;
             if (cost > 10) return Kirigami.Theme.negativeTextColor;
             if (cost > 5) return Kirigami.Theme.neutralTextColor;
             return Kirigami.Theme.textColor;

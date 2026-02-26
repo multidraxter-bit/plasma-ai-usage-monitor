@@ -367,7 +367,7 @@
         </entry>
         <entry name="browserSyncBrowser" type="Int">
             <default>0</default>
-            <label>Browser type: 0=Firefox, 1=Chrome (not supported), 2=Chromium (not supported)</label>
+            <label>Browser type: 0=Firefox (supported). Legacy non-zero values are treated as Firefox.</label>
         </entry>
         <entry name="browserSyncProfile" type="String">
             <default></default>
