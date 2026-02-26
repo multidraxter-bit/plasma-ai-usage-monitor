@@ -1,5 +1,5 @@
 [Global]
-IconName=cpu
+IconName=com.github.loofi.aiusagemonitor
 Comment=AI Usage Monitor
 Name=AI Usage Monitor
 

@@ -51,6 +51,9 @@ PlasmoidItem {
 
     // Notification cooldown tracking
     property var lastNotificationTimes: ({})
+    readonly property string brandedNotificationIcon: "com.github.loofi.aiusagemonitor"
+    readonly property string warningNotificationIcon: "dialog-warning"
+    readonly property string errorNotificationIcon: "dialog-error"
 
     // ── Secrets Manager (KWallet) ──
     SecretsManager {
@@ -289,7 +292,7 @@ PlasmoidItem {
         componentName: "plasma_applet_com.github.loofi.aiusagemonitor"
         eventId: "quotaWarning"
         title: i18n("AI Usage Monitor - Subscription")
-        iconName: "dialog-warning"
+        iconName: root.warningNotificationIcon
     }
 
     // ── KDE Notifications ──
@@ -299,7 +302,7 @@ PlasmoidItem {
         componentName: "plasma_applet_com.github.loofi.aiusagemonitor"
         eventId: "quotaWarning"
         title: i18n("AI Usage Monitor")
-        iconName: "dialog-warning"
+        iconName: root.warningNotificationIcon
     }
 
     Notification {
@@ -307,7 +310,7 @@ PlasmoidItem {
         componentName: "plasma_applet_com.github.loofi.aiusagemonitor"
         eventId: "apiError"
         title: i18n("AI Usage Monitor")
-        iconName: "dialog-error"
+        iconName: root.errorNotificationIcon
     }
 
     Notification {
@@ -315,7 +318,7 @@ PlasmoidItem {
         componentName: "plasma_applet_com.github.loofi.aiusagemonitor"
         eventId: "budgetWarning"
         title: i18n("AI Usage Monitor - Budget")
-        iconName: "wallet-open"
+        iconName: root.brandedNotificationIcon
     }
 
     Notification {
@@ -323,7 +326,7 @@ PlasmoidItem {
         componentName: "plasma_applet_com.github.loofi.aiusagemonitor"
         eventId: "providerDisconnected"
         title: i18n("AI Usage Monitor")
-        iconName: "network-disconnect"
+        iconName: root.brandedNotificationIcon
     }
 
     Notification {
@@ -331,7 +334,7 @@ PlasmoidItem {
         componentName: "plasma_applet_com.github.loofi.aiusagemonitor"
         eventId: "updateAvailable"
         title: i18n("AI Usage Monitor - Update Available")
-        iconName: "update-none"
+        iconName: root.brandedNotificationIcon
     }
 
     // ── Update Checker ──
@@ -714,7 +717,7 @@ PlasmoidItem {
         if (!canNotify("disconnect_" + provider)) return;
 
         connectionNotification.eventId = "providerDisconnected";
-        connectionNotification.iconName = "network-disconnect";
+        connectionNotification.iconName = root.brandedNotificationIcon;
         connectionNotification.text = i18n("%1 has disconnected", provider);
         connectionNotification.urgency = Notification.NormalUrgency;
         connectionNotification.sendEvent();
@@ -726,7 +729,7 @@ PlasmoidItem {
         if (!canNotify("reconnect_" + provider)) return;
 
         connectionNotification.eventId = "providerReconnected";
-        connectionNotification.iconName = "network-connect";
+        connectionNotification.iconName = root.brandedNotificationIcon;
         connectionNotification.text = i18n("%1 has reconnected", provider);
         connectionNotification.urgency = Notification.LowUrgency;
         connectionNotification.sendEvent();

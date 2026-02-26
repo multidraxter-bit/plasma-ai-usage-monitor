@@ -9,7 +9,7 @@
         "Category": "System Information",
         "Copyright": "© 2025-2026 Loofi",
         "Description": "Monitor AI API token usage, rate limits, costs, and budgets across multiple providers",
-        "Icon": "cpu",
+        "Icon": "com.github.loofi.aiusagemonitor",
         "Id": "com.github.loofi.aiusagemonitor",
         "License": "GPL-3.0-or-later",
         "Name": "AI Usage Monitor",

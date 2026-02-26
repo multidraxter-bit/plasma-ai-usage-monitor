@@ -4,6 +4,7 @@
   <metadata_license>CC0-1.0</metadata_license>
   <project_license>GPL-3.0-or-later</project_license>
   <name>AI Usage Monitor</name>
+  <icon type="stock">com.github.loofi.aiusagemonitor</icon>
   <summary>KDE Plasma widget to monitor AI API usage, rate limits, and costs</summary>
 
   <description>

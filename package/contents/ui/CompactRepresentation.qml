@@ -7,6 +7,7 @@ import org.kde.kirigami as Kirigami
 
 MouseArea {
     id: compactRoot
+    readonly property url brandedIconSource: Qt.resolvedUrl("../icons/logo.png")
 
     readonly property var providers: root.allProviders ?? []
     readonly property var subscriptionTools: root.allSubscriptionTools ?? []
@@ -84,7 +85,7 @@ MouseArea {
     Kirigami.Icon {
         id: mainIcon
         anchors.fill: parent
-        source: Qt.resolvedUrl("../icons/logo.png")
+        source: compactRoot.brandedIconSource
         active: compactRoot.containsMouse
         visible: compactRoot.displayMode === "icon"
 
@@ -138,7 +139,7 @@ MouseArea {
         spacing: Kirigami.Units.smallSpacing / 2
 
         Kirigami.Icon {
-            source: Qt.resolvedUrl("../icons/logo.png")
+            source: compactRoot.brandedIconSource
             Layout.preferredWidth: Kirigami.Units.iconSizes.small
             Layout.preferredHeight: Kirigami.Units.iconSizes.small
         }

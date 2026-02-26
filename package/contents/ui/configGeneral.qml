@@ -242,6 +242,21 @@ KCM.SimpleKCM {
             Kirigami.FormData.label: i18n("About")
         }
 
+        RowLayout {
+            Kirigami.FormData.label: i18n("Icon:")
+
+            Kirigami.Icon {
+                source: Qt.resolvedUrl("../icons/logo.png")
+                Layout.preferredWidth: Kirigami.Units.iconSizes.smallMedium
+                Layout.preferredHeight: Kirigami.Units.iconSizes.smallMedium
+            }
+
+            QQC2.Label {
+                text: i18n("AI Usage Monitor")
+                opacity: 0.8
+            }
+        }
+
         QQC2.Label {
             Kirigami.FormData.label: i18n("Version:")
             text: (plasmoid.metaData && plasmoid.metaData.version)

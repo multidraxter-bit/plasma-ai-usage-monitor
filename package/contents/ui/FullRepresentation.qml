@@ -36,7 +36,7 @@ PlasmaExtras.Representation {
             spacing: Kirigami.Units.smallSpacing
 
             Kirigami.Icon {
-                source: "cpu"
+                source: Qt.resolvedUrl("../icons/logo.png")
                 Layout.preferredWidth: Kirigami.Units.iconSizes.small
                 Layout.preferredHeight: Kirigami.Units.iconSizes.small
             }
