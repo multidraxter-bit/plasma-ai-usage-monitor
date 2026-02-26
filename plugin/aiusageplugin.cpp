@@ -37,6 +37,7 @@ void AiUsagePlugin::registerTypes(const char *uri)
     // Register C++ types for use in QML
     qmlRegisterType<SecretsManager>(uri, 1, 0, "SecretsManager");
     qmlRegisterType<OpenAIProvider>(uri, 1, 0, "OpenAIProvider");
+    qmlRegisterType<OpenAIProvider>(uri, 1, 0, "AzureOpenAIProvider");
     qmlRegisterType<AnthropicProvider>(uri, 1, 0, "AnthropicProvider");
     qmlRegisterType<GoogleProvider>(uri, 1, 0, "GoogleProvider");
     qmlRegisterType<MistralProvider>(uri, 1, 0, "MistralProvider");

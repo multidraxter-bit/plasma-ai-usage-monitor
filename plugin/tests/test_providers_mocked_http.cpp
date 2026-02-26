@@ -6,6 +6,7 @@
 #include <QTcpServer>
 #include <QTcpSocket>
 #include <QUrl>
+#include <QJsonObject>
 
 #include "anthropicprovider.h"
 #include "cohereprovider.h"
@@ -13,6 +14,7 @@
 #include "googleveoprovider.h"
 #include "openaiprovider.h"
 #include "openrouterprovider.h"
+#include "providerbackend.h"
 #include "togetherprovider.h"
 
 class HttpStubServer : public QObject
@@ -124,6 +126,8 @@ private Q_SLOTS:
     void openRouterUsageAndCredits();
     void togetherAiUsageAndHeaders();
     void cohereUsageAndHeaders();
+    void azureNormalizeHappyPath();
+    void azureNormalizeFailurePath();
 };
 
 void ProvidersMockedHttpTest::openAiSuccessAndHeaders()
@@ -552,6 +556,50 @@ void ProvidersMockedHttpTest::cohereUsageAndHeaders()
     QCOMPARE(provider.rateLimitTokens(), 8000);
     QCOMPARE(provider.rateLimitTokensRemaining(), 7700);
     QVERIFY(provider.isConnected());
+}
+
+void ProvidersMockedHttpTest::azureNormalizeHappyPath()
+{
+    QJsonObject usage;
+    usage.insert(QStringLiteral("prompt_tokens"), 321);
+    usage.insert(QStringLiteral("completion_tokens"), 123);
+    usage.insert(QStringLiteral("total_tokens"), 444);
+
+    QJsonObject cost;
+    cost.insert(QStringLiteral("total_cost"), 1.5);
+    cost.insert(QStringLiteral("daily_cost"), 1.25);
+    cost.insert(QStringLiteral("monthly_cost"), 9.75);
+
+    QJsonObject payload;
+    payload.insert(QStringLiteral("usage"), usage);
+    payload.insert(QStringLiteral("cost"), cost);
+
+    const ProviderBackend::NormalizedUsageCost normalized =
+        ProviderBackend::normalizeUsageCost(ProviderBackend::ProviderId::AzureOpenAI, payload);
+
+    QVERIFY(normalized.parsed);
+    QCOMPARE(normalized.inputTokens, 321);
+    QCOMPARE(normalized.outputTokens, 123);
+    QCOMPARE(normalized.requestCount, 1);
+    QCOMPARE(normalized.cost, 1.5);
+    QCOMPARE(normalized.dailyCost, 1.25);
+    QCOMPARE(normalized.monthlyCost, 9.75);
+}
+
+void ProvidersMockedHttpTest::azureNormalizeFailurePath()
+{
+    const QJsonObject payload;
+
+    const ProviderBackend::NormalizedUsageCost normalized =
+        ProviderBackend::normalizeUsageCost(ProviderBackend::ProviderId::AzureOpenAI, payload);
+
+    QVERIFY(!normalized.parsed);
+    QCOMPARE(normalized.inputTokens, 0);
+    QCOMPARE(normalized.outputTokens, 0);
+    QCOMPARE(normalized.requestCount, 0);
+    QCOMPARE(normalized.cost, 0.0);
+    QCOMPARE(normalized.dailyCost, 0.0);
+    QCOMPARE(normalized.monthlyCost, 0.0);
 }
 
 QTEST_MAIN(ProvidersMockedHttpTest)

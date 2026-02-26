@@ -10,6 +10,7 @@
 #include <QHash>
 #include <QList>
 #include <QTimer>
+#include <QJsonObject>
 #include <functional>
 
 /**
@@ -66,8 +67,56 @@ class ProviderBackend : public QObject
     Q_PROPERTY(int refreshCount READ refreshCount NOTIFY dataUpdated)
 
 public:
+    enum class ProviderId {
+        Unknown = 0,
+        OpenAI,
+        Anthropic,
+        Google,
+        Mistral,
+        DeepSeek,
+        Groq,
+        XAI,
+        OpenRouter,
+        Together,
+        Cohere,
+        GoogleVeo,
+        AzureOpenAI
+    };
+    Q_ENUM(ProviderId)
+
+    struct ProviderConfig {
+        ProviderId providerId = ProviderId::Unknown;
+        QString providerKey;
+        QString baseUrl;
+        QString modelId;
+        QString deploymentId;
+        QString authToken;
+        QString authKeySlot;
+    };
+
+    struct NormalizedUsageCost {
+        bool parsed = false;
+        qint64 inputTokens = 0;
+        qint64 outputTokens = 0;
+        int requestCount = 0;
+        double cost = 0.0;
+        double dailyCost = 0.0;
+        double monthlyCost = 0.0;
+    };
+
     explicit ProviderBackend(QObject *parent = nullptr);
     ~ProviderBackend() override;
+
+    static ProviderId providerIdFromKey(const QString &providerKey);
+    static QString providerKeyFromId(ProviderId providerId);
+    static QString defaultAuthKeySlotForProvider(ProviderId providerId);
+    static ProviderConfig makeProviderConfig(const QString &providerKey,
+                                             const QString &baseUrl,
+                                             const QString &modelId,
+                                             const QString &deploymentId,
+                                             const QString &authToken,
+                                             const QString &authKeySlot = QString());
+    static NormalizedUsageCost normalizeUsageCost(ProviderId providerId, const QJsonObject &payload);
 
     // Identity
     virtual QString name() const = 0;

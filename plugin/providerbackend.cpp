@@ -3,6 +3,43 @@
 #include <QUrl>
 #include <QRandomGenerator>
 
+namespace {
+ProviderBackend::NormalizedUsageCost normalizeOpenAiLikeUsage(const QJsonObject &payload)
+{
+    ProviderBackend::NormalizedUsageCost normalized;
+
+    const QJsonObject usage = payload.value(QStringLiteral("usage")).toObject();
+    if (usage.isEmpty()) {
+        return normalized;
+    }
+
+    const qint64 promptTokens = usage.value(QStringLiteral("prompt_tokens")).toInteger(0);
+    const qint64 completionTokens = usage.value(QStringLiteral("completion_tokens")).toInteger(0);
+    const qint64 totalTokens = usage.value(QStringLiteral("total_tokens")).toInteger(promptTokens + completionTokens);
+
+    normalized.parsed = true;
+    normalized.inputTokens = promptTokens;
+    normalized.outputTokens = completionTokens > 0 ? completionTokens : qMax<qint64>(0, totalTokens - promptTokens);
+    normalized.requestCount = 1;
+
+    const QJsonObject cost = payload.value(QStringLiteral("cost")).toObject();
+    if (!cost.isEmpty()) {
+        normalized.cost = cost.value(QStringLiteral("total_cost")).toDouble(normalized.cost);
+        normalized.dailyCost = cost.value(QStringLiteral("daily_cost")).toDouble(normalized.dailyCost);
+        normalized.monthlyCost = cost.value(QStringLiteral("monthly_cost")).toDouble(normalized.monthlyCost);
+    }
+
+    if (qFuzzyIsNull(normalized.dailyCost)) {
+        normalized.dailyCost = normalized.cost;
+    }
+    if (qFuzzyIsNull(normalized.monthlyCost)) {
+        normalized.monthlyCost = normalized.cost;
+    }
+
+    return normalized;
+}
+} // namespace
+
 ProviderBackend::ProviderBackend(QObject *parent)
     : QObject(parent)
     , m_networkManager(new QNetworkAccessManager(this))
@@ -10,6 +47,103 @@ ProviderBackend::ProviderBackend(QObject *parent)
 }
 
 ProviderBackend::~ProviderBackend() = default;
+
+ProviderBackend::ProviderId ProviderBackend::providerIdFromKey(const QString &providerKey)
+{
+    const QString normalized = providerKey.trimmed().toLower();
+
+    if (normalized == QLatin1String("openai")) return ProviderId::OpenAI;
+    if (normalized == QLatin1String("anthropic")) return ProviderId::Anthropic;
+    if (normalized == QLatin1String("google") || normalized == QLatin1String("google-gemini")) return ProviderId::Google;
+    if (normalized == QLatin1String("mistral")) return ProviderId::Mistral;
+    if (normalized == QLatin1String("deepseek")) return ProviderId::DeepSeek;
+    if (normalized == QLatin1String("groq")) return ProviderId::Groq;
+    if (normalized == QLatin1String("xai") || normalized == QLatin1String("x-ai")) return ProviderId::XAI;
+    if (normalized == QLatin1String("openrouter")) return ProviderId::OpenRouter;
+    if (normalized == QLatin1String("together")) return ProviderId::Together;
+    if (normalized == QLatin1String("cohere")) return ProviderId::Cohere;
+    if (normalized == QLatin1String("google-veo") || normalized == QLatin1String("veo")) return ProviderId::GoogleVeo;
+    if (normalized == QLatin1String("azure") || normalized == QLatin1String("azure-openai")
+        || normalized == QLatin1String("azure_openai")) {
+        return ProviderId::AzureOpenAI;
+    }
+
+    return ProviderId::Unknown;
+}
+
+QString ProviderBackend::providerKeyFromId(ProviderId providerId)
+{
+    switch (providerId) {
+    case ProviderId::OpenAI: return QStringLiteral("openai");
+    case ProviderId::Anthropic: return QStringLiteral("anthropic");
+    case ProviderId::Google: return QStringLiteral("google");
+    case ProviderId::Mistral: return QStringLiteral("mistral");
+    case ProviderId::DeepSeek: return QStringLiteral("deepseek");
+    case ProviderId::Groq: return QStringLiteral("groq");
+    case ProviderId::XAI: return QStringLiteral("xai");
+    case ProviderId::OpenRouter: return QStringLiteral("openrouter");
+    case ProviderId::Together: return QStringLiteral("together");
+    case ProviderId::Cohere: return QStringLiteral("cohere");
+    case ProviderId::GoogleVeo: return QStringLiteral("google-veo");
+    case ProviderId::AzureOpenAI: return QStringLiteral("azure-openai");
+    case ProviderId::Unknown:
+    default:
+        return QStringLiteral("unknown");
+    }
+}
+
+QString ProviderBackend::defaultAuthKeySlotForProvider(ProviderId providerId)
+{
+    if (providerId == ProviderId::AzureOpenAI) {
+        return QStringLiteral("azure_openai_api_key");
+    }
+    return providerKeyFromId(providerId) + QStringLiteral("_api_key");
+}
+
+ProviderBackend::ProviderConfig ProviderBackend::makeProviderConfig(const QString &providerKey,
+                                                                    const QString &baseUrl,
+                                                                    const QString &modelId,
+                                                                    const QString &deploymentId,
+                                                                    const QString &authToken,
+                                                                    const QString &authKeySlot)
+{
+    ProviderConfig config;
+    config.providerId = providerIdFromKey(providerKey);
+    config.providerKey = providerKeyFromId(config.providerId);
+    config.baseUrl = baseUrl.trimmed();
+    config.modelId = modelId.trimmed();
+    config.deploymentId = deploymentId.trimmed();
+    config.authToken = authToken;
+    config.authKeySlot = authKeySlot.trimmed();
+
+    if (config.authKeySlot.isEmpty()) {
+        config.authKeySlot = defaultAuthKeySlotForProvider(config.providerId);
+    }
+
+    return config;
+}
+
+ProviderBackend::NormalizedUsageCost ProviderBackend::normalizeUsageCost(ProviderId providerId, const QJsonObject &payload)
+{
+    switch (providerId) {
+    case ProviderId::OpenAI:
+    case ProviderId::Mistral:
+    case ProviderId::DeepSeek:
+    case ProviderId::Groq:
+    case ProviderId::XAI:
+    case ProviderId::OpenRouter:
+    case ProviderId::Together:
+    case ProviderId::Cohere:
+    case ProviderId::AzureOpenAI:
+        return normalizeOpenAiLikeUsage(payload);
+    case ProviderId::Anthropic:
+    case ProviderId::Google:
+    case ProviderId::GoogleVeo:
+    case ProviderId::Unknown:
+    default:
+        return NormalizedUsageCost{};
+    }
+}
 
 // --- State ---
 
