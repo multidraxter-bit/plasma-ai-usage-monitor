@@ -125,6 +125,7 @@ private Q_SLOTS:
     void googleVeoUsesHeaderLimitsWhenPresent();
     void googleVeoPartialHeadersFallbackToKnownLimits();
     void googleVeoUsagePayloadEstimatedCost();
+    void googleVeoDurationSecondsEstimatedCost();
     void googleVeoAuthError();
     void openRouterUsageAndCredits();
     void togetherAiUsageAndHeaders();
@@ -471,6 +472,51 @@ void ProvidersMockedHttpTest::googleVeoUsagePayloadEstimatedCost()
     QCOMPARE(provider.outputTokens(), 30000);
     QCOMPARE(provider.requestCount(), 1);
     QVERIFY(provider.cost() > 0.0);
+    QVERIFY(provider.isEstimatedCost());
+    QCOMPARE(provider.rateLimitRequests(), 44);
+    QCOMPARE(provider.rateLimitRequestsRemaining(), 40);
+    QVERIFY(provider.isConnected());
+}
+
+void ProvidersMockedHttpTest::googleVeoDurationSecondsEstimatedCost()
+{
+    HttpStubServer server;
+    QVERIFY(server.listen());
+
+    const QByteArray modelInfoBody = R"JSON({
+        "name": "models/veo-2",
+        "usage": {
+            "prompt_tokens": 10,
+            "completion_tokens": 5,
+            "video_duration_seconds": 8
+        }
+    })JSON";
+
+    server.setResponse(
+        QStringLiteral("GET"),
+        QStringLiteral("/v1beta/models/veo-2"),
+        200,
+        modelInfoBody,
+        {
+            {"x-ratelimit-limit-requests", "44"},
+            {"x-ratelimit-remaining-requests", "40"},
+        });
+
+    GoogleVeoProvider provider;
+    provider.setApiKey(QStringLiteral("test-key"));
+    provider.setCustomBaseUrl(server.baseUrl() + QStringLiteral("/v1beta"));
+    provider.setModel(QStringLiteral("veo-2"));
+    provider.setTier(QStringLiteral("paid"));
+
+    QSignalSpy dataSpy(&provider, &ProviderBackend::dataUpdated);
+    provider.refresh();
+
+    QTRY_VERIFY_WITH_TIMEOUT(dataSpy.count() >= 1, 3000);
+
+    QCOMPARE(provider.inputTokens(), 10);
+    QCOMPARE(provider.outputTokens(), 5);
+    QCOMPARE(provider.requestCount(), 1);
+    QVERIFY(qAbs(provider.cost() - 2.8) < 0.000001);
     QVERIFY(provider.isEstimatedCost());
     QCOMPARE(provider.rateLimitRequests(), 44);
     QCOMPARE(provider.rateLimitRequestsRemaining(), 40);

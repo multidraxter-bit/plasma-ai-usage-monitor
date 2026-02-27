@@ -571,3 +571,12 @@ void ProviderBackend::updateEstimatedCost(const QString &currentModel)
     m_dailyCost = estimatedTotal; // Best estimate for daily cost from accumulated tokens
     checkBudgetLimits();
 }
+
+void ProviderBackend::setEstimatedCost(double cost)
+{
+    m_cost = qMax(0.0, cost);
+    m_isEstimatedCost = true;
+    m_dailyCost = m_cost;
+    m_monthlyCost = m_cost;
+    checkBudgetLimits();
+}

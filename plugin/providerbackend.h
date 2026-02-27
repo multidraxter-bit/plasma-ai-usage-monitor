@@ -264,6 +264,10 @@ protected:
     /// Call this after updating token counts. Only sets cost if no real cost has been set.
     void updateEstimatedCost(const QString &currentModel);
 
+    /// Set provider-specific estimated cost when token pricing is not the right approximation.
+    /// Marks cost as estimated and updates daily/monthly estimated totals.
+    void setEstimatedCost(double cost);
+
 private:
     QNetworkAccessManager *m_networkManager;
     QString m_apiKey;

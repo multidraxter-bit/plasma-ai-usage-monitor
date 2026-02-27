@@ -4,6 +4,44 @@
 #include <QUrlQuery>
 #include <QDebug>
 
+namespace {
+double extractDurationSeconds(const QJsonObject &payload)
+{
+    const QJsonObject usage = payload.value(QStringLiteral("usage")).toObject();
+    const QJsonObject metadata = payload.value(QStringLiteral("metadata")).toObject();
+
+    const auto readPositive = [](const QJsonObject &obj, const char *key) -> double {
+        if (obj.isEmpty()) {
+            return 0.0;
+        }
+        return qMax(0.0, obj.value(QLatin1String(key)).toDouble(0.0));
+    };
+
+    const double usageDuration = qMax(
+        readPositive(usage, "video_duration_seconds"),
+        qMax(readPositive(usage, "duration_seconds"), readPositive(usage, "generated_seconds")));
+    if (usageDuration > 0.0) {
+        return usageDuration;
+    }
+
+    const double payloadDuration = qMax(
+        readPositive(payload, "video_duration_seconds"),
+        qMax(readPositive(payload, "duration_seconds"), readPositive(payload, "generated_seconds")));
+    if (payloadDuration > 0.0) {
+        return payloadDuration;
+    }
+
+    return qMax(
+        readPositive(metadata, "video_duration_seconds"),
+        qMax(readPositive(metadata, "duration_seconds"), readPositive(metadata, "generated_seconds")));
+}
+
+double modelCostPerSecond(const QString &model)
+{
+    return model.contains(QStringLiteral("veo-2")) ? 0.35 : 0.50;
+}
+} // namespace
+
 GoogleVeoProvider::GoogleVeoProvider(QObject *parent)
     : ProviderBackend(parent)
 {
@@ -132,10 +170,15 @@ void GoogleVeoProvider::onModelInfoReply(QNetworkReply *reply)
             setDailyCost(normalized.dailyCost > 0.0 ? normalized.dailyCost : normalized.cost);
             setMonthlyCost(normalized.monthlyCost > 0.0 ? normalized.monthlyCost : normalized.cost);
         } else {
-            setCost(0.0);
-            updateEstimatedCost(m_model);
-            setDailyCost(cost());
-            setMonthlyCost(cost());
+            const double durationSeconds = extractDurationSeconds(doc.object());
+            if (durationSeconds > 0.0) {
+                setEstimatedCost(durationSeconds * modelCostPerSecond(m_model));
+            } else {
+                setCost(0.0);
+                updateEstimatedCost(m_model);
+                setDailyCost(cost());
+                setMonthlyCost(cost());
+            }
         }
     } else {
         // Connectivity-only path for model-info endpoint.
