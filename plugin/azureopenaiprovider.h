@@ -60,6 +60,9 @@ private:
     qint64 m_sessionInputTokens = 0;
     qint64 m_sessionOutputTokens = 0;
     int m_sessionRequestCount = 0;
+    double m_sessionTotalCost = 0.0;
+    double m_sessionDailyCost = 0.0;
+    double m_sessionMonthlyCost = 0.0;
 
     static constexpr int REQUEST_TIMEOUT_MS = 30000;
 };

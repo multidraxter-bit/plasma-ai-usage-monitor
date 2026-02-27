@@ -128,6 +128,7 @@ private Q_SLOTS:
     void togetherAiUsageAndHeaders();
     void cohereUsageAndHeaders();
     void azureProviderSuccess();
+    void azureProviderMeteredCostPreferred();
     void azureProviderAuthError();
     void azureNormalizeHappyPath();
     void azureNormalizeFailurePath();
@@ -608,9 +609,58 @@ void ProvidersMockedHttpTest::azureProviderSuccess()
     QCOMPARE(provider.rateLimitTokens(), 9000);
     QCOMPARE(provider.rateLimitTokensRemaining(), 8750);
     QCOMPARE(provider.rateLimitResetTime(), QStringLiteral("25s"));
+    QVERIFY(provider.cost() > 0.0);
+    QVERIFY(provider.isEstimatedCost());
     QVERIFY(provider.isConnected());
 
     QVERIFY(server.hitCount(QStringLiteral("/openai/deployments/my-deployment/chat/completions")) >= 1);
+}
+
+void ProvidersMockedHttpTest::azureProviderMeteredCostPreferred()
+{
+    HttpStubServer server;
+    QVERIFY(server.listen());
+
+    const QByteArray usageBody = R"JSON({
+        "id": "chatcmpl-azure-metered",
+        "object": "chat.completion",
+        "usage": {
+            "prompt_tokens": 120,
+            "completion_tokens": 30,
+            "total_tokens": 150
+        },
+        "cost": {
+            "total_cost": 0.0125,
+            "daily_cost": 0.05,
+            "monthly_cost": 0.25
+        }
+    })JSON";
+
+    server.setResponse(
+        QStringLiteral("POST"),
+        QStringLiteral("/openai/deployments/my-deployment/chat/completions"),
+        200,
+        usageBody);
+
+    AzureOpenAIProvider provider;
+    provider.setApiKey(QStringLiteral("test-key"));
+    provider.setDeploymentId(QStringLiteral("my-deployment"));
+    provider.setModel(QStringLiteral("gpt-4o"));
+    provider.setCustomBaseUrl(server.baseUrl());
+
+    QSignalSpy dataSpy(&provider, &ProviderBackend::dataUpdated);
+    provider.refresh();
+
+    QTRY_VERIFY_WITH_TIMEOUT(dataSpy.count() >= 1, 3000);
+
+    QCOMPARE(provider.inputTokens(), 120);
+    QCOMPARE(provider.outputTokens(), 30);
+    QCOMPARE(provider.requestCount(), 1);
+    QVERIFY(qAbs(provider.cost() - 0.0125) < 0.000001);
+    QVERIFY(qAbs(provider.dailyCost() - 0.05) < 0.000001);
+    QVERIFY(qAbs(provider.monthlyCost() - 0.25) < 0.000001);
+    QVERIFY(!provider.isEstimatedCost());
+    QVERIFY(provider.isConnected());
 }
 
 void ProvidersMockedHttpTest::azureProviderAuthError()

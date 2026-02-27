@@ -187,26 +187,53 @@ void AzureOpenAIProvider::onCompletionReply(QNetworkReply *reply)
     }
 
     const QJsonObject root = doc.object();
-    const QJsonObject usage = root.value(QStringLiteral("usage")).toObject();
+    const ProviderBackend::NormalizedUsageCost normalized =
+        ProviderBackend::normalizeUsageCost(ProviderBackend::ProviderId::AzureOpenAI, root);
 
-    const qint64 promptTokens = usage.value(QStringLiteral("prompt_tokens")).toInteger(0);
-    const qint64 completionTokens = usage.value(QStringLiteral("completion_tokens")).toInteger(0);
-    const qint64 totalTokens = usage.value(QStringLiteral("total_tokens")).toInteger(promptTokens + completionTokens);
-
-    m_sessionInputTokens += promptTokens;
-    if (completionTokens > 0) {
-        m_sessionOutputTokens += completionTokens;
+    if (normalized.parsed) {
+        m_sessionInputTokens += normalized.inputTokens;
+        m_sessionOutputTokens += normalized.outputTokens;
+        m_sessionRequestCount += qMax(1, normalized.requestCount);
     } else {
-        m_sessionOutputTokens += qMax<qint64>(0, totalTokens - promptTokens);
+        const QJsonObject usage = root.value(QStringLiteral("usage")).toObject();
+        const qint64 promptTokens = usage.value(QStringLiteral("prompt_tokens")).toInteger(0);
+        const qint64 completionTokens = usage.value(QStringLiteral("completion_tokens")).toInteger(0);
+        const qint64 totalTokens = usage.value(QStringLiteral("total_tokens")).toInteger(promptTokens + completionTokens);
+
+        m_sessionInputTokens += promptTokens;
+        if (completionTokens > 0) {
+            m_sessionOutputTokens += completionTokens;
+        } else {
+            m_sessionOutputTokens += qMax<qint64>(0, totalTokens - promptTokens);
+        }
+        m_sessionRequestCount += 1;
     }
-    m_sessionRequestCount += 1;
 
     setInputTokens(m_sessionInputTokens);
     setOutputTokens(m_sessionOutputTokens);
     setRequestCount(m_sessionRequestCount);
 
-    // Azure metering API integration is separate; use token-based estimate meanwhile.
-    updateEstimatedCost(m_model);
+    if (normalized.parsed && normalized.cost > 0.0) {
+        m_sessionTotalCost += normalized.cost;
+        setCost(m_sessionTotalCost);
+
+        if (normalized.dailyCost > 0.0) {
+            m_sessionDailyCost += normalized.dailyCost;
+        } else {
+            m_sessionDailyCost += normalized.cost;
+        }
+
+        if (normalized.monthlyCost > 0.0) {
+            m_sessionMonthlyCost += normalized.monthlyCost;
+        } else {
+            m_sessionMonthlyCost += normalized.cost;
+        }
+
+        setDailyCost(m_sessionDailyCost);
+        setMonthlyCost(m_sessionMonthlyCost);
+    } else {
+        updateEstimatedCost(m_model);
+    }
 
     setConnected(true);
     setLoading(false);
