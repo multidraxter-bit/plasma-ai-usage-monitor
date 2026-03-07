@@ -21,9 +21,16 @@ PlasmoidItem {
             var p = providers[i];
             if (p.enabled && p.backend.connected) {
                 var info = p.name + ": ";
-                if (p.backend.cost > 0)
-                    info += "$" + p.backend.cost.toFixed(2) + " | ";
-                info += p.backend.rateLimitRequestsRemaining + " req left";
+                if (p.configKey === "loofi") {
+                    info += (p.backend.activeModel || i18n("No model")) + " | ";
+                    info += (p.backend.trainingStage || i18n("idle")) + " | ";
+                    info += i18n("GPU %1%", Math.round(Math.max(0, p.backend.gpuMemoryPct || 0))) + " | ";
+                    info += i18n("%1 req/24h", formatCompactMetric(p.backend.requestCount || 0));
+                } else {
+                    if (p.backend.cost > 0)
+                        info += "$" + p.backend.cost.toFixed(2) + " | ";
+                    info += p.backend.rateLimitRequestsRemaining + " req left";
+                }
                 lines.push(info);
             }
         }
@@ -43,6 +50,7 @@ PlasmoidItem {
     property alias cohere: cohereBackend
     property alias googleveo: googleveoBackend
     property alias azure: azureBackend
+    property alias loofi: loofiBackend
     property alias usageDb: usageDatabase
 
     // Subscription tool monitors
@@ -186,6 +194,11 @@ PlasmoidItem {
         dailyBudget: plasmoid.configuration.googleveoDailyBudget / 100.0
         monthlyBudget: plasmoid.configuration.googleveoMonthlyBudget / 100.0
         budgetWarningPercent: plasmoid.configuration.budgetWarningPercent
+    }
+
+    LoofiServerProvider {
+        id: loofiBackend
+        customBaseUrl: plasmoid.configuration.loofiServerUrl
     }
 
     // ── Subscription Tool Monitors ──
@@ -377,6 +390,10 @@ PlasmoidItem {
         return (providerInterval > 0 ? providerInterval : plasmoid.configuration.refreshInterval) * 1000;
     }
 
+    function canRefreshBackend(backend, requiresApiKey) {
+        return backend && (!requiresApiKey || backend.hasApiKey());
+    }
+
     // Per-provider refresh timers
     Timer {
         id: openaiRefreshTimer
@@ -384,7 +401,7 @@ PlasmoidItem {
         running: plasmoid.configuration.openaiEnabled
         repeat: true
         onTriggered: {
-            if (openaiBackend.hasApiKey()) openaiBackend.refresh();
+            if (canRefreshBackend(openaiBackend, true)) openaiBackend.refresh();
         }
     }
     Timer {
@@ -393,7 +410,7 @@ PlasmoidItem {
         running: plasmoid.configuration.anthropicEnabled
         repeat: true
         onTriggered: {
-            if (anthropicBackend.hasApiKey()) anthropicBackend.refresh();
+            if (canRefreshBackend(anthropicBackend, true)) anthropicBackend.refresh();
         }
     }
     Timer {
@@ -402,7 +419,7 @@ PlasmoidItem {
         running: plasmoid.configuration.googleEnabled
         repeat: true
         onTriggered: {
-            if (googleBackend.hasApiKey()) googleBackend.refresh();
+            if (canRefreshBackend(googleBackend, true)) googleBackend.refresh();
         }
     }
     Timer {
@@ -411,7 +428,7 @@ PlasmoidItem {
         running: plasmoid.configuration.mistralEnabled
         repeat: true
         onTriggered: {
-            if (mistralBackend.hasApiKey()) mistralBackend.refresh();
+            if (canRefreshBackend(mistralBackend, true)) mistralBackend.refresh();
         }
     }
     Timer {
@@ -420,7 +437,7 @@ PlasmoidItem {
         running: plasmoid.configuration.deepseekEnabled
         repeat: true
         onTriggered: {
-            if (deepseekBackend.hasApiKey()) deepseekBackend.refresh();
+            if (canRefreshBackend(deepseekBackend, true)) deepseekBackend.refresh();
         }
     }
     Timer {
@@ -429,7 +446,7 @@ PlasmoidItem {
         running: plasmoid.configuration.groqEnabled
         repeat: true
         onTriggered: {
-            if (groqBackend.hasApiKey()) groqBackend.refresh();
+            if (canRefreshBackend(groqBackend, true)) groqBackend.refresh();
         }
     }
     Timer {
@@ -438,7 +455,7 @@ PlasmoidItem {
         running: plasmoid.configuration.xaiEnabled
         repeat: true
         onTriggered: {
-            if (xaiBackend.hasApiKey()) xaiBackend.refresh();
+            if (canRefreshBackend(xaiBackend, true)) xaiBackend.refresh();
         }
     }
     Timer {
@@ -447,7 +464,7 @@ PlasmoidItem {
         running: plasmoid.configuration.openrouterEnabled
         repeat: true
         onTriggered: {
-            if (openrouterBackend.hasApiKey()) openrouterBackend.refresh();
+            if (canRefreshBackend(openrouterBackend, true)) openrouterBackend.refresh();
         }
     }
     Timer {
@@ -456,7 +473,7 @@ PlasmoidItem {
         running: plasmoid.configuration.togetherEnabled
         repeat: true
         onTriggered: {
-            if (togetherBackend.hasApiKey()) togetherBackend.refresh();
+            if (canRefreshBackend(togetherBackend, true)) togetherBackend.refresh();
         }
     }
     Timer {
@@ -465,7 +482,7 @@ PlasmoidItem {
         running: plasmoid.configuration.cohereEnabled
         repeat: true
         onTriggered: {
-            if (cohereBackend.hasApiKey()) cohereBackend.refresh();
+            if (canRefreshBackend(cohereBackend, true)) cohereBackend.refresh();
         }
     }
     Timer {
@@ -474,7 +491,7 @@ PlasmoidItem {
         running: plasmoid.configuration.googleveoEnabled
         repeat: true
         onTriggered: {
-            if (googleveoBackend.hasApiKey()) googleveoBackend.refresh();
+            if (canRefreshBackend(googleveoBackend, true)) googleveoBackend.refresh();
         }
     }
     Timer {
@@ -483,7 +500,16 @@ PlasmoidItem {
         running: plasmoid.configuration.azureEnabled
         repeat: true
         onTriggered: {
-            if (azureBackend.hasApiKey()) azureBackend.refresh();
+            if (canRefreshBackend(azureBackend, true)) azureBackend.refresh();
+        }
+    }
+    Timer {
+        id: loofiRefreshTimer
+        interval: effectiveInterval(plasmoid.configuration.loofiRefreshInterval)
+        running: plasmoid.configuration.loofiEnabled
+        repeat: true
+        onTriggered: {
+            if (canRefreshBackend(loofiBackend, false)) loofiBackend.refresh();
         }
     }
 
@@ -518,6 +544,7 @@ PlasmoidItem {
     // ── Helper: all provider info ──
 
     readonly property var allProviders: [
+        { name: "Loofi Server", dbName: "LoofiServer", configKey: "loofi", backend: loofiBackend, enabled: plasmoid.configuration.loofiEnabled, color: "#FF6B35", requiresApiKey: false },
         { name: "OpenAI", dbName: "OpenAI", configKey: "openai", backend: openaiBackend, enabled: plasmoid.configuration.openaiEnabled, color: "#10A37F" },
         { name: "Anthropic", dbName: "Anthropic", configKey: "anthropic", backend: anthropicBackend, enabled: plasmoid.configuration.anthropicEnabled, color: "#D4A574" },
         { name: "Google Gemini", dbName: "Google", configKey: "google", backend: googleBackend, enabled: plasmoid.configuration.googleEnabled, color: "#4285F4" },
@@ -572,9 +599,18 @@ PlasmoidItem {
 
     // ── Functions ──
 
+    function formatCompactMetric(value) {
+        if (value >= 1000000)
+            return (value / 1000000).toFixed(1) + "M";
+        if (value >= 1000)
+            return (value / 1000).toFixed(1) + "K";
+        return value.toString();
+    }
+
     function refreshAll() {
         for (var i = 0; i < allProviders.length; i++) {
-            if (allProviders[i].enabled && allProviders[i].backend.hasApiKey()) {
+            var provider = allProviders[i];
+            if (provider.enabled && canRefreshBackend(provider.backend, provider.requiresApiKey !== false)) {
                 allProviders[i].backend.refresh();
             }
         }
@@ -582,7 +618,7 @@ PlasmoidItem {
 
     function loadApiKeys() {
         for (var i = 0; i < allProviders.length; i++) {
-            if (allProviders[i].enabled) {
+            if (allProviders[i].enabled && allProviders[i].requiresApiKey !== false) {
                 var key = secrets.getKey(allProviders[i].configKey);
                 if (key) allProviders[i].backend.setApiKey(key);
             }
@@ -832,6 +868,8 @@ PlasmoidItem {
 
         if (secrets.walletOpen) {
             loadApiKeys();
+        } else {
+            refreshAll();
         }
         // Eagerly initialize database (avoids blocking on first write)
         usageDatabase.init();
@@ -863,6 +901,10 @@ PlasmoidItem {
         function onXaiEnabledChanged() { loadApiKeys(); }
         function onGoogleveoEnabledChanged() { loadApiKeys(); }
         function onAzureEnabledChanged() { loadApiKeys(); }
+        function onLoofiEnabledChanged() { refreshAll(); }
+        function onLoofiServerUrlChanged() {
+            if (plasmoid.configuration.loofiEnabled) loofiBackend.refresh();
+        }
         function onBrowserSyncProfileChanged() {
             browserCookies.selectedFirefoxProfile = plasmoid.configuration.browserSyncProfile;
         }

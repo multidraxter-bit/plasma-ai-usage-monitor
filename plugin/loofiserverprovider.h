@@ -18,6 +18,7 @@ class LoofiServerProvider : public ProviderBackend
 {
     Q_OBJECT
 
+    Q_PROPERTY(QString model         READ activeModel   NOTIFY serverDataUpdated)
     Q_PROPERTY(QString activeModel   READ activeModel   NOTIFY serverDataUpdated)
     Q_PROPERTY(QString trainingStage READ trainingStage NOTIFY serverDataUpdated)
     Q_PROPERTY(double  gpuMemoryPct  READ gpuMemoryPct  NOTIFY serverDataUpdated)

@@ -5,13 +5,25 @@
 #include <QJsonObject>
 #include <QUrl>
 
+namespace {
+constexpr auto DEFAULT_LOOFI_SERVER_URL = "http://192.168.1.3:3000";
+}
+
 LoofiServerProvider::LoofiServerProvider(QObject *parent)
     : ProviderBackend(parent)
 {}
 
 QString LoofiServerProvider::serverUrl() const
 {
-    return qEnvironmentVariable("LOOFI_SERVER_URL", QStringLiteral("http://192.168.1.3:3000"));
+    if (!customBaseUrl().trimmed().isEmpty()) {
+        return effectiveBaseUrl("");
+    }
+
+    QString url = qEnvironmentVariable("LOOFI_SERVER_URL", QStringLiteral(DEFAULT_LOOFI_SERVER_URL));
+    while (url.endsWith(QLatin1Char('/'))) {
+        url.chop(1);
+    }
+    return url;
 }
 
 void LoofiServerProvider::refresh()
@@ -60,8 +72,7 @@ void LoofiServerProvider::refresh()
         m_gpuMemoryPct  = obj.value(QLatin1String("gpu_memory_pct")).toDouble(-1.0);
 
         const int infer = obj.value(QLatin1String("inference_count_24h")).toInt(0);
-        if (infer > 0)
-            setRequestCount(infer);
+        setRequestCount(infer);
 
         updateLastRefreshed();
         setConnected(true);

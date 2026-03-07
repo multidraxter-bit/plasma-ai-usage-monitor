@@ -453,7 +453,7 @@ PlasmaExtras.Representation {
                                 Layout.fillWidth: true
                                 visible: modelData.enabled
                                 providerName: modelData.name
-                                providerIcon: "globe"
+                                providerIcon: modelData.backend?.iconName ?? "globe"
                                 providerColor: modelData.color
                                 backend: modelData.backend ?? null
                                 showCost: true
@@ -866,7 +866,8 @@ PlasmaExtras.Representation {
     }
 
     function hasAnyProvider() {
-        return plasmoid.configuration.openaiEnabled
+        return plasmoid.configuration.loofiEnabled
+            || plasmoid.configuration.openaiEnabled
             || plasmoid.configuration.anthropicEnabled
             || plasmoid.configuration.googleEnabled
             || plasmoid.configuration.mistralEnabled

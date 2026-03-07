@@ -17,6 +17,7 @@ ColumnLayout {
     property bool showCost: false
     property bool showUsage: false
     property bool collapsed: false
+    readonly property bool isLoofiServer: card.providerName === "Loofi Server"
 
     spacing: 0
 
@@ -42,7 +43,7 @@ ColumnLayout {
             else status = i18n("disconnected");
 
             var desc = card.providerName + ", " + status;
-            if (card.backend && card.backend.connected && card.showCost) {
+            if (card.backend && card.backend.connected && card.showCost && !card.isLoofiServer) {
                 desc += ", $" + (card.backend.cost ?? 0).toFixed(4);
             }
             return desc;
@@ -179,7 +180,7 @@ ColumnLayout {
 
                 // Compact cost when collapsed
                 PlasmaComponents.Label {
-                    visible: card.collapsed && card.showCost && (card.backend?.connected ?? false)
+                    visible: card.collapsed && card.showCost && !card.isLoofiServer && (card.backend?.connected ?? false)
                     text: "$" + (card.backend?.cost ?? 0).toFixed(2)
                     font.bold: true
                     font.pointSize: Kirigami.Theme.smallFont.pointSize
@@ -254,9 +255,75 @@ ColumnLayout {
             }
 
             // Usage data (for providers with usage APIs)
+            ColumnLayout {
+                Layout.fillWidth: true
+                visible: !card.collapsed && card.isLoofiServer && (card.backend?.connected ?? false)
+                spacing: Kirigami.Units.smallSpacing
+
+                PlasmaComponents.Label {
+                    text: i18n("Server KPIs")
+                    font.pointSize: Kirigami.Theme.smallFont.pointSize
+                    font.bold: true
+                    opacity: 0.8
+                }
+
+                GridLayout {
+                    Layout.fillWidth: true
+                    columns: 2
+                    columnSpacing: Kirigami.Units.largeSpacing
+                    rowSpacing: Kirigami.Units.smallSpacing
+
+                    PlasmaComponents.Label {
+                        text: i18n("Active model:")
+                        font.pointSize: Kirigami.Theme.smallFont.pointSize
+                        opacity: 0.7
+                    }
+                    PlasmaComponents.Label {
+                        text: card.backend?.activeModel || i18n("Unknown")
+                        font.bold: true
+                        Layout.alignment: Qt.AlignRight
+                        elide: Text.ElideRight
+                    }
+
+                    PlasmaComponents.Label {
+                        text: i18n("Training stage:")
+                        font.pointSize: Kirigami.Theme.smallFont.pointSize
+                        opacity: 0.7
+                    }
+                    PlasmaComponents.Label {
+                        text: card.backend?.trainingStage || i18n("idle")
+                        font.bold: true
+                        Layout.alignment: Qt.AlignRight
+                        elide: Text.ElideRight
+                    }
+
+                    PlasmaComponents.Label {
+                        text: i18n("GPU memory:")
+                        font.pointSize: Kirigami.Theme.smallFont.pointSize
+                        opacity: 0.7
+                    }
+                    PlasmaComponents.Label {
+                        text: formatPercent(card.backend?.gpuMemoryPct ?? -1)
+                        font.bold: true
+                        Layout.alignment: Qt.AlignRight
+                    }
+
+                    PlasmaComponents.Label {
+                        text: i18n("Requests (24h):")
+                        font.pointSize: Kirigami.Theme.smallFont.pointSize
+                        opacity: 0.7
+                    }
+                    PlasmaComponents.Label {
+                        text: formatNumber(card.backend?.requestCount ?? 0)
+                        font.bold: true
+                        Layout.alignment: Qt.AlignRight
+                    }
+                }
+            }
+
             GridLayout {
                 Layout.fillWidth: true
-                visible: !card.collapsed && card.showUsage && (card.backend?.connected ?? false)
+                visible: !card.collapsed && card.showUsage && !card.isLoofiServer && (card.backend?.connected ?? false)
                 columns: 2
                 columnSpacing: Kirigami.Units.largeSpacing
                 rowSpacing: Kirigami.Units.smallSpacing
@@ -298,7 +365,7 @@ ColumnLayout {
             // Cost display
             RowLayout {
                 Layout.fillWidth: true
-                visible: !card.collapsed && card.showCost && (card.backend?.connected ?? false)
+                visible: !card.collapsed && card.showCost && !card.isLoofiServer && (card.backend?.connected ?? false)
                 spacing: Kirigami.Units.smallSpacing
 
                 PlasmaComponents.Label {
@@ -647,6 +714,12 @@ ColumnLayout {
 
     function formatNumber(n) {
         return Utils.formatNumber(n);
+    }
+
+    function formatPercent(value) {
+        if (value < 0)
+            return i18n("Unknown");
+        return Math.round(value) + "%";
     }
 
     function formatRelativeTime(dateTime) {

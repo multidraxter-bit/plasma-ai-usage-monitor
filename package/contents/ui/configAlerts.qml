@@ -31,6 +31,7 @@ KCM.SimpleKCM {
     property alias cfg_xaiNotificationsEnabled: xaiNotifySwitch.checked
     property alias cfg_googleveoNotificationsEnabled: googleveoNotifySwitch.checked
     property alias cfg_azureNotificationsEnabled: azureNotifySwitch.checked
+    property alias cfg_loofiNotificationsEnabled: loofiNotifySwitch.checked
     property alias cfg_notifyOnUpdate: updateNotifySwitch.checked
     property alias cfg_updateCheckInterval: updateCheckSpinBox.value
 
@@ -217,6 +218,13 @@ KCM.SimpleKCM {
             Kirigami.FormData.label: i18n("Azure OpenAI:")
             enabled: alertsSwitch.checked
             checked: plasmoid.configuration.azureNotificationsEnabled
+        }
+
+        QQC2.Switch {
+            id: loofiNotifySwitch
+            Kirigami.FormData.label: i18n("Loofi Server:")
+            enabled: alertsSwitch.checked
+            checked: plasmoid.configuration.loofiNotificationsEnabled
         }
 
         // ── Update Notifications ──

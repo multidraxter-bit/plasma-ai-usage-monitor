@@ -11,6 +11,7 @@ set(TEST_PROVIDER_SRC
     ${CMAKE_SOURCE_DIR}/plugin/cohereprovider.cpp
     ${CMAKE_SOURCE_DIR}/plugin/deepseekprovider.cpp
     ${CMAKE_SOURCE_DIR}/plugin/googleveoprovider.cpp
+    ${CMAKE_SOURCE_DIR}/plugin/loofiserverprovider.cpp
     ${CMAKE_SOURCE_DIR}/plugin/openrouterprovider.cpp
     ${CMAKE_SOURCE_DIR}/plugin/togetherprovider.cpp
 )

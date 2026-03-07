@@ -19,6 +19,7 @@ KCM.SimpleKCM {
     property alias cfg_groqRefreshInterval: groqRefreshSlider.value
     property alias cfg_xaiRefreshInterval: xaiRefreshSlider.value
     property alias cfg_googleveoRefreshInterval: googleveoRefreshSlider.value
+    property alias cfg_loofiRefreshInterval: loofiRefreshSlider.value
 
     Kirigami.FormLayout {
         anchors.fill: parent
@@ -58,7 +59,8 @@ KCM.SimpleKCM {
             model: [
                 i18n("Icon only"),
                 i18n("Total cost"),
-                i18n("Active providers count")
+                i18n("Active providers count"),
+                i18n("Loofi server KPIs")
             ]
             QQC2.ToolTip.text: i18n("Choose what to display next to the icon in the system panel")
             QQC2.ToolTip.visible: hovered
@@ -67,6 +69,7 @@ KCM.SimpleKCM {
                 switch (generalPage.cfg_compactDisplayMode) {
                     case "cost": return 1;
                     case "count": return 2;
+                    case "loofi": return 3;
                     default: return 0;
                 }
             }
@@ -74,6 +77,7 @@ KCM.SimpleKCM {
                 switch (currentIndex) {
                     case 1: generalPage.cfg_compactDisplayMode = "cost"; break;
                     case 2: generalPage.cfg_compactDisplayMode = "count"; break;
+                    case 3: generalPage.cfg_compactDisplayMode = "loofi"; break;
                     default: generalPage.cfg_compactDisplayMode = "icon"; break;
                 }
             }
@@ -231,6 +235,23 @@ KCM.SimpleKCM {
             }
             QQC2.Label {
                 text: googleveoRefreshSlider.value === 0 ? i18n("Use default") : formatInterval(googleveoRefreshSlider.value)
+                font.pointSize: Kirigami.Theme.smallFont.pointSize
+                opacity: 0.7; Layout.alignment: Qt.AlignHCenter
+            }
+        }
+
+        ColumnLayout {
+            Kirigami.FormData.label: i18n("Loofi Server:")
+            spacing: 2
+
+            QQC2.Slider {
+                id: loofiRefreshSlider
+                Layout.fillWidth: true
+                from: 0; to: 1800; stepSize: 60
+                value: plasmoid.configuration.loofiRefreshInterval
+            }
+            QQC2.Label {
+                text: loofiRefreshSlider.value === 0 ? i18n("Use default") : formatInterval(loofiRefreshSlider.value)
                 font.pointSize: Kirigami.Theme.smallFont.pointSize
                 opacity: 0.7; Layout.alignment: Qt.AlignHCenter
             }
