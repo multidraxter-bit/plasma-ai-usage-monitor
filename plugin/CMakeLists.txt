@@ -23,6 +23,7 @@ set(aiusagemonitor_SRCS
     codexclimonitor.cpp
     copilotmonitor.cpp
     browsercookieextractor.cpp
+    loofiserverprovider.cpp
 )
 
 set(aiusagemonitor_HDRS
@@ -51,6 +52,7 @@ set(aiusagemonitor_HDRS
     codexclimonitor.h
     copilotmonitor.h
     browsercookieextractor.h
+    loofiserverprovider.h
 )
 
 add_library(aiusagemonitorplugin SHARED ${aiusagemonitor_SRCS} ${aiusagemonitor_HDRS})

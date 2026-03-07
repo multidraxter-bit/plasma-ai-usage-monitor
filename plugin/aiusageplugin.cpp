@@ -22,6 +22,7 @@
 #include "codexclimonitor.h"
 #include "copilotmonitor.h"
 #include "browsercookieextractor.h"
+#include "loofiserverprovider.h"
 
 #include <QQmlEngine>
 #include <QJSEngine>
@@ -60,6 +61,9 @@ void AiUsagePlugin::registerTypes(const char *uri)
 
     // Browser cookie extraction for sync
     qmlRegisterType<BrowserCookieExtractor>(uri, 1, 0, "BrowserCookieExtractor");
+
+    // Self-hosted Loofi AI server
+    qmlRegisterType<LoofiServerProvider>(uri, 1, 0, "LoofiServerProvider");
 
     // Register abstract base classes as uncreatable (for type info in QML)
     qmlRegisterUncreatableType<ProviderBackend>(uri, 1, 0, "ProviderBackend",
