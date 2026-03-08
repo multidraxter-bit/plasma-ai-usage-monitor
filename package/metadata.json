@@ -13,7 +13,7 @@
         "Id": "com.github.loofi.aiusagemonitor",
         "License": "GPL-3.0-or-later",
         "Name": "AI Usage Monitor",
-        "Version": "3.7.0",
+        "Version": "3.8.0",
         "Website": "https://github.com/loofitheboss/plasma-ai-usage-monitor"
     },
     "X-Plasma-API-Minimum-Version": "6.0",

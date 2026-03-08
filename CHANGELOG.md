@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.8.0] — 2026-03-08
+
+### Added
+
+- Add interactive `uninstall.sh` script that detects user-local and system installs and removes them interactively, with COPR fallback guidance
+- Add `just uninstall-guided` Justfile recipe for the new guided uninstall flow
+- Add actionable error hints in ProviderCard — maps common HTTP errors (401, 403, 429), network failures, and KWallet errors to plain-language fix instructions
+- Add stale user-local version detection in `install_bootstrap.sh` — warns when a cached `~/.local` copy shadows a freshly installed system package
+
+### Changed
+
+- `install.sh` now uses `--method auto` instead of `--method source`, so Fedora users are routed through COPR (faster, no compiler needed) by default
+- `install_bootstrap.sh` now offers to reload plasmashell immediately after any install method completes, so the widget appears without a manual restart
+- `install_local_plasmoid.sh` now uses `--install` for first-time installs and `--upgrade` for subsequent updates, fixing a failure when no prior user-local copy existed
+- `reload_plasma.sh` now prints the restarted PID and a next-step hint to reduce confusion after the panel briefly disappears
+
 ## [3.7.0] — 2026-02-26
 
 ### Added
