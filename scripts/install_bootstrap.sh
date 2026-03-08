@@ -126,6 +126,23 @@ case "$METHOD" in
     fi
     run_cmd cmake --build "$ROOT_DIR/build" --parallel "$jobs"
     run_cmd sudo cmake --install "$ROOT_DIR/build"
+
+    # Check for stale user-local copy that would shadow system install
+    USER_META="${HOME}/.local/share/plasma/plasmoids/com.github.loofi.aiusagemonitor/metadata.json"
+    SYS_META="/usr/share/plasma/plasmoids/com.github.loofi.aiusagemonitor/metadata.json"
+    if [[ -f "$USER_META" ]]; then
+      user_ver=$(sed -n 's/.*"Version": "\([0-9.]*\)".*/\1/p' "$USER_META" | head -1)
+      sys_ver=$(sed -n 's/.*"Version": "\([0-9.]*\)".*/\1/p' "$SYS_META" 2>/dev/null | head -1 || echo "unknown")
+      if [[ -n "$user_ver" && "$user_ver" != "$sys_ver" ]]; then
+        echo
+        echo "WARNING: Stale user-local version detected!"
+        echo "  User-local: $user_ver  (~/.local/share/plasma/plasmoids/...)"
+        echo "  System:     $sys_ver   (/usr/share/plasma/plasmoids/...)"
+        echo "  The user-local copy shadows the system install."
+        echo "  Fix: kpackagetool6 --type Plasma/Applet --remove com.github.loofi.aiusagemonitor"
+        echo "  Or:  just uninstall-user"
+      fi
+    fi
     ;;
 
   user)
@@ -143,7 +160,28 @@ esac
 
 echo
 echo "Install/bootstrap complete."
+
+# Offer plasmashell reload so widget appears immediately
+if command -v plasmashell >/dev/null 2>&1; then
+  if [[ "$ASSUME_YES" == true ]]; then
+    echo "Reloading plasmashell to activate widget..."
+    run_cmd bash "$ROOT_DIR/scripts/reload_plasma.sh"
+  else
+    echo
+    read -r -p "Reload plasmashell now to make widget appear? [Y/n]: " reload_answer
+    case "${reload_answer:-y}" in
+      y|Y|yes|YES|"")
+        run_cmd bash "$ROOT_DIR/scripts/reload_plasma.sh"
+        ;;
+      *)
+        echo "Skipped. Run manually: ./scripts/reload_plasma.sh"
+        ;;
+    esac
+  fi
+fi
+
+echo
 echo "Next steps:"
-echo "  1. Add 'AI Usage Monitor' from Add Widgets"
-echo "  2. Open widget settings and configure API keys"
-echo "  3. If UI looks stale, run: ./scripts/show_installed_versions.sh"
+echo "  1. Right-click panel → Add Widgets → search 'AI Usage Monitor'"
+echo "  2. Right-click widget → Configure → add your API keys"
+echo "  3. If widget still not visible, run: ./scripts/show_installed_versions.sh"
