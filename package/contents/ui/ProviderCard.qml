@@ -210,12 +210,12 @@ ColumnLayout {
 
                     PlasmaComponents.Label {
                         Layout.fillWidth: true
-                        text: card.backend?.error ?? ""
+                        text: humanizeError(card.backend?.error ?? "")
                         color: Kirigami.Theme.negativeTextColor
                         font.pointSize: Kirigami.Theme.smallFont.pointSize
                         wrapMode: Text.WordWrap
                         elide: errorExpanded ? Text.ElideNone : Text.ElideRight
-                        maximumLineCount: errorExpanded ? -1 : 1
+                        maximumLineCount: errorExpanded ? -1 : 2
                     }
 
                     // Retry button
@@ -703,6 +703,22 @@ ColumnLayout {
     property bool errorExpanded: false
 
     // ── Helper functions ──
+
+    function humanizeError(raw) {
+        if (!raw) return "";
+        const s = raw.toString();
+        if (s.includes("403") && card.providerName === "OpenAI")
+            return s + "\nHint: OpenAI requires an Admin API key (not a regular key). Get one at platform.openai.com/settings/organization/api-keys";
+        if (s.includes("403") || s.includes("401"))
+            return s + "\nHint: Check your API key in Settings \u2192 Providers";
+        if (s.includes("429"))
+            return s + "\nHint: Rate limit hit. Try a longer refresh interval in Settings \u2192 General";
+        if (s.includes("NetworkError") || s.includes("network error") || s.includes("host not found") || s.includes("Connection refused"))
+            return s + "\nHint: Cannot reach the API. Check your internet connection or proxy settings";
+        if (s.includes("KWallet"))
+            return s + "\nHint: Enable KWallet in System Settings \u2192 KDE Wallet";
+        return s;
+    }
 
     function rateLimitColor(remaining, total) {
         return Utils.rateLimitColor(remaining, total, Kirigami.Theme);
