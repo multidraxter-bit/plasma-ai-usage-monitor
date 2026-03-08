@@ -8,6 +8,11 @@ else
   pkill -x plasmashell || true
 fi
 
+# Give it a moment to fully exit
+sleep 1
+
 nohup plasmashell >/dev/null 2>&1 &
-echo "plasmashell restarted."
+PLASMA_PID=$!
+echo "plasmashell restarted (PID $PLASMA_PID)."
+echo "Wait a few seconds for the panel to appear, then right-click to add the widget."
 
