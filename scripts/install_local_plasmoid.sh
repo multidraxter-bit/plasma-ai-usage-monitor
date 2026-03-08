@@ -9,8 +9,16 @@ if ! command -v kpackagetool6 >/dev/null 2>&1; then
   exit 1
 fi
 
-echo "Upgrading local plasmoid package from: ${ROOT_DIR}/package"
-kpackagetool6 --type Plasma/Applet --upgrade "${ROOT_DIR}/package"
+PLASMOID_ID="com.github.loofi.aiusagemonitor"
+USER_PLASMOID_DIR="${HOME}/.local/share/plasma/plasmoids/${PLASMOID_ID}"
+
+if [[ -d "$USER_PLASMOID_DIR" ]]; then
+  echo "Upgrading local plasmoid package from: ${ROOT_DIR}/package"
+  kpackagetool6 --type Plasma/Applet --upgrade "${ROOT_DIR}/package"
+else
+  echo "Installing local plasmoid package from: ${ROOT_DIR}/package"
+  kpackagetool6 --type Plasma/Applet --install "${ROOT_DIR}/package"
+fi
 
 echo "Done. Local package installed at:"
 echo "  ${HOME}/.local/share/plasma/plasmoids/com.github.loofi.aiusagemonitor"
