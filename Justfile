@@ -66,6 +66,10 @@ uninstall:
         exit 1
     fi
 
+# Guided interactive uninstall: detects and removes user-local and/or system installs
+uninstall-guided:
+    bash uninstall.sh
+
 # ── User-Local Install (no sudo, QML package only) ───────────────────────────
 
 # Install QML package to ~/.local/share/plasma/plasmoids/ (no sudo needed)
