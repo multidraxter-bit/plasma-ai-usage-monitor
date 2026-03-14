@@ -11,8 +11,17 @@ Tech stack: QML/C++ + KDE Plasma 6
 
 ## Commands
 
+- Preferred dev loop: `just dev` for QML-only changes
 - Build: `cmake -B build && cmake --build build`
 - Test: `cmake --build build --target test`
+- Use `just install` / `just reload` when C++ plugin changes must be installed into Plasma
+
+## Architecture
+
+- `package/` contains the plasmoid package installed via `plasma_install_package(...)`
+- `plugin/` contains the C++ QML plugin built by CMake
+- `CMakeLists.txt` uses plain CMake + ECM/KDEInstallDirs; do not assume `vcpkg.json` or `CMakePresets.json`
+- Preserve `notifyrc` and AppStream metainfo install rules when editing packaging behavior
 
 ## Code Style
 
@@ -24,18 +33,8 @@ Tech stack: QML/C++ + KDE Plasma 6
 
 ## Testing
 
-- Framework: Qt Test / CTest
-- Tests alongside source in `tests/` directory
-
-## Commits
-
-Format: `type(scope): description`
-Types: feat, fix, refactor, docs, test, chore, ci, perf, revert, style
-Scope: kebab-case, max 100 chars subject.
-
-## MCP Servers
-
-Workspace-level MCP config in primary repo `.vscode/mcp.json`.
+- Framework: Qt Test / CTest when `BUILD_TESTING` is enabled
+- Prefer repo-owned build/test workflows from `README.md` and `Justfile`
 
 ## AI Agents
 

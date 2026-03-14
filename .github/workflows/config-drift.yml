@@ -10,6 +10,11 @@ on:
       - '.github/copilot-instructions.md'
       - '.github/dependabot.yml'
       - '.github/agents/**'
+      - '.github/instructions/**'
+      - '.github/prompts/**'
+      - '.github/skills/**'
+      - '.github/hooks/**'
+      - 'AGENTS.md'
   schedule:
     - cron: '0 6 * * 1' # Weekly Monday 6am UTC
 
