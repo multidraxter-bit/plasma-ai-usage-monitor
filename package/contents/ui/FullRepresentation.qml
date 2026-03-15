@@ -24,6 +24,9 @@ PlasmaExtras.Representation {
     property bool historyLoading: false
     property int onboardingStep: 0
     readonly property bool narrowPopup: width < Kirigami.Units.gridUnit * 22
+    readonly property bool compactHistoryControls: width < Kirigami.Units.gridUnit * 18
+    readonly property bool compactSectionHeaders: width < Kirigami.Units.gridUnit * 19
+    readonly property bool compactCompareRanking: width < Kirigami.Units.gridUnit * 20
     readonly property int enabledProviderCount: {
         var providers = root.allProviders ?? [];
         var count = 0;
@@ -36,6 +39,9 @@ PlasmaExtras.Representation {
     readonly property bool hasAnyConnectedProvider: connectedProviderCount > 0
 
     readonly property bool compareMode: historyModeCombo.currentValue === "compare"
+    readonly property bool detailHistoryHasSelection: selectedDetailProviderDbName() !== ""
+    readonly property bool detailHistoryReady: detailHistoryState() === "ready"
+    readonly property bool compareHistoryReady: compareHistoryState() === "ready"
     readonly property bool onboardingVisible: !hasAnyProvider()
         && !plasmoid.configuration.setupWizardCompleted
         && !plasmoid.configuration.setupWizardDismissed
@@ -257,7 +263,11 @@ PlasmaExtras.Representation {
                 Layout.fillHeight: true
 
                 contentItem: Flickable {
+                    flickableDirection: Flickable.VerticalFlick
+                    contentWidth: width
                     contentHeight: liveColumn.implicitHeight
+                    interactive: contentHeight > height
+                    boundsBehavior: Flickable.StopAtBounds
                     clip: true
 
                     ColumnLayout {
@@ -269,6 +279,7 @@ PlasmaExtras.Representation {
                             Layout.fillWidth: true
                             Layout.leftMargin: Kirigami.Units.smallSpacing
                             Layout.rightMargin: Kirigami.Units.smallSpacing
+                            Layout.topMargin: Kirigami.Units.smallSpacing
                             radius: Kirigami.Units.cornerRadius
                             color: Qt.alpha(Kirigami.Theme.highlightColor, 0.06)
                             border.width: 1
@@ -300,6 +311,8 @@ PlasmaExtras.Representation {
                                             text: i18n("Providers")
                                             font.pointSize: Kirigami.Theme.smallFont.pointSize
                                             opacity: 0.65
+                                            wrapMode: Text.WordWrap
+                                            maximumLineCount: 2
                                         }
 
                                         PlasmaComponents.Label {
@@ -327,6 +340,8 @@ PlasmaExtras.Representation {
                                             text: i18n("Connected")
                                             font.pointSize: Kirigami.Theme.smallFont.pointSize
                                             opacity: 0.65
+                                            wrapMode: Text.WordWrap
+                                            maximumLineCount: 2
                                         }
 
                                         PlasmaComponents.Label {
@@ -357,6 +372,8 @@ PlasmaExtras.Representation {
                                             text: i18n("Total Cost")
                                             font.pointSize: Kirigami.Theme.smallFont.pointSize
                                             opacity: 0.65
+                                            wrapMode: Text.WordWrap
+                                            maximumLineCount: 2
                                         }
 
                                         PlasmaComponents.Label {
@@ -384,6 +401,8 @@ PlasmaExtras.Representation {
                                             text: i18n("Tool Monitors")
                                             font.pointSize: Kirigami.Theme.smallFont.pointSize
                                             opacity: 0.65
+                                            wrapMode: Text.WordWrap
+                                            maximumLineCount: 2
                                         }
 
                                         PlasmaComponents.Label {
@@ -403,35 +422,41 @@ PlasmaExtras.Representation {
                             subscriptionTools: root.allSubscriptionTools ?? []
                         }
 
-                        RowLayout {
+                        ColumnLayout {
                             Layout.fillWidth: true
                             Layout.leftMargin: Kirigami.Units.smallSpacing
                             Layout.rightMargin: Kirigami.Units.smallSpacing
                             visible: fullRoot.enabledProviderCount > 0
+                            spacing: fullRoot.compactSectionHeaders ? 2 : Kirigami.Units.smallSpacing
 
-                            PlasmaExtras.Heading {
-                                level: 5
-                                text: i18n("Providers")
+                            RowLayout {
                                 Layout.fillWidth: true
-                                opacity: 0.78
-                            }
+                                spacing: Kirigami.Units.smallSpacing
 
-                            Rectangle {
-                                radius: Kirigami.Units.smallSpacing
-                                color: Qt.alpha(Kirigami.Theme.highlightColor, 0.12)
-                                border.width: 1
-                                border.color: Qt.alpha(Kirigami.Theme.highlightColor, 0.26)
-                                implicitWidth: providerStatusLabel.implicitWidth + Kirigami.Units.smallSpacing * 2
-                                implicitHeight: providerStatusLabel.implicitHeight + Kirigami.Units.smallSpacing
+                                PlasmaExtras.Heading {
+                                    level: 5
+                                    text: i18n("Providers")
+                                    Layout.fillWidth: true
+                                    opacity: 0.78
+                                }
 
-                                PlasmaComponents.Label {
-                                    id: providerStatusLabel
-                                    anchors.centerIn: parent
-                                    text: i18n("%1/%2 connected", fullRoot.connectedProviderCount, fullRoot.enabledProviderCount)
-                                    font.pointSize: Kirigami.Theme.smallFont.pointSize
-                                    color: fullRoot.hasAnyConnectedProvider
-                                        ? Kirigami.Theme.textColor
-                                        : Kirigami.Theme.disabledTextColor
+                                Rectangle {
+                                    radius: Kirigami.Units.smallSpacing
+                                    color: Qt.alpha(Kirigami.Theme.highlightColor, 0.12)
+                                    border.width: 1
+                                    border.color: Qt.alpha(Kirigami.Theme.highlightColor, 0.26)
+                                    implicitWidth: providerStatusLabel.implicitWidth + Kirigami.Units.smallSpacing * 2
+                                    implicitHeight: providerStatusLabel.implicitHeight + Kirigami.Units.smallSpacing
+
+                                    PlasmaComponents.Label {
+                                        id: providerStatusLabel
+                                        anchors.centerIn: parent
+                                        text: i18n("%1/%2 connected", fullRoot.connectedProviderCount, fullRoot.enabledProviderCount)
+                                        font.pointSize: Kirigami.Theme.smallFont.pointSize
+                                        color: fullRoot.hasAnyConnectedProvider
+                                            ? Kirigami.Theme.textColor
+                                            : Kirigami.Theme.disabledTextColor
+                                    }
                                 }
                             }
                         }
@@ -461,28 +486,34 @@ PlasmaExtras.Representation {
                             }
                         }
 
-                        RowLayout {
+                        ColumnLayout {
                             Layout.fillWidth: true
                             Layout.leftMargin: Kirigami.Units.smallSpacing
                             Layout.rightMargin: Kirigami.Units.smallSpacing
                             Layout.topMargin: Kirigami.Units.largeSpacing
                             visible: root.enabledToolCount > 0
+                            spacing: fullRoot.compactSectionHeaders ? 2 : Kirigami.Units.smallSpacing
 
-                            PlasmaExtras.Heading {
-                                level: 5
-                                text: i18n("Subscription Tools")
+                            RowLayout {
                                 Layout.fillWidth: true
-                                opacity: 0.7
-                            }
+                                spacing: Kirigami.Units.smallSpacing
 
-                            PlasmaComponents.ToolButton {
-                                icon.name: "view-refresh"
-                                display: PlasmaComponents.AbstractButton.IconOnly
-                                Layout.preferredWidth: Kirigami.Units.iconSizes.small
-                                Layout.preferredHeight: Kirigami.Units.iconSizes.small
-                                visible: plasmoid.configuration.browserSyncEnabled
-                                onClicked: root.performBrowserSync()
-                                PlasmaComponents.ToolTip { text: i18n("Sync usage data from browser") }
+                                PlasmaExtras.Heading {
+                                    level: 5
+                                    text: i18n("Subscription Tools")
+                                    Layout.fillWidth: true
+                                    opacity: 0.7
+                                }
+
+                                PlasmaComponents.ToolButton {
+                                    icon.name: "view-refresh"
+                                    display: PlasmaComponents.AbstractButton.IconOnly
+                                    Layout.preferredWidth: Kirigami.Units.iconSizes.small
+                                    Layout.preferredHeight: Kirigami.Units.iconSizes.small
+                                    visible: plasmoid.configuration.browserSyncEnabled
+                                    onClicked: root.performBrowserSync()
+                                    PlasmaComponents.ToolTip { text: i18n("Sync usage data from browser") }
+                                }
                             }
                         }
 
@@ -535,6 +566,7 @@ PlasmaExtras.Representation {
 
                         PlasmaComponents.Label {
                             text: i18n("View:")
+                            visible: !fullRoot.compactHistoryControls
                             font.pointSize: Kirigami.Theme.smallFont.pointSize
                             opacity: 0.7
                         }
@@ -548,15 +580,17 @@ PlasmaExtras.Representation {
                             textRole: "text"
                             valueRole: "value"
                             currentIndex: 0
-                            Layout.preferredWidth: fullRoot.narrowPopup ? Kirigami.Units.gridUnit * 6 : implicitWidth
+                            Layout.preferredWidth: fullRoot.compactHistoryControls ? Kirigami.Units.gridUnit * 5.5
+                                : (fullRoot.narrowPopup ? Kirigami.Units.gridUnit * 6 : implicitWidth)
                             onCurrentIndexChanged: {
                                 refreshHistory();
                             }
+                            PlasmaComponents.ToolTip { text: i18n("History view mode") }
                         }
 
                         PlasmaComponents.Label {
                             text: i18n("Source:")
-                            visible: fullRoot.compareMode
+                            visible: fullRoot.compareMode && !fullRoot.compactHistoryControls
                             font.pointSize: Kirigami.Theme.smallFont.pointSize
                             opacity: 0.7
                         }
@@ -571,11 +605,13 @@ PlasmaExtras.Representation {
                             textRole: "text"
                             valueRole: "value"
                             currentIndex: 0
-                            Layout.preferredWidth: fullRoot.narrowPopup ? Kirigami.Units.gridUnit * 8 : implicitWidth
+                            Layout.preferredWidth: fullRoot.compactHistoryControls ? Kirigami.Units.gridUnit * 7
+                                : (fullRoot.narrowPopup ? Kirigami.Units.gridUnit * 8 : implicitWidth)
                             onCurrentIndexChanged: {
                                 resetCompareMetric();
                                 refreshHistory();
                             }
+                            PlasmaComponents.ToolTip { text: i18n("Comparison source") }
                         }
 
                         QQC2.ComboBox {
@@ -584,15 +620,17 @@ PlasmaExtras.Representation {
                             model: getEnabledProviderEntries()
                             textRole: "label"
                             valueRole: "dbName"
-                            Layout.preferredWidth: fullRoot.narrowPopup ? Kirigami.Units.gridUnit * 9 : Kirigami.Units.gridUnit * 11
+                            Layout.preferredWidth: fullRoot.compactHistoryControls ? Kirigami.Units.gridUnit * 7.5
+                                : (fullRoot.narrowPopup ? Kirigami.Units.gridUnit * 9 : Kirigami.Units.gridUnit * 11)
                             onCurrentIndexChanged: {
                                 if (!fullRoot.compareMode) refreshHistory();
                             }
+                            PlasmaComponents.ToolTip { text: i18n("History provider") }
                         }
 
                         PlasmaComponents.Label {
                             text: i18n("Metric:")
-                            visible: fullRoot.compareMode
+                            visible: fullRoot.compareMode && !fullRoot.compactHistoryControls
                             font.pointSize: Kirigami.Theme.smallFont.pointSize
                             opacity: 0.7
                         }
@@ -603,14 +641,17 @@ PlasmaExtras.Representation {
                             model: getCompareMetricOptions(compareSourceCombo.currentValue)
                             textRole: "text"
                             valueRole: "value"
-                            Layout.preferredWidth: fullRoot.narrowPopup ? Kirigami.Units.gridUnit * 8 : implicitWidth
+                            Layout.preferredWidth: fullRoot.compactHistoryControls ? Kirigami.Units.gridUnit * 7
+                                : (fullRoot.narrowPopup ? Kirigami.Units.gridUnit * 8 : implicitWidth)
                             onCurrentIndexChanged: {
                                 if (fullRoot.compareMode) refreshHistory();
                             }
+                            PlasmaComponents.ToolTip { text: i18n("Comparison metric") }
                         }
 
                         PlasmaComponents.Label {
                             text: i18n("Range:")
+                            visible: !fullRoot.compactHistoryControls
                             font.pointSize: Kirigami.Theme.smallFont.pointSize
                             opacity: 0.7
                         }
@@ -619,8 +660,10 @@ PlasmaExtras.Representation {
                             id: timeRangeCombo
                             model: [i18n("24 hours"), i18n("7 days"), i18n("30 days")]
                             currentIndex: 1
-                            Layout.preferredWidth: fullRoot.narrowPopup ? Kirigami.Units.gridUnit * 6 : implicitWidth
+                            Layout.preferredWidth: fullRoot.compactHistoryControls ? Kirigami.Units.gridUnit * 5.5
+                                : (fullRoot.narrowPopup ? Kirigami.Units.gridUnit * 6 : implicitWidth)
                             onCurrentIndexChanged: refreshHistory()
+                            PlasmaComponents.ToolTip { text: i18n("Time range") }
                         }
 
                         PlasmaComponents.ToolButton {
@@ -645,13 +688,16 @@ PlasmaExtras.Representation {
                     ColumnLayout {
                         anchors.fill: parent
                         spacing: Kirigami.Units.smallSpacing
-                        visible: !fullRoot.compareMode
+                        visible: !fullRoot.compareMode && fullRoot.detailHistoryHasSelection
 
                         UsageChart {
                             id: historyChart
                             Layout.fillWidth: true
                             Layout.preferredHeight: Kirigami.Units.gridUnit * 10
                             Layout.margins: Kirigami.Units.smallSpacing
+                            showMetricBar: fullRoot.detailHistoryHasSelection
+                            showChartContent: fullRoot.detailHistoryReady
+                            showEmptyState: false
                             chartData: fullRoot.detailSnapshots
                         }
 
@@ -659,6 +705,8 @@ PlasmaExtras.Representation {
                             id: trendSummary
                             Layout.fillWidth: true
                             Layout.margins: Kirigami.Units.smallSpacing
+                            visible: fullRoot.detailHistoryReady
+                            showEmptyState: false
                             summaryData: fullRoot.detailSummaryData
                             dailyCosts: fullRoot.detailDailyCosts
                             provider: fullRoot.detailProviderLabel
@@ -668,9 +716,7 @@ PlasmaExtras.Representation {
                     PlasmaExtras.PlaceholderMessage {
                         anchors.centerIn: parent
                         width: parent.width - Kirigami.Units.largeSpacing * 2
-                        visible: !fullRoot.compareMode
-                                 && !fullRoot.historyLoading
-                                 && selectedDetailProviderDbName() === ""
+                        visible: detailHistoryState() === "select-provider"
                         iconName: "office-chart-line"
                         text: i18n("Select a provider")
                         explanation: i18n("Choose a provider to view historical trends")
@@ -679,10 +725,7 @@ PlasmaExtras.Representation {
                     PlasmaExtras.PlaceholderMessage {
                         anchors.centerIn: parent
                         width: parent.width - Kirigami.Units.largeSpacing * 2
-                        visible: !fullRoot.compareMode
-                                 && !fullRoot.historyLoading
-                                 && selectedDetailProviderDbName() !== ""
-                                 && fullRoot.detailSnapshots.length === 0
+                        visible: detailHistoryState() === "no-data"
                         iconName: "view-calendar-timeline"
                         text: i18n("No historical data")
                         explanation: i18n("No snapshots were found for this provider and time range")
@@ -691,13 +734,14 @@ PlasmaExtras.Representation {
                     ColumnLayout {
                         anchors.fill: parent
                         spacing: Kirigami.Units.smallSpacing
-                        visible: fullRoot.compareMode
+                        visible: fullRoot.compareHistoryReady
 
                         MultiSeriesChart {
                             id: compareChart
                             Layout.fillWidth: true
                             Layout.preferredHeight: Kirigami.Units.gridUnit * 11
                             Layout.margins: Kirigami.Units.smallSpacing
+                            showEmptyState: false
                             metric: currentCompareMetric()
                             seriesData: fullRoot.compareSeriesData
                         }
@@ -728,45 +772,81 @@ PlasmaExtras.Representation {
                                 Repeater {
                                     model: compareRanking()
 
-                                    RowLayout {
+                                    ColumnLayout {
                                         Layout.fillWidth: true
-                                        spacing: Kirigami.Units.smallSpacing
+                                        spacing: fullRoot.compactCompareRanking ? 2 : 0
 
-                                        PlasmaComponents.Label {
-                                            text: (index + 1) + "."
-                                            opacity: 0.6
-                                        }
-
-                                        Rectangle {
-                                            width: 8
-                                            height: 8
-                                            radius: 4
-                                            color: modelData.color
-                                        }
-
-                                        PlasmaComponents.Label {
-                                            text: modelData.name
+                                        RowLayout {
                                             Layout.fillWidth: true
-                                            elide: Text.ElideRight
+                                            spacing: Kirigami.Units.smallSpacing
+
+                                            PlasmaComponents.Label {
+                                                text: (index + 1) + "."
+                                                opacity: 0.6
+                                            }
+
+                                            Rectangle {
+                                                width: 8
+                                                height: 8
+                                                radius: 4
+                                                color: modelData.color
+                                            }
+
+                                            PlasmaComponents.Label {
+                                                text: modelData.name
+                                                Layout.fillWidth: true
+                                                elide: fullRoot.compactCompareRanking ? Text.ElideNone : Text.ElideRight
+                                                wrapMode: fullRoot.compactCompareRanking ? Text.WordWrap : Text.NoWrap
+                                                maximumLineCount: fullRoot.compactCompareRanking ? 2 : 1
+                                            }
+
+                                            PlasmaComponents.Label {
+                                                visible: !fullRoot.compactCompareRanking
+                                                text: formatCompareValue(modelData.latestValue)
+                                                font.bold: true
+                                            }
+
+                                            PlasmaComponents.Label {
+                                                visible: !fullRoot.compactCompareRanking
+                                                text: modelData.deltaPercent > 0
+                                                    ? i18n("↑ %1%", Math.abs(modelData.deltaPercent).toFixed(1))
+                                                    : (modelData.deltaPercent < 0
+                                                       ? i18n("↓ %1%", Math.abs(modelData.deltaPercent).toFixed(1))
+                                                       : i18n("→ 0%"))
+                                                color: modelData.deltaPercent > 0
+                                                    ? Kirigami.Theme.negativeTextColor
+                                                    : (modelData.deltaPercent < 0
+                                                       ? Kirigami.Theme.positiveTextColor
+                                                       : Kirigami.Theme.disabledTextColor)
+                                                font.pointSize: Kirigami.Theme.smallFont.pointSize
+                                            }
                                         }
 
-                                        PlasmaComponents.Label {
-                                            text: formatCompareValue(modelData.latestValue)
-                                            font.bold: true
-                                        }
+                                        RowLayout {
+                                            Layout.fillWidth: true
+                                            visible: fullRoot.compactCompareRanking
+                                            spacing: Kirigami.Units.smallSpacing
 
-                                        PlasmaComponents.Label {
-                                            text: modelData.deltaPercent > 0
-                                                ? i18n("↑ %1%", Math.abs(modelData.deltaPercent).toFixed(1))
-                                                : (modelData.deltaPercent < 0
-                                                   ? i18n("↓ %1%", Math.abs(modelData.deltaPercent).toFixed(1))
-                                                   : i18n("→ 0%"))
-                                            color: modelData.deltaPercent > 0
-                                                ? Kirigami.Theme.negativeTextColor
-                                                : (modelData.deltaPercent < 0
-                                                   ? Kirigami.Theme.positiveTextColor
-                                                   : Kirigami.Theme.disabledTextColor)
-                                            font.pointSize: Kirigami.Theme.smallFont.pointSize
+                                            Item { Layout.fillWidth: true }
+
+                                            PlasmaComponents.Label {
+                                                text: formatCompareValue(modelData.latestValue)
+                                                font.bold: true
+                                            }
+
+                                            PlasmaComponents.Label {
+                                                text: modelData.deltaPercent > 0
+                                                    ? i18n("↑ %1%", Math.abs(modelData.deltaPercent).toFixed(1))
+                                                    : (modelData.deltaPercent < 0
+                                                       ? i18n("↓ %1%", Math.abs(modelData.deltaPercent).toFixed(1))
+                                                       : i18n("→ 0%"))
+                                                color: modelData.deltaPercent > 0
+                                                    ? Kirigami.Theme.negativeTextColor
+                                                    : (modelData.deltaPercent < 0
+                                                       ? Kirigami.Theme.positiveTextColor
+                                                       : Kirigami.Theme.disabledTextColor)
+                                                font.pointSize: Kirigami.Theme.smallFont.pointSize
+                                            }
                                         }
                                     }
                                 }
@@ -777,10 +857,7 @@ PlasmaExtras.Representation {
                     PlasmaExtras.PlaceholderMessage {
                         anchors.centerIn: parent
                         width: parent.width - Kirigami.Units.largeSpacing * 2
-                        visible: fullRoot.compareMode
-                                 && !fullRoot.historyLoading
-                                 && canRefreshHistory()
-                                 && !hasCompareData()
+                        visible: compareHistoryState() === "no-data"
                         iconName: "office-chart-line"
                         text: i18n("No comparison data")
                         explanation: i18n("No data was found for the selected source, metric, and range")
@@ -789,9 +866,7 @@ PlasmaExtras.Representation {
                     PlasmaExtras.PlaceholderMessage {
                         anchors.centerIn: parent
                         width: parent.width - Kirigami.Units.largeSpacing * 2
-                        visible: fullRoot.compareMode
-                                 && !fullRoot.historyLoading
-                                 && !canRefreshHistory()
+                        visible: compareHistoryState() === "no-sources"
                         iconName: "dialog-information"
                         text: i18n("No sources available")
                         explanation: i18n("Enable at least one provider or subscription tool to compare trends")
@@ -831,6 +906,9 @@ PlasmaExtras.Representation {
 
                     PlasmaComponents.ToolButton {
                         icon.name: "document-export"
+                        display: fullRoot.compactHistoryControls
+                            ? PlasmaComponents.AbstractButton.IconOnly
+                            : PlasmaComponents.AbstractButton.TextBesideIcon
                         text: i18n("CSV")
                         enabled: canExportCurrentView()
                         onClicked: exportData("csv")
@@ -839,6 +917,9 @@ PlasmaExtras.Representation {
 
                     PlasmaComponents.ToolButton {
                         icon.name: "document-export"
+                        display: fullRoot.compactHistoryControls
+                            ? PlasmaComponents.AbstractButton.IconOnly
+                            : PlasmaComponents.AbstractButton.TextBesideIcon
                         text: i18n("JSON")
                         enabled: canExportCurrentView()
                         onClicked: exportData("json")
@@ -992,6 +1073,22 @@ PlasmaExtras.Representation {
             return getEnabledProviderDbNames().length > 0;
         }
         return selectedDetailProviderDbName() !== "";
+    }
+
+    function detailHistoryState() {
+        if (fullRoot.compareMode) return "hidden";
+        if (fullRoot.historyLoading) return "loading";
+        if (!fullRoot.detailHistoryHasSelection) return "select-provider";
+        if (fullRoot.detailSnapshots.length === 0) return "no-data";
+        return "ready";
+    }
+
+    function compareHistoryState() {
+        if (!fullRoot.compareMode) return "hidden";
+        if (fullRoot.historyLoading) return "loading";
+        if (!canRefreshHistory()) return "no-sources";
+        if (!hasCompareData()) return "no-data";
+        return "ready";
     }
 
     function refreshHistory() {

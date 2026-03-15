@@ -19,7 +19,7 @@ QString LoofiServerProvider::serverUrl() const
         return effectiveBaseUrl("");
     }
 
-    QString url = qEnvironmentVariable("LOOFI_SERVER_URL", QStringLiteral(DEFAULT_LOOFI_SERVER_URL));
+    QString url = qEnvironmentVariable("LOOFI_SERVER_URL", DEFAULT_LOOFI_SERVER_URL);
     while (url.endsWith(QLatin1Char('/'))) {
         url.chop(1);
     }

@@ -21,14 +21,14 @@
 
 A native KDE Plasma 6 plasmoid that monitors AI API token usage, rate limits, and costs across multiple providers. Sits in your panel as a compact icon with a colored status badge and expands into a detailed popup with per-provider stats, usage history charts, and budget tracking. Also tracks subscription-based AI coding tool usage limits for Claude Code, Codex CLI, and GitHub Copilot.
 
-**Supported providers:** OpenAI, Anthropic (Claude), Google Gemini, Mistral AI, DeepSeek, Groq, xAI (Grok), OpenRouter, Together AI, Cohere
+**Supported providers:** Loofi Server, OpenAI, Azure OpenAI, Anthropic (Claude), Google Gemini, Mistral AI, DeepSeek, Groq, xAI (Grok), OpenRouter, Together AI, Cohere, Google Veo
 
 **Supported subscription tools:** Claude Code, OpenAI Codex CLI, GitHub Copilot
 
 ## Features
 
 - **Real-time monitoring** — Periodic background polling with configurable per-provider refresh intervals (default 5 min) and manual refresh
-- **10 AI providers** — OpenAI, Anthropic, Google Gemini, Mistral AI, DeepSeek, Groq, xAI/Grok, OpenRouter, Together AI, Cohere
+- **13 AI providers** — Loofi Server, OpenAI, Azure OpenAI, Anthropic, Google Gemini, Mistral AI, DeepSeek, Groq, xAI/Grok, OpenRouter, Together AI, Cohere, Google Veo
 - **Token usage tracking** — Input/output tokens used, requests made, quota/tier limits
 - **Cost tracking** — Dollar spending with daily and monthly cost breakdowns; automatic token-based cost estimation for providers without billing APIs (~30 models with pricing tables)
 - **Budget management** — Per-provider daily/monthly budgets with configurable warning thresholds and notifications when budgets are exceeded
@@ -90,16 +90,16 @@ Settings → Subscriptions → Browser Sync.
 
 ## What Each Provider Reports
 
-| Metric | OpenAI | Anthropic | Google | Mistral | DeepSeek | Groq | xAI |
-|--------|--------|-----------|--------|---------|----------|------|-----|
-| Token usage (in/out) | Yes | No | No | Yes | Yes | Yes | Yes |
-| Rate limits remaining | Yes | Yes | No* | Yes | Yes | Yes | Yes |
-| Cost / spending | Yes (billing) | Est.** | Est.** | Est.** | Est.** | Est.** | Est.** |
-| Request count | Yes | Yes | No | Yes | Yes | Yes | Yes |
-| Connection status | Yes | Yes | Yes | Yes | Yes | Yes | Yes |
+| Metric                | OpenAI        | Anthropic | Google   | Mistral  | DeepSeek | Groq     | xAI      |
+| --------------------- | ------------- | --------- | -------- | -------- | -------- | -------- | -------- |
+| Token usage (in/out)  | Yes           | No        | No       | Yes      | Yes      | Yes      | Yes      |
+| Rate limits remaining | Yes           | Yes       | No\*     | Yes      | Yes      | Yes      | Yes      |
+| Cost / spending       | Yes (billing) | Est.\*\*  | Est.\*\* | Est.\*\* | Est.\*\* | Est.\*\* | Est.\*\* |
+| Request count         | Yes           | Yes       | No       | Yes      | Yes      | Yes      | Yes      |
+| Connection status     | Yes           | Yes       | Yes      | Yes      | Yes      | Yes      | Yes      |
 
-*\* Google Gemini displays known free-tier limits from documentation (static).*
-*\*\* Estimated from token usage and per-model pricing tables. Labeled "Est. Cost" in the UI with a tooltip.*
+_\* Google Gemini displays known free-tier limits from documentation (static)._
+_\*\* Estimated from token usage and per-model pricing tables. Labeled "Est. Cost" in the UI with a tooltip._
 
 - **OpenAI** has the richest data: real usage from `/organization/usage/completions`, dollar costs from `/organization/costs` and `/organization/costs` (monthly), and rate limits from response headers. Requires an **Admin API key**.
 - **Anthropic** has no usage/billing API. The widget pings `/v1/messages/count_tokens` (lightweight, no token cost) and reads the `anthropic-ratelimit-*` response headers for rate limit data. Cost is estimated from registered model pricing.
@@ -155,36 +155,36 @@ sudo dnf install just   # Fedora
 # or: cargo install just
 ```
 
-| Recipe | Description |
-|--------|-------------|
-| `just build` | Configure + build (Release) |
-| `just build-debug` | Configure + build (Debug, enables tests) |
-| `just test` | Build debug + run unit tests via ctest |
-| `just check` | Version consistency + no-hardcoded-versions checks |
-| `just doctor` | Validate install/build prerequisites |
-| `just doctor-fix` | Validate and auto-install missing Fedora deps |
-| `just versions` | Show repo / user-local / system installed versions |
-| `just clean` | Remove the `build/` directory |
-| **System-wide (sudo)** | |
-| `just install` | Build then `sudo cmake --install build` |
-| `just reinstall` | Uninstall + install |
-| `just uninstall` | Remove via `build/install_manifest.txt` |
-| **User-local (no sudo)** | |
-| `just dev` | Install user-local QML + reload plasmashell (fastest dev loop) |
-| `just install-user` | `kpackagetool6 --upgrade package/` |
-| `just uninstall-user` | Remove user-local QML package |
-| `just reload` | Restart plasmashell |
-| **Bootstrap** | |
-| `just bootstrap` | Guided install (auto picks COPR on Fedora) |
-| `just bootstrap-source` | Guided source install with dependency auto-fix |
-| `just bootstrap-copr` | Guided Fedora COPR install |
-| `just bootstrap-user` | Guided user-local install + reload |
-| **COPR / DNF** | |
-| `just copr-install` | Enable COPR + `dnf install` |
-| `just copr-update` | `dnf upgrade` from COPR |
-| `just copr-remove` | Remove package + COPR repo |
-| **Version** | |
-| `just bump VERSION=3.7.0` | Bump version in all 4 files atomically |
+| Recipe                    | Description                                                    |
+| ------------------------- | -------------------------------------------------------------- |
+| `just build`              | Configure + build (Release)                                    |
+| `just build-debug`        | Configure + build (Debug, enables tests)                       |
+| `just test`               | Build debug + run unit tests via ctest                         |
+| `just check`              | Version consistency + no-hardcoded-versions checks             |
+| `just doctor`             | Validate install/build prerequisites                           |
+| `just doctor-fix`         | Validate and auto-install missing Fedora deps                  |
+| `just versions`           | Show repo / user-local / system installed versions             |
+| `just clean`              | Remove the `build/` directory                                  |
+| **System-wide (sudo)**    |                                                                |
+| `just install`            | Build then `sudo cmake --install build`                        |
+| `just reinstall`          | Uninstall + install                                            |
+| `just uninstall`          | Remove via `build/install_manifest.txt`                        |
+| **User-local (no sudo)**  |                                                                |
+| `just dev`                | Install user-local QML + reload plasmashell (fastest dev loop) |
+| `just install-user`       | `kpackagetool6 --upgrade package/`                             |
+| `just uninstall-user`     | Remove user-local QML package                                  |
+| `just reload`             | Restart plasmashell                                            |
+| **Bootstrap**             |                                                                |
+| `just bootstrap`          | Guided install (auto picks COPR on Fedora)                     |
+| `just bootstrap-source`   | Guided source install with dependency auto-fix                 |
+| `just bootstrap-copr`     | Guided Fedora COPR install                                     |
+| `just bootstrap-user`     | Guided user-local install + reload                             |
+| **COPR / DNF**            |                                                                |
+| `just copr-install`       | Enable COPR + `dnf install`                                    |
+| `just copr-update`        | `dnf upgrade` from COPR                                        |
+| `just copr-remove`        | Remove package + COPR repo                                     |
+| **Version**               |                                                                |
+| `just bump VERSION=3.8.1` | Bump version in all 4 files atomically                         |
 
 **Typical dev loop (QML changes):**
 
@@ -204,10 +204,10 @@ just reload
 **Release a new version:**
 
 ```bash
-just bump VERSION=3.7.0
+just bump VERSION=3.8.1
 # Update CHANGELOG.md, then:
-git commit -am "chore: bump version to v3.7.0"
-git tag v3.7.0 && git push --tags
+git commit -am "chore: bump version to v3.8.1"
+git tag v3.8.1 && git push --tags
 ```
 
 ---
@@ -220,7 +220,7 @@ Use the guided bootstrap script to run preflight checks and install with the
 right method:
 
 ```bash
-git clone https://github.com/loofitheboss/plasma-ai-usage-monitor.git
+git clone https://github.com/multidraxter-bit/plasma-ai-usage-monitor.git
 cd plasma-ai-usage-monitor
 ./scripts/install_bootstrap.sh
 ```
@@ -263,7 +263,7 @@ The included `install.sh` script now delegates to the guided bootstrap flow
 in source mode with Fedora dependency auto-fix enabled:
 
 ```bash
-git clone https://github.com/loofitheboss/plasma-ai-usage-monitor.git
+git clone https://github.com/multidraxter-bit/plasma-ai-usage-monitor.git
 cd plasma-ai-usage-monitor
 chmod +x install.sh
 ./install.sh
@@ -391,7 +391,7 @@ Each provider has:
 
 ```text
 plasma-ai-usage-monitor/
-├── CMakeLists.txt                  # Root build system (v3.7.0)
+├── CMakeLists.txt                  # Root build system (v3.8.1)
 ├── install.sh                      # Build & install script
 ├── plasma-ai-usage-monitor.spec    # RPM packaging spec
 ├── plasma_applet_...notifyrc       # KDE notification events
@@ -539,6 +539,8 @@ rpmbuild -ba plasma-ai-usage-monitor.spec
   - `scripts/package_plasmoid.sh`
   - `scripts/check_flatpak_scaffold.sh`
 - Packaging validation now checks manifest identity/runtime fields and version consistency with project metadata in CI/release workflows.
+- The `.plasmoid` archive is built from the **contents of `package/`**, so `metadata.json` and `contents/` sit at the archive root as required by Plasma/KDE Store package installs.
+- **Important:** the KDE Store / `.plasmoid` artifact contains only the plasmoid package payload. This project still needs the compiled QML plugin from the distro package or a source install to work fully.
 
 Quick checks:
 
@@ -571,12 +573,12 @@ Check that the History tab is enabled in configuration. Data is stored in `~/.lo
 
 ## Documentation
 
-| Document | Description |
-|----------|-------------|
-| [CHANGELOG.md](CHANGELOG.md) | Full version history from v1.0.0 to present |
-| [SECURITY.md](SECURITY.md) | Security policy, vulnerability reporting, and design decisions |
-| [CONTRIBUTING.md](CONTRIBUTING.md) | Development setup, coding standards, and contribution workflow |
-| [docs/walkthrough.md](docs/walkthrough.md) | Sprint notes and walkthrough context |
+| Document                                   | Description                                                    |
+| ------------------------------------------ | -------------------------------------------------------------- |
+| [CHANGELOG.md](CHANGELOG.md)               | Full version history from v1.0.0 to present                    |
+| [SECURITY.md](SECURITY.md)                 | Security policy, vulnerability reporting, and design decisions |
+| [CONTRIBUTING.md](CONTRIBUTING.md)         | Development setup, coding standards, and contribution workflow |
+| [docs/walkthrough.md](docs/walkthrough.md) | Sprint notes and walkthrough context                           |
 
 ## Changelog
 

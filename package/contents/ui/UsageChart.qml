@@ -16,17 +16,22 @@ Item {
     property var chartData: []
     property string provider: ""
     property string metric: "cost"  // "cost", "tokens", "requests", "rateLimit"
+    property bool showMetricBar: true
+    property bool showChartContent: true
+    property bool showEmptyState: true
     property color lineColor: Kirigami.Theme.highlightColor
     property color areaColor: Qt.rgba(lineColor.r, lineColor.g, lineColor.b, 0.15)
     property color gridColor: Qt.rgba(Kirigami.Theme.textColor.r,
                                        Kirigami.Theme.textColor.g,
                                        Kirigami.Theme.textColor.b, 0.1)
+    readonly property bool hasEnoughData: !!chartData && chartData.length >= 2
 
     implicitHeight: Kirigami.Units.gridUnit * 10
 
     // Metric selector row
     RowLayout {
         id: metricBar
+        visible: chartRoot.showMetricBar
         anchors.top: parent.top
         anchors.left: parent.left
         anchors.right: parent.right
@@ -57,8 +62,8 @@ Item {
 
     // Empty state
     PlasmaComponents.Label {
-        anchors.centerIn: canvas
-        visible: !chartData || chartData.length < 2
+        anchors.centerIn: parent
+        visible: chartRoot.showEmptyState && !chartRoot.hasEnoughData
         text: i18n("Not enough data to display chart")
         opacity: 0.5
         font.pointSize: Kirigami.Theme.smallFont.pointSize
@@ -82,7 +87,7 @@ Item {
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.bottom: parent.bottom
-        visible: chartData && chartData.length >= 2
+        visible: chartRoot.showChartContent && chartRoot.hasEnoughData
 
         onPaint: {
             var ctx = getContext("2d");

@@ -239,6 +239,7 @@ protected:
     void setOutputTokens(qint64 tokens);
     void setRequestCount(int count);
     void setCost(double cost);
+    void setEstimatedCost(double cost);
     void setDailyCost(double cost);
     void setMonthlyCost(double cost);
     void setRateLimitRequests(int limit);

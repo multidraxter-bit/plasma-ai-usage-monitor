@@ -1,9 +1,9 @@
 Name:           plasma-ai-usage-monitor
-Version:        3.8.0
+Version:        3.8.1
 Release:        1%{?dist}
 Summary:        KDE Plasma 6 widget to monitor AI API token usage, rate limits, and costs
 License:        GPL-3.0-or-later
-URL:            https://github.com/loofitheboss/plasma-ai-usage-monitor
+URL:            https://github.com/multidraxter-bit/plasma-ai-usage-monitor
 Source0:        %{url}/archive/v%{version}/%{name}-%{version}.tar.gz
 
 BuildRequires:  cmake >= 3.16
@@ -15,6 +15,7 @@ BuildRequires:  libplasma-devel
 BuildRequires:  kf6-kwallet-devel
 BuildRequires:  kf6-ki18n-devel
 BuildRequires:  kf6-knotifications-devel
+BuildRequires:  kf6-kcoreaddons-devel
 BuildRequires:  libappstream-glib
 BuildRequires:  qt6-qtbase-private-devel
 
@@ -67,6 +68,12 @@ appstream-util validate-relax --nonet %{buildroot}%{_datadir}/metainfo/com.githu
 %{_datadir}/metainfo/com.github.loofi.aiusagemonitor.metainfo.xml
 
 %changelog
+* Sat Mar 15 2026 Loofi <loofi@github.com> - 3.8.1-1
+- Add guided uninstall flow and stale local install shadow detection
+- Polish release/install UX and provider troubleshooting hints
+- Fix KDE Store plasmoid archive layout to ship metadata.json and contents/ at archive root
+- Add missing KF6 CoreAddons build dependency for RPM builds
+
 * Thu Feb 26 2026 Loofi <loofi@github.com> - 3.7.0-1
 - Add Horizon dashboard overview strip in full view with KPI tiles for providers, connectivity, total cost, and tool monitors
 - Add provider section header with connected/enabled status badge and targeted empty-state guidance

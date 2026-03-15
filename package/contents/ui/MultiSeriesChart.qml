@@ -8,6 +8,7 @@ Item {
 
     property var seriesData: []
     property string metric: "cost"
+    property bool showEmptyState: true
     readonly property real legendChipMaxWidth: Kirigami.Units.gridUnit * 9
 
     // Hover state
@@ -199,7 +200,7 @@ Item {
 
             PlasmaComponents.Label {
                 anchors.centerIn: parent
-                visible: !hasData()
+                visible: chartRoot.showEmptyState && !hasData()
                 text: i18n("No comparison data available for this range")
                 opacity: 0.55
                 font.pointSize: Kirigami.Theme.smallFont.pointSize

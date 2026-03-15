@@ -17,14 +17,18 @@ Item {
     property var summaryData: ({})
     property var dailyCosts: []
     property string provider: ""
+    property bool showEmptyState: true
+    readonly property bool hasSummaryData: !!summaryData
+        && Object.keys(summaryData).length > 0
+        && (summaryData.snapshotCount || 0) > 0
 
-    implicitHeight: summaryGrid.implicitHeight
+    implicitHeight: hasSummaryData ? summaryGrid.implicitHeight : (showEmptyState ? emptyStateLabel.implicitHeight : 0)
 
     // Empty state
     PlasmaComponents.Label {
+        id: emptyStateLabel
         anchors.centerIn: parent
-        visible: !summaryData || Object.keys(summaryData).length === 0
-                 || (summaryData.snapshotCount || 0) === 0
+        visible: trendRoot.showEmptyState && !trendRoot.hasSummaryData
         text: i18n("No historical data available")
         opacity: 0.5
         font.pointSize: Kirigami.Theme.smallFont.pointSize
@@ -33,7 +37,7 @@ Item {
     GridLayout {
         id: summaryGrid
         anchors.fill: parent
-        visible: summaryData && (summaryData.snapshotCount || 0) > 0
+        visible: trendRoot.hasSummaryData
         columns: 2
         columnSpacing: Kirigami.Units.largeSpacing
         rowSpacing: Kirigami.Units.smallSpacing

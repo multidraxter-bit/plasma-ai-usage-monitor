@@ -17,6 +17,8 @@ ColumnLayout {
     property bool showCost: false
     property bool showUsage: false
     property bool collapsed: false
+    readonly property bool narrowCard: card.width < Kirigami.Units.gridUnit * 18
+    readonly property bool compactDetails: card.width < Kirigami.Units.gridUnit * 16
     readonly property bool isLoofiServer: card.providerName === "Loofi Server"
 
     spacing: 0
@@ -80,121 +82,154 @@ ColumnLayout {
             }
             spacing: Kirigami.Units.mediumSpacing
 
-            // Header row: provider name + status (clickable to collapse/expand)
-            RowLayout {
+            // Header section: title row + wrapping metadata chips
+            ColumnLayout {
                 Layout.fillWidth: true
                 spacing: Kirigami.Units.smallSpacing
 
-                // Provider color indicator
-                Rectangle {
-                    width: 4
-                    Layout.preferredHeight: providerLabel.implicitHeight
-                    radius: 2
-                    color: card.providerColor
-
-                    Behavior on color {
-                        ColorAnimation { duration: 300 }
-                    }
-                }
-
-                Kirigami.Icon {
-                    source: card.providerIcon
-                    Layout.preferredWidth: Kirigami.Units.iconSizes.small
-                    Layout.preferredHeight: Kirigami.Units.iconSizes.small
-                }
-
-                PlasmaExtras.Heading {
-                    id: providerLabel
-                    level: 4
-                    text: card.providerName
+                RowLayout {
                     Layout.fillWidth: true
-                }
+                    spacing: Kirigami.Units.smallSpacing
 
-                // Model badge
-                Rectangle {
-                    visible: (card.backend?.model ?? "") !== ""
-                    implicitWidth: modelLabel.implicitWidth + Kirigami.Units.smallSpacing * 2
-                    implicitHeight: modelLabel.implicitHeight + 2
-                    radius: 3
-                    color: Qt.alpha(card.providerColor, 0.15)
+                    // Provider color indicator
+                    Rectangle {
+                        width: 4
+                        Layout.preferredHeight: providerLabel.implicitHeight
+                        radius: 2
+                        color: card.providerColor
 
-                    PlasmaComponents.Label {
-                        id: modelLabel
-                        anchors.centerIn: parent
-                        text: card.backend?.model ?? ""
-                        font.pointSize: Kirigami.Theme.smallFont.pointSize * 0.9
-                        color: Qt.alpha(Kirigami.Theme.textColor, 0.7)
+                        Behavior on color {
+                            ColorAnimation { duration: 300 }
+                        }
+                    }
+
+                    Kirigami.Icon {
+                        source: card.providerIcon
+                        Layout.preferredWidth: Kirigami.Units.iconSizes.small
+                        Layout.preferredHeight: Kirigami.Units.iconSizes.small
+                    }
+
+                    PlasmaExtras.Heading {
+                        id: providerLabel
+                        level: 4
+                        text: card.providerName
+                        Layout.fillWidth: true
+                        wrapMode: card.narrowCard ? Text.WordWrap : Text.NoWrap
                         elide: Text.ElideRight
+                        maximumLineCount: card.narrowCard ? 2 : 1
                     }
 
-                    PlasmaComponents.ToolTip {
-                        text: i18n("Model: %1", card.backend?.model ?? "")
-                    }
-                }
-                Rectangle {
-                    visible: (card.backend?.errorCount ?? 0) > 0
-                    width: errorCountLabel.implicitWidth + Kirigami.Units.smallSpacing * 2
-                    height: errorCountLabel.implicitHeight + Kirigami.Units.smallSpacing
-                    radius: height / 2
-                    color: Kirigami.Theme.negativeBackgroundColor
-
-                    PlasmaComponents.Label {
-                        id: errorCountLabel
-                        anchors.centerIn: parent
-                        text: (card.backend?.errorCount ?? 0).toString()
-                        font.pointSize: Kirigami.Theme.smallFont.pointSize
-                        color: Kirigami.Theme.negativeTextColor
+                    PlasmaComponents.ToolButton {
+                        icon.name: card.collapsed ? "arrow-down" : "arrow-up"
+                        display: PlasmaComponents.AbstractButton.IconOnly
+                        Layout.preferredWidth: Kirigami.Units.iconSizes.small
+                        Layout.preferredHeight: Kirigami.Units.iconSizes.small
+                        onClicked: card.collapsed = !card.collapsed
+                        PlasmaComponents.ToolTip { text: card.collapsed ? i18n("Expand") : i18n("Collapse") }
                     }
                 }
 
-                // Connection status
-                PlasmaComponents.Label {
-                    font.pointSize: Kirigami.Theme.smallFont.pointSize
-                    elide: Text.ElideRight
-                    text: {
-                        if (!card.backend) return i18n("N/A");
-                        if (card.backend.loading) return i18n("Loading...");
-                        if (card.backend.error) return i18n("Error");
-                        if (card.backend.connected) return i18n("Connected");
-                        return i18n("Disconnected");
+                Flow {
+                    Layout.fillWidth: true
+                    width: parent.width
+                    spacing: Kirigami.Units.smallSpacing
+
+                    Rectangle {
+                        visible: (card.backend?.model ?? "") !== ""
+                        width: Math.min(modelLabel.implicitWidth + Kirigami.Units.smallSpacing * 2,
+                                        card.narrowCard ? Kirigami.Units.gridUnit * 8 : Kirigami.Units.gridUnit * 10)
+                        height: modelLabel.implicitHeight + 4
+                        radius: 3
+                        color: Qt.alpha(card.providerColor, 0.15)
+                        clip: true
+
+                        PlasmaComponents.Label {
+                            id: modelLabel
+                            anchors.centerIn: parent
+                            width: parent.width - Kirigami.Units.smallSpacing * 2
+                            text: card.backend?.model ?? ""
+                            font.pointSize: Kirigami.Theme.smallFont.pointSize * 0.9
+                            color: Qt.alpha(Kirigami.Theme.textColor, 0.7)
+                            elide: Text.ElideRight
+                            horizontalAlignment: Text.AlignHCenter
+                        }
+
+                        PlasmaComponents.ToolTip {
+                            text: i18n("Model: %1", card.backend?.model ?? "")
+                        }
                     }
-                    color: {
-                        if (!card.backend) return Kirigami.Theme.disabledTextColor;
-                        if (card.backend.error) return Kirigami.Theme.negativeTextColor;
-                        if (card.backend.connected) return Kirigami.Theme.positiveTextColor;
-                        return Kirigami.Theme.disabledTextColor;
+
+                    Rectangle {
+                        visible: (card.backend?.errorCount ?? 0) > 0
+                        width: errorCountLabel.implicitWidth + Kirigami.Units.smallSpacing * 2
+                        height: errorCountLabel.implicitHeight + Kirigami.Units.smallSpacing
+                        radius: height / 2
+                        color: Kirigami.Theme.negativeBackgroundColor
+
+                        PlasmaComponents.Label {
+                            id: errorCountLabel
+                            anchors.centerIn: parent
+                            text: (card.backend?.errorCount ?? 0).toString()
+                            font.pointSize: Kirigami.Theme.smallFont.pointSize
+                            color: Kirigami.Theme.negativeTextColor
+                        }
                     }
 
-                    Behavior on color {
-                        ColorAnimation { duration: 200 }
+                    Rectangle {
+                        width: statusLabel.implicitWidth + Kirigami.Units.smallSpacing * 2
+                        height: statusLabel.implicitHeight + 4
+                        radius: height / 2
+                        color: {
+                            if (!card.backend) return Qt.alpha(Kirigami.Theme.textColor, 0.08);
+                            if (card.backend.error) return Qt.alpha(Kirigami.Theme.negativeTextColor, 0.15);
+                            if (card.backend.connected) return Qt.alpha(Kirigami.Theme.positiveTextColor, 0.15);
+                            return Qt.alpha(Kirigami.Theme.textColor, 0.08);
+                        }
+
+                        PlasmaComponents.Label {
+                            id: statusLabel
+                            anchors.centerIn: parent
+                            font.pointSize: Kirigami.Theme.smallFont.pointSize
+                            elide: Text.ElideRight
+                            text: {
+                                if (!card.backend) return i18n("N/A");
+                                if (card.backend.loading) return i18n("Loading...");
+                                if (card.backend.error) return i18n("Error");
+                                if (card.backend.connected) return i18n("Connected");
+                                return i18n("Disconnected");
+                            }
+                            color: {
+                                if (!card.backend) return Kirigami.Theme.disabledTextColor;
+                                if (card.backend.error) return Kirigami.Theme.negativeTextColor;
+                                if (card.backend.connected) return Kirigami.Theme.positiveTextColor;
+                                return Kirigami.Theme.disabledTextColor;
+                            }
+                        }
                     }
-                }
 
-                // Loading spinner
-                PlasmaComponents.BusyIndicator {
-                    Layout.preferredWidth: Kirigami.Units.iconSizes.small
-                    Layout.preferredHeight: Kirigami.Units.iconSizes.small
-                    visible: card.backend?.loading ?? false
-                    running: visible
-                }
+                    PlasmaComponents.BusyIndicator {
+                        width: Kirigami.Units.iconSizes.small
+                        height: Kirigami.Units.iconSizes.small
+                        visible: card.backend?.loading ?? false
+                        running: visible
+                    }
 
-                // Compact cost when collapsed
-                PlasmaComponents.Label {
-                    visible: card.collapsed && card.showCost && !card.isLoofiServer && (card.backend?.connected ?? false)
-                    text: "$" + (card.backend?.cost ?? 0).toFixed(2)
-                    font.bold: true
-                    font.pointSize: Kirigami.Theme.smallFont.pointSize
-                    opacity: 0.7
-                }
+                    Rectangle {
+                        visible: card.collapsed && card.showCost && !card.isLoofiServer && (card.backend?.connected ?? false)
+                        width: collapsedCostLabel.implicitWidth + Kirigami.Units.smallSpacing * 2
+                        height: collapsedCostLabel.implicitHeight + 4
+                        radius: height / 2
+                        color: Qt.alpha(Kirigami.Theme.textColor, 0.08)
 
-                // Collapse/expand toggle
-                PlasmaComponents.ToolButton {
-                    icon.name: card.collapsed ? "arrow-down" : "arrow-up"
-                    display: PlasmaComponents.AbstractButton.IconOnly
-                    Layout.preferredWidth: Kirigami.Units.iconSizes.small
-                    Layout.preferredHeight: Kirigami.Units.iconSizes.small
-                    onClicked: card.collapsed = !card.collapsed
-                    PlasmaComponents.ToolTip { text: card.collapsed ? i18n("Expand") : i18n("Collapse") }
+                        PlasmaComponents.Label {
+                            id: collapsedCostLabel
+                            anchors.centerIn: parent
+                            text: "$" + (card.backend?.cost ?? 0).toFixed(2)
+                            font.bold: true
+                            font.pointSize: Kirigami.Theme.smallFont.pointSize
+                            opacity: 0.75
+                        }
+                    }
                 }
             }
 
@@ -269,7 +304,7 @@ ColumnLayout {
 
                 GridLayout {
                     Layout.fillWidth: true
-                    columns: 2
+                    columns: card.compactDetails ? 1 : 2
                     columnSpacing: Kirigami.Units.largeSpacing
                     rowSpacing: Kirigami.Units.smallSpacing
 
@@ -281,8 +316,9 @@ ColumnLayout {
                     PlasmaComponents.Label {
                         text: card.backend?.activeModel || i18n("Unknown")
                         font.bold: true
-                        Layout.alignment: Qt.AlignRight
+                        Layout.alignment: card.compactDetails ? Qt.AlignLeft : Qt.AlignRight
                         elide: Text.ElideRight
+                        wrapMode: card.compactDetails ? Text.WordWrap : Text.NoWrap
                     }
 
                     PlasmaComponents.Label {
@@ -293,8 +329,9 @@ ColumnLayout {
                     PlasmaComponents.Label {
                         text: card.backend?.trainingStage || i18n("idle")
                         font.bold: true
-                        Layout.alignment: Qt.AlignRight
+                        Layout.alignment: card.compactDetails ? Qt.AlignLeft : Qt.AlignRight
                         elide: Text.ElideRight
+                        wrapMode: card.compactDetails ? Text.WordWrap : Text.NoWrap
                     }
 
                     PlasmaComponents.Label {
@@ -305,7 +342,7 @@ ColumnLayout {
                     PlasmaComponents.Label {
                         text: formatPercent(card.backend?.gpuMemoryPct ?? -1)
                         font.bold: true
-                        Layout.alignment: Qt.AlignRight
+                        Layout.alignment: card.compactDetails ? Qt.AlignLeft : Qt.AlignRight
                     }
 
                     PlasmaComponents.Label {
@@ -316,7 +353,7 @@ ColumnLayout {
                     PlasmaComponents.Label {
                         text: formatNumber(card.backend?.requestCount ?? 0)
                         font.bold: true
-                        Layout.alignment: Qt.AlignRight
+                        Layout.alignment: card.compactDetails ? Qt.AlignLeft : Qt.AlignRight
                     }
                 }
             }
@@ -324,7 +361,7 @@ ColumnLayout {
             GridLayout {
                 Layout.fillWidth: true
                 visible: !card.collapsed && card.showUsage && !card.isLoofiServer && (card.backend?.connected ?? false)
-                columns: 2
+                columns: card.compactDetails ? 1 : 2
                 columnSpacing: Kirigami.Units.largeSpacing
                 rowSpacing: Kirigami.Units.smallSpacing
 
@@ -336,7 +373,7 @@ ColumnLayout {
                 PlasmaComponents.Label {
                     text: formatNumber(card.backend?.inputTokens ?? 0)
                     font.bold: true
-                    Layout.alignment: Qt.AlignRight
+                    Layout.alignment: card.compactDetails ? Qt.AlignLeft : Qt.AlignRight
                 }
 
                 PlasmaComponents.Label {
@@ -347,7 +384,7 @@ ColumnLayout {
                 PlasmaComponents.Label {
                     text: formatNumber(card.backend?.outputTokens ?? 0)
                     font.bold: true
-                    Layout.alignment: Qt.AlignRight
+                    Layout.alignment: card.compactDetails ? Qt.AlignLeft : Qt.AlignRight
                 }
 
                 PlasmaComponents.Label {
@@ -358,7 +395,7 @@ ColumnLayout {
                 PlasmaComponents.Label {
                     text: formatNumber(card.backend?.requestCount ?? 0)
                     font.bold: true
-                    Layout.alignment: Qt.AlignRight
+                    Layout.alignment: card.compactDetails ? Qt.AlignLeft : Qt.AlignRight
                 }
             }
 
@@ -392,6 +429,7 @@ ColumnLayout {
                     text: "$" + (card.backend?.cost ?? 0).toFixed(4)
                     font.bold: true
                     font.pointSize: Kirigami.Theme.defaultFont.pointSize * 1.1
+                    wrapMode: card.compactDetails ? Text.WordWrap : Text.NoWrap
                     color: {
                         var c = card.backend?.cost ?? 0;
                         if (c > 10) return Kirigami.Theme.negativeTextColor;
@@ -450,8 +488,11 @@ ColumnLayout {
                         }
                         Item { Layout.fillWidth: true }
                         PlasmaComponents.Label {
+                            Layout.preferredWidth: card.compactDetails ? Kirigami.Units.gridUnit * 8 : -1
                             text: "$" + (card.backend?.dailyCost ?? 0).toFixed(2) + " / $" + (card.backend?.dailyBudget ?? 0).toFixed(2)
                             font.pointSize: Kirigami.Theme.smallFont.pointSize
+                            horizontalAlignment: card.compactDetails ? Text.AlignRight : Text.AlignLeft
+                            wrapMode: card.compactDetails ? Text.WordWrap : Text.NoWrap
                         }
                     }
 
@@ -503,8 +544,11 @@ ColumnLayout {
                         }
                         Item { Layout.fillWidth: true }
                         PlasmaComponents.Label {
+                            Layout.preferredWidth: card.compactDetails ? Kirigami.Units.gridUnit * 8 : -1
                             text: "$" + (card.backend?.monthlyCost ?? 0).toFixed(2) + " / $" + (card.backend?.monthlyBudget ?? 0).toFixed(2)
                             font.pointSize: Kirigami.Theme.smallFont.pointSize
+                            horizontalAlignment: card.compactDetails ? Text.AlignRight : Text.AlignLeft
+                            wrapMode: card.compactDetails ? Text.WordWrap : Text.NoWrap
                         }
                     }
 
@@ -582,8 +626,11 @@ ColumnLayout {
                         Item { Layout.fillWidth: true }
                         PlasmaComponents.Label {
                             readonly property int used: (card.backend?.rateLimitRequests ?? 0) - (card.backend?.rateLimitRequestsRemaining ?? 0)
+                            Layout.preferredWidth: card.compactDetails ? Kirigami.Units.gridUnit * 8 : -1
                             text: used + " / " + (card.backend?.rateLimitRequests ?? 0) + " " + i18n("used")
                             font.pointSize: Kirigami.Theme.smallFont.pointSize
+                            horizontalAlignment: card.compactDetails ? Text.AlignRight : Text.AlignLeft
+                            wrapMode: card.compactDetails ? Text.WordWrap : Text.NoWrap
                         }
                     }
 
@@ -635,8 +682,11 @@ ColumnLayout {
                         Item { Layout.fillWidth: true }
                         PlasmaComponents.Label {
                             readonly property int used: (card.backend?.rateLimitTokens ?? 0) - (card.backend?.rateLimitTokensRemaining ?? 0)
+                            Layout.preferredWidth: card.compactDetails ? Kirigami.Units.gridUnit * 8 : -1
                             text: formatNumber(used) + " / " + formatNumber(card.backend?.rateLimitTokens ?? 0) + " " + i18n("used")
                             font.pointSize: Kirigami.Theme.smallFont.pointSize
+                            horizontalAlignment: card.compactDetails ? Text.AlignRight : Text.AlignLeft
+                            wrapMode: card.compactDetails ? Text.WordWrap : Text.NoWrap
                         }
                     }
 
@@ -685,7 +735,7 @@ ColumnLayout {
             PlasmaComponents.Label {
                 Layout.fillWidth: true
                 visible: !card.collapsed && (card.backend?.connected ?? false)
-                horizontalAlignment: Text.AlignRight
+                horizontalAlignment: card.compactDetails ? Text.AlignLeft : Text.AlignRight
                 text: {
                     var lr = card.backend?.lastRefreshed;
                     if (!lr) return "";

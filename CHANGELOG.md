@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.8.1] — 2026-03-15
+
+### Changed
+
+- Clean up full popup history-state handling so detail/compare empty states are owned by the parent view instead of rendering duplicate fallback messages from child widgets
+- Improve live dashboard responsiveness by splitting dense provider/subscription card headers into title + metadata rows and tightening live/history narrow-width behavior
+- Refresh README and roadmap references to reflect the shipped `3.8.0` version and current provider surface
+- Fix provider backend build regressions by restoring the missing `setEstimatedCost()` declaration and correcting the Loofi Server URL environment fallback call
+- Fix the generated `.plasmoid` archive layout so Plasma/KDE Store installs see `metadata.json` and `contents/` at archive root instead of inside a nested `package/` directory
+- Refresh release-facing repository URLs and RPM metadata for the current GitHub repository
+
 ## [3.8.0] — 2026-03-08
 
 ### Added
@@ -393,28 +404,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - KWallet integration for secure API key storage
 - KDE notifications for rate limit warnings
 
-[Unreleased]: https://github.com/loofitheboss/plasma-ai-usage-monitor/compare/v3.7.0...HEAD
-[3.7.0]: https://github.com/loofitheboss/plasma-ai-usage-monitor/compare/v3.6.0...v3.7.0
-[3.6.0]: https://github.com/loofitheboss/plasma-ai-usage-monitor/compare/v3.5.3...v3.6.0
-[3.5.3]: https://github.com/loofitheboss/plasma-ai-usage-monitor/compare/v3.5.2...v3.5.3
-[3.5.2]: https://github.com/loofitheboss/plasma-ai-usage-monitor/compare/v3.5.1...v3.5.2
-[3.5.1]: https://github.com/loofitheboss/plasma-ai-usage-monitor/compare/v3.5.0...v3.5.1
-[3.5.0]: https://github.com/loofitheboss/plasma-ai-usage-monitor/compare/v3.4.0...v3.5.0
-[3.4.0]: https://github.com/loofitheboss/plasma-ai-usage-monitor/compare/v3.3.0...v3.4.0
-[3.3.0]: https://github.com/loofitheboss/plasma-ai-usage-monitor/compare/v3.2.0...v3.3.0
-[3.2.0]: https://github.com/loofitheboss/plasma-ai-usage-monitor/compare/v3.1.0...v3.2.0
-[3.1.0]: https://github.com/loofitheboss/plasma-ai-usage-monitor/compare/v3.0.0...v3.1.0
-[3.0.0]: https://github.com/loofitheboss/plasma-ai-usage-monitor/compare/v2.9.0...v3.0.0
-[2.9.0]: https://github.com/loofitheboss/plasma-ai-usage-monitor/compare/v2.8.2...v2.9.0
-[2.8.2]: https://github.com/loofitheboss/plasma-ai-usage-monitor/compare/v2.8.1...v2.8.2
-[2.8.1]: https://github.com/loofitheboss/plasma-ai-usage-monitor/compare/v2.8.0...v2.8.1
-[2.8.0]: https://github.com/loofitheboss/plasma-ai-usage-monitor/compare/v2.7.0...v2.8.0
-[2.7.0]: https://github.com/loofitheboss/plasma-ai-usage-monitor/compare/v2.6.0...v2.7.0
-[2.6.0]: https://github.com/loofitheboss/plasma-ai-usage-monitor/compare/v2.5.0...v2.6.0
-[2.5.0]: https://github.com/loofitheboss/plasma-ai-usage-monitor/compare/v2.4.0...v2.5.0
-[2.4.0]: https://github.com/loofitheboss/plasma-ai-usage-monitor/compare/v2.3.0...v2.4.0
-[2.3.0]: https://github.com/loofitheboss/plasma-ai-usage-monitor/compare/v2.2.0...v2.3.0
-[2.2.0]: https://github.com/loofitheboss/plasma-ai-usage-monitor/compare/v2.1.0...v2.2.0
-[2.1.0]: https://github.com/loofitheboss/plasma-ai-usage-monitor/compare/v2.0.0...v2.1.0
-[2.0.0]: https://github.com/loofitheboss/plasma-ai-usage-monitor/compare/v1.0.0...v2.0.0
-[1.0.0]: https://github.com/loofitheboss/plasma-ai-usage-monitor/releases/tag/v1.0.0
+[Unreleased]: https://github.com/multidraxter-bit/plasma-ai-usage-monitor/compare/v3.8.1...HEAD
+[3.8.1]: https://github.com/multidraxter-bit/plasma-ai-usage-monitor/compare/v3.8.0...v3.8.1
+[3.8.0]: https://github.com/multidraxter-bit/plasma-ai-usage-monitor/compare/v3.7.0...v3.8.0
+[3.7.0]: https://github.com/multidraxter-bit/plasma-ai-usage-monitor/compare/v3.6.0...v3.7.0
+[3.6.0]: https://github.com/multidraxter-bit/plasma-ai-usage-monitor/compare/v3.5.3...v3.6.0
+[3.5.3]: https://github.com/multidraxter-bit/plasma-ai-usage-monitor/compare/v3.5.2...v3.5.3
+[3.5.2]: https://github.com/multidraxter-bit/plasma-ai-usage-monitor/compare/v3.5.1...v3.5.2
+[3.5.1]: https://github.com/multidraxter-bit/plasma-ai-usage-monitor/compare/v3.5.0...v3.5.1
+[3.5.0]: https://github.com/multidraxter-bit/plasma-ai-usage-monitor/compare/v3.4.0...v3.5.0
+[3.4.0]: https://github.com/multidraxter-bit/plasma-ai-usage-monitor/compare/v3.3.0...v3.4.0
+[3.3.0]: https://github.com/multidraxter-bit/plasma-ai-usage-monitor/compare/v3.2.0...v3.3.0
+[3.2.0]: https://github.com/multidraxter-bit/plasma-ai-usage-monitor/compare/v3.1.0...v3.2.0
+[3.1.0]: https://github.com/multidraxter-bit/plasma-ai-usage-monitor/compare/v3.0.0...v3.1.0
+[3.0.0]: https://github.com/multidraxter-bit/plasma-ai-usage-monitor/compare/v2.9.0...v3.0.0
+[2.9.0]: https://github.com/multidraxter-bit/plasma-ai-usage-monitor/compare/v2.8.2...v2.9.0
+[2.8.2]: https://github.com/multidraxter-bit/plasma-ai-usage-monitor/compare/v2.8.1...v2.8.2
+[2.8.1]: https://github.com/multidraxter-bit/plasma-ai-usage-monitor/compare/v2.8.0...v2.8.1
+[2.8.0]: https://github.com/multidraxter-bit/plasma-ai-usage-monitor/compare/v2.7.0...v2.8.0
+[2.7.0]: https://github.com/multidraxter-bit/plasma-ai-usage-monitor/compare/v2.6.0...v2.7.0
+[2.6.0]: https://github.com/multidraxter-bit/plasma-ai-usage-monitor/compare/v2.5.0...v2.6.0
+[2.5.0]: https://github.com/multidraxter-bit/plasma-ai-usage-monitor/compare/v2.4.0...v2.5.0
+[2.4.0]: https://github.com/multidraxter-bit/plasma-ai-usage-monitor/compare/v2.3.0...v2.4.0
+[2.3.0]: https://github.com/multidraxter-bit/plasma-ai-usage-monitor/compare/v2.2.0...v2.3.0
+[2.2.0]: https://github.com/multidraxter-bit/plasma-ai-usage-monitor/compare/v2.1.0...v2.2.0
+[2.1.0]: https://github.com/multidraxter-bit/plasma-ai-usage-monitor/compare/v2.0.0...v2.1.0
+[2.0.0]: https://github.com/multidraxter-bit/plasma-ai-usage-monitor/compare/v1.0.0...v2.0.0
+[1.0.0]: https://github.com/multidraxter-bit/plasma-ai-usage-monitor/releases/tag/v1.0.0

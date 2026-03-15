@@ -20,11 +20,11 @@
 
   <extends>org.kde.plasma.desktop</extends>
 
-  <url type="homepage">https://github.com/loofitheboss/plasma-ai-usage-monitor</url>
-  <url type="bugtracker">https://github.com/loofitheboss/plasma-ai-usage-monitor/issues</url>
+  <url type="homepage">https://github.com/multidraxter-bit/plasma-ai-usage-monitor</url>
+  <url type="bugtracker">https://github.com/multidraxter-bit/plasma-ai-usage-monitor/issues</url>
 
   <releases>
-    <release version="3.8.0" date="2026-03-08"/>
+    <release version="3.8.1" date="2026-03-15"/>
   </releases>
 
   <categories>

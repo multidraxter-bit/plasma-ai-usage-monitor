@@ -12,6 +12,7 @@ ColumnLayout {
 
     property var providers: []
     property var subscriptionTools: []
+    readonly property bool narrowCard: costCard.width < Kirigami.Units.gridUnit * 18
 
     readonly property double subscriptionTotalCost: {
         var total = 0;
@@ -74,40 +75,46 @@ ColumnLayout {
             }
             spacing: Kirigami.Units.smallSpacing
 
-            RowLayout {
+            ColumnLayout {
                 Layout.fillWidth: true
+                spacing: Kirigami.Units.smallSpacing
 
-                PlasmaExtras.Heading {
-                    level: 4
-                    text: costCard.costViewMode === 0 ? i18n("Total Cost")
-                        : costCard.costViewMode === 1 ? i18n("Today's Cost")
-                        : i18n("Monthly Cost")
-                }
+                RowLayout {
+                    Layout.fillWidth: true
+                    spacing: Kirigami.Units.smallSpacing
 
-                Item { Layout.fillWidth: true }
+                    PlasmaExtras.Heading {
+                        level: 4
+                        text: costCard.costViewMode === 0 ? i18n("Total Cost")
+                            : costCard.costViewMode === 1 ? i18n("Today's Cost")
+                            : i18n("Monthly Cost")
+                        Layout.fillWidth: true
+                    }
 
-                // View mode toggle buttons
-                Row {
-                    spacing: 2
+                    // View mode toggle buttons
+                    Row {
+                        spacing: 2
 
-                    Repeater {
-                        model: [
-                            { label: i18n("All"), mode: 0 },
-                            { label: i18n("Day"), mode: 1 },
-                            { label: i18n("Month"), mode: 2 }
-                        ]
+                        Repeater {
+                            model: [
+                                { label: i18n("All"), mode: 0 },
+                                { label: i18n("Day"), mode: 1 },
+                                { label: i18n("Month"), mode: 2 }
+                            ]
 
-                        PlasmaComponents.ToolButton {
-                            text: modelData.label
-                            checked: costCard.costViewMode === modelData.mode
-                            onClicked: costCard.costViewMode = modelData.mode
-                            font.pointSize: Kirigami.Theme.smallFont.pointSize
-                            implicitHeight: Kirigami.Units.gridUnit * 1.2
+                            PlasmaComponents.ToolButton {
+                                text: modelData.label
+                                checked: costCard.costViewMode === modelData.mode
+                                onClicked: costCard.costViewMode = modelData.mode
+                                font.pointSize: Kirigami.Theme.smallFont.pointSize
+                                implicitHeight: Kirigami.Units.gridUnit * 1.2
+                            }
                         }
                     }
                 }
 
                 PlasmaComponents.Label {
+                    Layout.fillWidth: true
                     text: {
                         var val = costCard.costViewMode === 0 ? costCard.totalCost
                                 : costCard.costViewMode === 1 ? costCard.totalDailyCost
@@ -116,6 +123,7 @@ ColumnLayout {
                     }
                     font.bold: true
                     font.pointSize: Kirigami.Theme.defaultFont.pointSize * 1.3
+                    horizontalAlignment: costCard.narrowCard ? Text.AlignLeft : Text.AlignRight
                     color: {
                         var cost = costCard.costViewMode === 0 ? costCard.totalCost
                                  : costCard.costViewMode === 1 ? costCard.totalDailyCost
@@ -152,6 +160,8 @@ ColumnLayout {
                     PlasmaComponents.Label {
                         Layout.fillWidth: true
                         elide: Text.ElideRight
+                        maximumLineCount: costCard.narrowCard ? 2 : 1
+                        wrapMode: costCard.narrowCard ? Text.WordWrap : Text.NoWrap
                         text: modelData.name
                         font.pointSize: Kirigami.Theme.smallFont.pointSize
                         opacity: 0.7
@@ -188,6 +198,8 @@ ColumnLayout {
                     PlasmaComponents.Label {
                         Layout.fillWidth: true
                         elide: Text.ElideRight
+                        maximumLineCount: costCard.narrowCard ? 2 : 1
+                        wrapMode: costCard.narrowCard ? Text.WordWrap : Text.NoWrap
                         text: i18n("%1 (subscription)", modelData.name)
                         font.pointSize: Kirigami.Theme.smallFont.pointSize
                         opacity: 0.7
