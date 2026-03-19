@@ -44,6 +44,7 @@ private Q_SLOTS:
     void usageIncrementAndReset();
     void copilotDetectActivityIncrementsUsage();
     void browserSyncEmptyCookieDiagnostics();
+    void browserSyncUnsupportedBrowserDiagnostics();
 };
 
 void SubscriptionToolsTest::planDefaults()
@@ -192,6 +193,45 @@ void SubscriptionToolsTest::browserSyncEmptyCookieDiagnostics()
     const QList<QVariant> codexDiagnosticArgs = codexDiagnosticSpy.takeFirst();
     QCOMPARE(codexDiagnosticArgs.at(0).toString(), QStringLiteral("Codex CLI"));
     QCOMPARE(codexDiagnosticArgs.at(1).toString(), QStringLiteral("not_logged_in"));
+}
+
+void SubscriptionToolsTest::browserSyncUnsupportedBrowserDiagnostics()
+{
+    ClaudeCodeMonitor claude;
+    QSignalSpy claudeCompletedSpy(&claude, &SubscriptionToolBackend::syncCompleted);
+    QSignalSpy claudeDiagnosticSpy(&claude, &SubscriptionToolBackend::syncDiagnostic);
+
+    claude.syncFromBrowser(QStringLiteral("sessionKey=test"), 1);
+
+    QCOMPARE(claudeCompletedSpy.count(), 1);
+    QCOMPARE(claudeDiagnosticSpy.count(), 1);
+    QCOMPARE(claude.syncStatus(), QStringLiteral("Browser unsupported"));
+
+    const QList<QVariant> claudeCompletionArgs = claudeCompletedSpy.takeFirst();
+    QCOMPARE(claudeCompletionArgs.at(0).toBool(), false);
+    QVERIFY(claudeCompletionArgs.at(1).toString().contains(QStringLiteral("Firefox"), Qt::CaseInsensitive));
+
+    const QList<QVariant> claudeDiagnosticArgs = claudeDiagnosticSpy.takeFirst();
+    QCOMPARE(claudeDiagnosticArgs.at(0).toString(), QStringLiteral("Claude Code"));
+    QCOMPARE(claudeDiagnosticArgs.at(1).toString(), QStringLiteral("unsupported_browser"));
+
+    CodexCliMonitor codex;
+    QSignalSpy codexCompletedSpy(&codex, &SubscriptionToolBackend::syncCompleted);
+    QSignalSpy codexDiagnosticSpy(&codex, &SubscriptionToolBackend::syncDiagnostic);
+
+    codex.syncFromBrowser(QStringLiteral("__Secure-next-auth.session-token=test"), 1);
+
+    QCOMPARE(codexCompletedSpy.count(), 1);
+    QCOMPARE(codexDiagnosticSpy.count(), 1);
+    QCOMPARE(codex.syncStatus(), QStringLiteral("Browser unsupported"));
+
+    const QList<QVariant> codexCompletionArgs = codexCompletedSpy.takeFirst();
+    QCOMPARE(codexCompletionArgs.at(0).toBool(), false);
+    QVERIFY(codexCompletionArgs.at(1).toString().contains(QStringLiteral("Firefox"), Qt::CaseInsensitive));
+
+    const QList<QVariant> codexDiagnosticArgs = codexDiagnosticSpy.takeFirst();
+    QCOMPARE(codexDiagnosticArgs.at(0).toString(), QStringLiteral("Codex CLI"));
+    QCOMPARE(codexDiagnosticArgs.at(1).toString(), QStringLiteral("unsupported_browser"));
 }
 
 QTEST_MAIN(SubscriptionToolsTest)

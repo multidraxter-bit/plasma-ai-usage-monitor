@@ -23,6 +23,7 @@ class UpdateChecker : public QObject
     Q_OBJECT
     Q_PROPERTY(QString currentVersion READ currentVersion WRITE setCurrentVersion NOTIFY currentVersionChanged)
     Q_PROPERTY(int checkIntervalHours READ checkIntervalHours WRITE setCheckIntervalHours NOTIFY checkIntervalHoursChanged)
+    Q_PROPERTY(QString releaseApiUrl READ releaseApiUrl WRITE setReleaseApiUrl NOTIFY releaseApiUrlChanged)
     Q_PROPERTY(bool checking READ checking NOTIFY checkingChanged)
     Q_PROPERTY(QString latestVersion READ latestVersion NOTIFY latestVersionChanged)
 
@@ -37,6 +38,9 @@ public:
     int checkIntervalHours() const;
     void setCheckIntervalHours(int h);
 
+    QString releaseApiUrl() const;
+    void setReleaseApiUrl(const QString &url);
+
     bool checking() const;
     QString latestVersion() const;
 
@@ -46,6 +50,7 @@ public:
 Q_SIGNALS:
     void currentVersionChanged();
     void checkIntervalHoursChanged();
+    void releaseApiUrlChanged();
     void checkingChanged();
     void latestVersionChanged();
     void updateAvailable(const QString &latestVersion, const QString &releaseUrl);
@@ -57,6 +62,7 @@ private:
     QTimer *m_timer = nullptr;
     QString m_currentVersion;
     QString m_latestVersion;
+    QString m_releaseApiUrl = QStringLiteral("https://api.github.com/repos/multidraxter-bit/plasma-ai-usage-monitor/releases/latest");
     int m_intervalHours = 12;
     bool m_checking = false;
 };

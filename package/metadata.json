@@ -13,7 +13,7 @@
         "Id": "com.github.loofi.aiusagemonitor",
         "License": "GPL-3.0-or-later",
         "Name": "AI Usage Monitor",
-        "Version": "3.8.1",
+        "Version": "3.9.0",
         "Website": "https://github.com/multidraxter-bit/plasma-ai-usage-monitor",
         "BugReportUrl": "https://github.com/multidraxter-bit/plasma-ai-usage-monitor/issues"
     },

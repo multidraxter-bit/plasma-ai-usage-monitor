@@ -53,7 +53,7 @@ KCM.SimpleKCM {
         var normalized = normalizedSyncCode(code);
         if (normalized === "connected") return i18n("%1 session looks valid in Firefox.", serviceLabel);
         if (normalized === "profile_missing") return i18n("Install Firefox or choose Firefox for Browser Sync.");
-        if (normalized === "cookie_db_missing") return i18n("Close Firefox once, then retry so cookies.sqlite is accessible.");
+        if (normalized === "cookie_db_missing") return i18n("Open Firefox once, sign in to %1, then retry so the cookie database exists.", serviceLabel);
         if (normalized === "cookies_not_found") return i18n("Open %1 in Firefox and sign in at least once.", serviceLabel);
         if (normalized === "session_missing_or_expired") return i18n("Log in to %1 again in Firefox, then retry.", serviceLabel);
         if (normalized === "unsupported_browser") return i18n("Only Firefox is supported currently.");

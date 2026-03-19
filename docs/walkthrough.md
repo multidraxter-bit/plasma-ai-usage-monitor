@@ -1,33 +1,21 @@
-# Sprint 1 — Documentation & UX Walkthrough
+## Walkthrough Status
 
-## What Changed
+This file now acts as a lightweight bridge between the older sprint notes and the current docs set.
 
-### Documentation (3 files)
+## Current Source of Truth
 
-| File | Change |
-|------|--------|
-| [CHANGELOG.md](file:///home/loofi/plasma-ai-usage-monitor/plasma-ai-usage-monitor/CHANGELOG.md) | **[NEW]** Full version history v1.0.0→v2.8.1and comparison links |
-| [SECURITY.md](file:///home/loofi/plasma-ai-usage-monitor/plasma-ai-usage-monitor/SECURITY.md) | **[NEW]** Security policy, reporting, design decisions |
-| [README.md](file:///home/loofi/plasma-ai-usage-monitor/plasma-ai-usage-monitor/README.md) | Added Documentation section with doc links; trimmed inline changelog to latest release only |
+- [README.md](../README.md) — product overview, install paths, and canonical screenshot references
+- [ROADMAP.md](../ROADMAP.md) — release sequencing and current stabilization scope
+- [docs/demo/fedora-kde-vm.md](demo/fedora-kde-vm.md) — live-test and screenshot environment workflow
+- [docs/store/submission-checklist.md](store/submission-checklist.md) — GitHub/KDE Store publication handoff pack
+- [assets/screenshots/README.md](../assets/screenshots/README.md) — screenshot quality rules and shot inventory
 
-### UX Improvements (4 files)
+## Historical Note
 
-| File | Change |
-|------|--------|
-| [FullRepresentation.qml](file:///home/loofi/plasma-ai-usage-monitor/plasma-ai-usage-monitor/package/contents/ui/FullRepresentation.qml) | Enhanced first-run welcome message (warmer text, better icon) |
-| [configProviders.qml](file:///home/loofi/plasma-ai-usage-monitor/plasma-ai-usage-monitor/package/contents/ui/configProviders.qml) | Added `isInvalidUrl()` validator + inline warnings for malformed URLs; tooltips on model filter and base URL fields |
-| [configGeneral.qml](file:///home/loofi/plasma-ai-usage-monitor/plasma-ai-usage-monitor/package/contents/ui/configGeneral.qml) | Tooltips on refresh interval slider and panel display mode |
-| [configBudget.qml](file:///home/loofi/plasma-ai-usage-monitor/plasma-ai-usage-monitor/package/contents/ui/configBudget.qml) | Tooltip on budget warning threshold slider |
+Earlier sprint notes referenced repo-local file URLs and old version milestones. Those details have been retired so this document does not drift away from the current repository layout.
 
-## Validation
+## Why This File Still Exists
 
-- **Build**: Clean compile, 100% targets built ✅
-- **Tests**: 5/5 CTest targets pass ✅
-  - `appstreamtest`, `usagedatabase_series`, `history_mapping_regression`, `version_consistency`, `no_hardcoded_versions`
-
-## Remaining Sprint 1 Items
-
-- [ ] Improve browser sync error messages
-- [ ] Provider unit tests (mocked HTTP)
-- [ ] Subscription tool unit tests
-- [ ] `clang-tidy` CI gate
+- keeps older links from going completely dark
+- points contributors to the current documentation map
+- avoids duplicating roadmap, release, and screenshot instructions in multiple places

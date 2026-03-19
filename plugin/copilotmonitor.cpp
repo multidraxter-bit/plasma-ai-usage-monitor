@@ -168,7 +168,9 @@ void CopilotMonitor::fetchOrgMetrics()
     int gen = m_fetchGeneration;
 
     // GET /orgs/{org}/copilot/billing
-    QUrl url(QStringLiteral("https://api.github.com/orgs/%1/copilot/billing").arg(m_orgName));
+    QUrl url = qEnvironmentVariableIsSet("PLASMA_AI_MONITOR_DEMO")
+        ? QUrl(QStringLiteral("http://localhost:8080/copilot/orgs/%1/copilot/billing").arg(m_orgName))
+        : QUrl(QStringLiteral("https://api.github.com/orgs/%1/copilot/billing").arg(m_orgName));
 
     QNetworkRequest request(url);
     request.setTransferTimeout(30000);

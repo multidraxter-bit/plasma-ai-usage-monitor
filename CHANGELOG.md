@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.9.0] — 2026-03-19
+
+### Added
+
+- Add local mock API server (`scripts/demo/mock_server.py`) for deterministic, offline demo environment and testing
+- Add demo mode overrides (`PLASMA_AI_MONITOR_DEMO=1`) to reroute C++ provider and subscription backends to `localhost:8080`
+- Add canonical store-ready screenshots captured via the Fedora KDE VM using the new mock data environment
+- Add comprehensive mock HTTP test suites for Azure OpenAI, GitHub Copilot, Claude Code, and Codex CLI
+- Add deep test coverage for `UpdateChecker` including GitHub release parsing, prerelease filtering, and network timeouts
+
+### Changed
+
+- Refactor `main.qml` startup sequence and snapshot timers to fix popup fragility and eliminate UI blocking on panel open
+- Improve theme awareness in `FullRepresentation.qml`, `ProviderCard.qml`, and `SubscriptionToolCard.qml` using `Kirigami.Theme` dynamic palettes
+- Enhance keyboard navigation with explicit `KeyNavigation` and `activeFocusOnTab` across primary interactive elements
+- Update AppStream metadata (`metainfo.xml`) with updated screenshot URLs and feature lists for KDE Store publication
+- Refine `README.md` and walkthrough documentation with polished assets and demo mode instructions
+
 ## [3.8.1] — 2026-03-15
 
 ### Changed

@@ -10,11 +10,13 @@
   <description>
     <p>
       AI Usage Monitor is a Plasma 6 widget for tracking AI provider usage, estimated
-      cost, budget thresholds, and subscription-tool limits from the panel.
+      cost, rate limits, budget thresholds, and subscription-tool limits directly from
+      the panel.
     </p>
     <p>
-      It supports multiple providers, local history, export options, and notification
-      controls designed for day-to-day API usage visibility.
+      It supports multiple hosted AI providers, local history, compare analytics,
+      export options, notification controls, and subscription-tool monitoring for
+      Claude Code, Codex CLI, and GitHub Copilot.
     </p>
   </description>
 
@@ -23,8 +25,23 @@
   <url type="homepage">https://github.com/multidraxter-bit/plasma-ai-usage-monitor</url>
   <url type="bugtracker">https://github.com/multidraxter-bit/plasma-ai-usage-monitor/issues</url>
 
+  <screenshots>
+    <screenshot type="default">
+      <caption>Live dashboard with connected provider cards and cost summaries</caption>
+      <image type="source">https://raw.githubusercontent.com/multidraxter-bit/plasma-ai-usage-monitor/main/assets/screenshots/main-window.png</image>
+    </screenshot>
+    <screenshot>
+      <caption>Compact panel representation with status badge</caption>
+      <image type="source">https://raw.githubusercontent.com/multidraxter-bit/plasma-ai-usage-monitor/main/assets/screenshots/panel-view.png</image>
+    </screenshot>
+    <screenshot>
+      <caption>Configuration-oriented view used for provider and budget setup</caption>
+      <image type="source">https://raw.githubusercontent.com/multidraxter-bit/plasma-ai-usage-monitor/main/assets/screenshots/settings-view.png</image>
+    </screenshot>
+  </screenshots>
+
   <releases>
-    <release version="3.8.1" date="2026-03-15"/>
+    <release version="3.9.0" date="2026-03-19"/>
   </releases>
 
   <categories>

@@ -1,0 +1,118 @@
+{
+  "openai": {
+    "usage": {
+      "input_tokens": 18200,
+      "output_tokens": 6400,
+      "num_model_requests": 87
+    },
+    "cost": { "amount": 1245 }
+  },
+  "anthropic": {
+    "headers": {
+      "requests_limit": 120,
+      "requests_remaining": 84,
+      "input_tokens_limit": 240000,
+      "input_tokens_remaining": 180000,
+      "output_tokens_limit": 120000,
+      "output_tokens_remaining": 96000,
+      "reset": "2026-03-16T18:30:00Z"
+    }
+  },
+  "google": {
+    "total_tokens": 12
+  },
+  "mistral": {
+    "usage": { "prompt_tokens": 4200, "completion_tokens": 1600 },
+    "headers": {
+      "requests_limit": 90,
+      "requests_remaining": 73,
+      "tokens_limit": 400000,
+      "tokens_remaining": 394200
+    }
+  },
+  "deepseek": {
+    "usage": { "prompt_tokens": 2600, "completion_tokens": 1200 },
+    "headers": {
+      "requests_limit": 150,
+      "requests_remaining": 141,
+      "tokens_limit": 500000,
+      "tokens_remaining": 496200
+    },
+    "balance": 42.75
+  },
+  "groq": {
+    "usage": { "prompt_tokens": 3200, "completion_tokens": 900 },
+    "headers": {
+      "requests_limit": 200,
+      "requests_remaining": 191,
+      "tokens_limit": 450000,
+      "tokens_remaining": 445900
+    }
+  },
+  "xai": {
+    "usage": { "prompt_tokens": 5400, "completion_tokens": 2200 },
+    "headers": {
+      "requests_limit": 60,
+      "requests_remaining": 52,
+      "tokens_limit": 220000,
+      "tokens_remaining": 212400
+    }
+  },
+  "openrouter": {
+    "usage": { "prompt_tokens": 2800, "completion_tokens": 1100 },
+    "headers": {
+      "requests_limit": 120,
+      "requests_remaining": 111,
+      "tokens_limit": 350000,
+      "tokens_remaining": 346100
+    },
+    "credits": { "usage": 6.25, "limit": 50.0 }
+  },
+  "together": {
+    "usage": { "prompt_tokens": 3100, "completion_tokens": 1000 },
+    "headers": {
+      "requests_limit": 100,
+      "requests_remaining": 93,
+      "tokens_limit": 280000,
+      "tokens_remaining": 275900
+    }
+  },
+  "cohere": {
+    "usage": { "prompt_tokens": 2400, "completion_tokens": 700 },
+    "headers": {
+      "requests_limit": 70,
+      "requests_remaining": 66,
+      "tokens_limit": 180000,
+      "tokens_remaining": 176900
+    }
+  },
+  "googleveo": {
+    "name": "models/veo-2",
+    "usage": {
+      "prompt_tokens": 150000,
+      "completion_tokens": 42000,
+      "video_duration_seconds": 8
+    },
+    "headers": { "requests_limit": 30, "requests_remaining": 24 }
+  },
+  "azure": {
+    "usage": {
+      "prompt_tokens": 7600,
+      "completion_tokens": 2600,
+      "total_tokens": 10200
+    },
+    "cost": { "total_cost": 0.82, "daily_cost": 4.2, "monthly_cost": 21.7 },
+    "headers": {
+      "requests_limit": 80,
+      "requests_remaining": 67,
+      "tokens_limit": 300000,
+      "tokens_remaining": 289800
+    }
+  },
+  "loofi": {
+    "model": "Qwen3.5-9B",
+    "training_stage": "canary_eval",
+    "gpu_memory_pct": 83.5,
+    "inference_count_24h": 142
+  }
+}

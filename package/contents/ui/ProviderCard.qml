@@ -120,6 +120,8 @@ ColumnLayout {
                     }
 
                     PlasmaComponents.ToolButton {
+                        activeFocusOnTab: true
+                        activeFocusOnTab: true
                         icon.name: card.collapsed ? "arrow-down" : "arrow-up"
                         display: PlasmaComponents.AbstractButton.IconOnly
                         Layout.preferredWidth: Kirigami.Units.iconSizes.small
@@ -255,6 +257,8 @@ ColumnLayout {
 
                     // Retry button
                     PlasmaComponents.ToolButton {
+                        activeFocusOnTab: true
+                        activeFocusOnTab: true
                         icon.name: "view-refresh"
                         display: PlasmaComponents.AbstractButton.IconOnly
                         PlasmaComponents.ToolTip { text: i18n("Retry") }
@@ -265,6 +269,8 @@ ColumnLayout {
 
                     // Expand/collapse error details
                     PlasmaComponents.ToolButton {
+                        activeFocusOnTab: true
+                        activeFocusOnTab: true
                         icon.name: errorExpanded ? "arrow-up" : "arrow-down"
                         display: PlasmaComponents.AbstractButton.IconOnly
                         visible: (card.backend?.consecutiveErrors ?? 0) > 1

@@ -10,10 +10,14 @@ set(TEST_PROVIDER_SRC
     ${CMAKE_SOURCE_DIR}/plugin/anthropicprovider.cpp
     ${CMAKE_SOURCE_DIR}/plugin/cohereprovider.cpp
     ${CMAKE_SOURCE_DIR}/plugin/deepseekprovider.cpp
+    ${CMAKE_SOURCE_DIR}/plugin/googleprovider.cpp
     ${CMAKE_SOURCE_DIR}/plugin/googleveoprovider.cpp
+    ${CMAKE_SOURCE_DIR}/plugin/groqprovider.cpp
     ${CMAKE_SOURCE_DIR}/plugin/loofiserverprovider.cpp
+    ${CMAKE_SOURCE_DIR}/plugin/mistralprovider.cpp
     ${CMAKE_SOURCE_DIR}/plugin/openrouterprovider.cpp
     ${CMAKE_SOURCE_DIR}/plugin/togetherprovider.cpp
+    ${CMAKE_SOURCE_DIR}/plugin/xaiprovider.cpp
 )
 
 set(TEST_SUBSCRIPTION_SRC

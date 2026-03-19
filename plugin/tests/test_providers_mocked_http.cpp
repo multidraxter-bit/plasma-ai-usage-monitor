@@ -11,13 +11,17 @@
 #include "anthropicprovider.h"
 #include "cohereprovider.h"
 #include "deepseekprovider.h"
+#include "googleprovider.h"
 #include "googleveoprovider.h"
 #include "azureopenaiprovider.h"
 #include "loofiserverprovider.h"
+#include "groqprovider.h"
+#include "mistralprovider.h"
 #include "openaiprovider.h"
 #include "openrouterprovider.h"
 #include "providerbackend.h"
 #include "togetherprovider.h"
+#include "xaiprovider.h"
 
 class HttpStubServer : public QObject
 {
@@ -122,6 +126,7 @@ private Q_SLOTS:
     void openAiAuthError();
     void anthropicRateLimitHeaders();
     void deepSeekUsageAndBalance();
+    void googleKnownLimitsByTier();
     void googleVeoKnownLimitsByTier();
     void googleVeoUsesHeaderLimitsWhenPresent();
     void googleVeoPartialHeadersFallbackToKnownLimits();
@@ -131,6 +136,9 @@ private Q_SLOTS:
     void openRouterUsageAndCredits();
     void togetherAiUsageAndHeaders();
     void cohereUsageAndHeaders();
+    void mistralUsageAndHeaders();
+    void groqUsageAndHeaders();
+    void xaiUsageAndHeaders();
     void azureProviderSuccess();
     void azureProviderMeteredCostPreferred();
     void azureProviderAuthError();
@@ -314,6 +322,35 @@ void ProvidersMockedHttpTest::deepSeekUsageAndBalance()
     QCOMPARE(provider.rateLimitTokens(), 6000);
     QCOMPARE(provider.rateLimitTokensRemaining(), 5800);
     QCOMPARE(provider.balance(), 13.0);
+    QVERIFY(provider.isConnected());
+}
+
+void ProvidersMockedHttpTest::googleKnownLimitsByTier()
+{
+    HttpStubServer server;
+    QVERIFY(server.listen());
+
+    server.setResponse(
+        QStringLiteral("POST"),
+        QStringLiteral("/v1beta/models/gemini-2.5-flash:countTokens"),
+        200,
+        QByteArrayLiteral(R"JSON({"totalTokens": 2})JSON"));
+
+    GoogleProvider provider;
+    provider.setApiKey(QStringLiteral("test-key"));
+    provider.setCustomBaseUrl(server.baseUrl() + QStringLiteral("/v1beta"));
+    provider.setModel(QStringLiteral("gemini-2.5-flash"));
+    provider.setTier(QStringLiteral("paid"));
+
+    QSignalSpy dataSpy(&provider, &ProviderBackend::dataUpdated);
+    provider.refresh();
+
+    QTRY_VERIFY_WITH_TIMEOUT(dataSpy.count() >= 1, 3000);
+
+    QCOMPARE(provider.rateLimitRequests(), 2000);
+    QCOMPARE(provider.rateLimitRequestsRemaining(), 2000);
+    QCOMPARE(provider.rateLimitTokens(), 4000000);
+    QCOMPARE(provider.rateLimitTokensRemaining(), 4000000);
     QVERIFY(provider.isConnected());
 }
 
@@ -696,6 +733,138 @@ void ProvidersMockedHttpTest::cohereUsageAndHeaders()
     QCOMPARE(provider.rateLimitRequestsRemaining(), 35);
     QCOMPARE(provider.rateLimitTokens(), 8000);
     QCOMPARE(provider.rateLimitTokensRemaining(), 7700);
+    QVERIFY(provider.isConnected());
+}
+
+void ProvidersMockedHttpTest::mistralUsageAndHeaders()
+{
+    HttpStubServer server;
+    QVERIFY(server.listen());
+
+    const QByteArray usageBody = R"JSON({
+        "usage": {
+            "prompt_tokens": 90,
+            "completion_tokens": 45
+        }
+    })JSON";
+
+    server.setResponse(
+        QStringLiteral("POST"),
+        QStringLiteral("/chat/completions"),
+        200,
+        usageBody,
+        {
+            {"x-ratelimit-limit-requests", "75"},
+            {"x-ratelimit-remaining-requests", "71"},
+            {"x-ratelimit-limit-tokens", "5000"},
+            {"x-ratelimit-remaining-tokens", "4865"},
+        });
+
+    MistralProvider provider;
+    provider.setApiKey(QStringLiteral("test-key"));
+    provider.setCustomBaseUrl(server.baseUrl());
+
+    QSignalSpy dataSpy(&provider, &ProviderBackend::dataUpdated);
+    provider.refresh();
+
+    QTRY_VERIFY_WITH_TIMEOUT(dataSpy.count() >= 1, 3000);
+
+    QCOMPARE(provider.inputTokens(), 90);
+    QCOMPARE(provider.outputTokens(), 45);
+    QCOMPARE(provider.requestCount(), 1);
+    QCOMPARE(provider.rateLimitRequests(), 75);
+    QCOMPARE(provider.rateLimitRequestsRemaining(), 71);
+    QCOMPARE(provider.rateLimitTokens(), 5000);
+    QCOMPARE(provider.rateLimitTokensRemaining(), 4865);
+    QVERIFY(provider.cost() > 0.0);
+    QVERIFY(provider.isConnected());
+}
+
+void ProvidersMockedHttpTest::groqUsageAndHeaders()
+{
+    HttpStubServer server;
+    QVERIFY(server.listen());
+
+    const QByteArray usageBody = R"JSON({
+        "usage": {
+            "prompt_tokens": 64,
+            "completion_tokens": 16
+        }
+    })JSON";
+
+    server.setResponse(
+        QStringLiteral("POST"),
+        QStringLiteral("/chat/completions"),
+        200,
+        usageBody,
+        {
+            {"x-ratelimit-limit-requests", "120"},
+            {"x-ratelimit-remaining-requests", "118"},
+            {"x-ratelimit-limit-tokens", "6400"},
+            {"x-ratelimit-remaining-tokens", "6320"},
+        });
+
+    GroqProvider provider;
+    provider.setApiKey(QStringLiteral("test-key"));
+    provider.setCustomBaseUrl(server.baseUrl());
+
+    QSignalSpy dataSpy(&provider, &ProviderBackend::dataUpdated);
+    provider.refresh();
+
+    QTRY_VERIFY_WITH_TIMEOUT(dataSpy.count() >= 1, 3000);
+
+    QCOMPARE(provider.inputTokens(), 64);
+    QCOMPARE(provider.outputTokens(), 16);
+    QCOMPARE(provider.requestCount(), 1);
+    QCOMPARE(provider.rateLimitRequests(), 120);
+    QCOMPARE(provider.rateLimitRequestsRemaining(), 118);
+    QCOMPARE(provider.rateLimitTokens(), 6400);
+    QCOMPARE(provider.rateLimitTokensRemaining(), 6320);
+    QVERIFY(provider.cost() > 0.0);
+    QVERIFY(provider.isConnected());
+}
+
+void ProvidersMockedHttpTest::xaiUsageAndHeaders()
+{
+    HttpStubServer server;
+    QVERIFY(server.listen());
+
+    const QByteArray usageBody = R"JSON({
+        "usage": {
+            "prompt_tokens": 300,
+            "completion_tokens": 120
+        }
+    })JSON";
+
+    server.setResponse(
+        QStringLiteral("POST"),
+        QStringLiteral("/chat/completions"),
+        200,
+        usageBody,
+        {
+            {"x-ratelimit-limit-requests", "33"},
+            {"x-ratelimit-remaining-requests", "30"},
+            {"x-ratelimit-limit-tokens", "3300"},
+            {"x-ratelimit-remaining-tokens", "2880"},
+        });
+
+    XAIProvider provider;
+    provider.setApiKey(QStringLiteral("test-key"));
+    provider.setCustomBaseUrl(server.baseUrl());
+
+    QSignalSpy dataSpy(&provider, &ProviderBackend::dataUpdated);
+    provider.refresh();
+
+    QTRY_VERIFY_WITH_TIMEOUT(dataSpy.count() >= 1, 3000);
+
+    QCOMPARE(provider.inputTokens(), 300);
+    QCOMPARE(provider.outputTokens(), 120);
+    QCOMPARE(provider.requestCount(), 1);
+    QCOMPARE(provider.rateLimitRequests(), 33);
+    QCOMPARE(provider.rateLimitRequestsRemaining(), 30);
+    QCOMPARE(provider.rateLimitTokens(), 3300);
+    QCOMPARE(provider.rateLimitTokensRemaining(), 2880);
+    QVERIFY(provider.cost() > 0.0);
     QVERIFY(provider.isConnected());
 }
 

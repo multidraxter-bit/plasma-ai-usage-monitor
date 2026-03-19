@@ -243,6 +243,9 @@ PlasmoidItem {
         onLimitReached: function(tool) {
             handleToolLimitReached(tool);
         }
+        onSyncDiagnostic: function(toolName, code, message) {
+            handleToolSyncDiagnostic(toolName, code, message);
+        }
         onUsageUpdated: {
             recordToolUsageSnapshot(claudeCodeMonitor);
         }
@@ -270,6 +273,9 @@ PlasmoidItem {
         }
         onLimitReached: function(tool) {
             handleToolLimitReached(tool);
+        }
+        onSyncDiagnostic: function(toolName, code, message) {
+            handleToolSyncDiagnostic(toolName, code, message);
         }
         onUsageUpdated: {
             recordToolUsageSnapshot(codexCliMonitor);
@@ -303,6 +309,9 @@ PlasmoidItem {
         }
         onLimitReached: function(tool) {
             handleToolLimitReached(tool);
+        }
+        onSyncDiagnostic: function(toolName, code, message) {
+            handleToolSyncDiagnostic(toolName, code, message);
         }
         onUsageUpdated: {
             recordToolUsageSnapshot(copilotMonitor);
@@ -826,6 +835,34 @@ PlasmoidItem {
         subscriptionNotification.sendEvent();
     }
 
+    function isToolNotificationEnabled(toolName) {
+        var tools = allSubscriptionTools;
+        for (var i = 0; i < tools.length; i++) {
+            if (tools[i].name === toolName) {
+                return tools[i].notify;
+            }
+        }
+        return true;
+    }
+
+    function handleToolSyncDiagnostic(toolName, code, message) {
+        if (!plasmoid.configuration.alertsEnabled) return;
+        if (!isToolNotificationEnabled(toolName)) return;
+        if (code === "not_logged_in" || code === "cookies_not_found") return;
+        if (!canNotify("tool_sync_" + toolName + "_" + code)) return;
+
+        var severity = Notification.LowUrgency;
+        if (code === "session_expired" || code === "format_changed" || code === "organization_missing") {
+            severity = Notification.CriticalUrgency;
+        } else if (code === "network_error" || code === "invalid_response" || code === "unsupported_browser") {
+            severity = Notification.NormalUrgency;
+        }
+
+        subscriptionNotification.text = i18n("%1 sync: %2", toolName, message);
+        subscriptionNotification.urgency = severity;
+        subscriptionNotification.sendEvent();
+    }
+
     function recordToolUsageSnapshot(monitor) {
         if (!usageDatabase.enabled) return;
         usageDatabase.recordToolSnapshot(
@@ -846,17 +883,13 @@ PlasmoidItem {
         // Sync Claude Code (claude.ai cookies)
         if (plasmoid.configuration.claudeCodeEnabled && claudeCodeMonitor.installed) {
             var claudeHeader = browserCookies.getCookieHeader("claude.ai");
-            if (claudeHeader.length > 0) {
-                claudeCodeMonitor.syncFromBrowser(claudeHeader, plasmoid.configuration.browserSyncBrowser);
-            }
+            claudeCodeMonitor.syncFromBrowser(claudeHeader, plasmoid.configuration.browserSyncBrowser);
         }
 
         // Sync Codex CLI (chatgpt.com cookies)
         if (plasmoid.configuration.codexEnabled && codexCliMonitor.installed) {
             var codexHeader = browserCookies.getCookieHeader("chatgpt.com");
-            if (codexHeader.length > 0) {
-                codexCliMonitor.syncFromBrowser(codexHeader, plasmoid.configuration.browserSyncBrowser);
-            }
+            codexCliMonitor.syncFromBrowser(codexHeader, plasmoid.configuration.browserSyncBrowser);
         }
     }
 
@@ -866,15 +899,15 @@ PlasmoidItem {
         // Wire up shared signal handlers for all providers
         connectProviderSignals();
 
-        if (secrets.walletOpen) {
-            loadApiKeys();
-        } else {
-            refreshAll();
-        }
         // Eagerly initialize database (avoids blocking on first write)
         usageDatabase.init();
-        // Initial prune of old data
-        usageDatabase.pruneOldData();
+
+        // Delay data fetching slightly to not block UI loading
+        startupTimer.start();
+
+        // Delay initial prune
+        initialPruneTimer.start();
+
         // Initial browser sync after a short delay
         if (plasmoid.configuration.browserSyncEnabled) {
             initialSyncTimer.start();
@@ -882,8 +915,28 @@ PlasmoidItem {
     }
 
     Timer {
+        id: startupTimer
+        interval: 200 // 200ms delay for startup data fetch
+        repeat: false
+        onTriggered: {
+            if (secrets.walletOpen) {
+                loadApiKeys();
+            } else {
+                refreshAll();
+            }
+        }
+    }
+
+    Timer {
+        id: initialPruneTimer
+        interval: 2000 // 2 second delay for initial prune
+        repeat: false
+        onTriggered: usageDatabase.pruneOldData()
+    }
+
+    Timer {
         id: initialSyncTimer
-        interval: 5000 // 5 second delay for startup
+        interval: 5000 // 5 second delay for sync
         repeat: false
         onTriggered: performBrowserSync()
     }

@@ -11,7 +11,7 @@
  *   - 24-hour inference count (mapped to requestCount)
  *
  * Configuration (via environment variables):
- *   LOOFI_SERVER_URL   – base URL of the server  (default: http://192.168.1.3:3000)
+ *   LOOFI_SERVER_URL   – base URL of the server  (default: http://127.0.0.1:3000)
  *   LOOFI_SERVER_TOKEN – Bearer token for auth    (default: empty / no auth)
  */
 class LoofiServerProvider : public ProviderBackend

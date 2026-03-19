@@ -10,6 +10,8 @@
 #include <QNetworkReply>
 #include <KLocalizedString>
 
+#include "browsercookieextractor.h"
+
 CodexCliMonitor::CodexCliMonitor(QObject *parent)
     : SubscriptionToolBackend(parent)
     , m_watcher(new QFileSystemWatcher(this))
@@ -150,11 +152,18 @@ double CodexCliMonitor::defaultCostForPlan(const QString &plan) const
 
 void CodexCliMonitor::syncFromBrowser(const QString &cookieHeader, int browserType)
 {
-    Q_UNUSED(browserType);
-
     if (isSyncing()) return;
     setSyncing(true);
     setSyncStatus(QStringLiteral("Syncing..."));
+
+    if (browserType != BrowserCookieExtractor::Firefox) {
+        setSyncing(false);
+        setSyncStatus(i18n("Browser unsupported"));
+        const QString message = i18n("Browser Sync currently supports Firefox only");
+        Q_EMIT syncDiagnostic(toolName(), QStringLiteral("unsupported_browser"), message);
+        Q_EMIT syncCompleted(false, message);
+        return;
+    }
 
     if (cookieHeader.isEmpty()) {
         setSyncing(false);
@@ -171,7 +180,9 @@ void CodexCliMonitor::syncFromBrowser(const QString &cookieHeader, int browserTy
 void CodexCliMonitor::fetchAccountCheck(const QString &cookieHeader)
 {
     // ChatGPT internal API for account/usage info
-    QUrl url(QStringLiteral("https://chatgpt.com/backend-api/accounts/check/v4-2023-04-27"));
+    QUrl url = qEnvironmentVariableIsSet("PLASMA_AI_MONITOR_DEMO")
+        ? QUrl(QStringLiteral("http://localhost:8080/chatgpt/backend-api/accounts/check/v4-2023-04-27"))
+        : QUrl(QStringLiteral("https://chatgpt.com/backend-api/accounts/check/v4-2023-04-27"));
 
     QNetworkRequest request(url);
     request.setRawHeader("Cookie", cookieHeader.toUtf8());

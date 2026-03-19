@@ -398,7 +398,7 @@ QString BrowserCookieExtractor::connectionMessage(const QString &service, const 
         return QStringLiteral("No Firefox profile detected on this system.");
     }
     if (normalizedCode == QStringLiteral("cookie_db_missing")) {
-        return QStringLiteral("Firefox profile found, but cookie DB is unavailable.");
+        return QStringLiteral("Firefox profile found, but cookies.sqlite is missing or unreadable.");
     }
     if (normalizedCode == QStringLiteral("cookies_not_found")) {
         return QStringLiteral("No cookies found for this service.");
@@ -407,7 +407,7 @@ QString BrowserCookieExtractor::connectionMessage(const QString &service, const 
         return QStringLiteral("Session cookies missing or expired. Sign in again.");
     }
     if (normalizedCode == QStringLiteral("unsupported_browser")) {
-        return QStringLiteral("Only Firefox is supported currently.");
+        return QStringLiteral("Browser Sync currently supports Firefox only.");
     }
     if (normalizedCode == QStringLiteral("unknown_service")) {
         return QStringLiteral("Unknown service.");

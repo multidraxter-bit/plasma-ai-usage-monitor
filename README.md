@@ -10,6 +10,7 @@
 
 <p align="center">
   <a href="#features">Features</a> •
+  <a href="https://github.com/multidraxter-bit/plasma-ai-usage-monitor/releases">Releases</a> •
   <a href="#installation">Installation</a> •
   <a href="#configuration">Configuration</a> •
   <a href="#api-key-requirements">API Keys</a> •
@@ -20,6 +21,17 @@
 ---
 
 A native KDE Plasma 6 plasmoid that monitors AI API token usage, rate limits, and costs across multiple providers. Sits in your panel as a compact icon with a colored status badge and expands into a detailed popup with per-provider stats, usage history charts, and budget tracking. Also tracks subscription-based AI coding tool usage limits for Claude Code, Codex CLI, and GitHub Copilot.
+
+> **Current stabilization focus:** `v3.9.0 "Showcase"` is dedicated to reliability hardening, a reproducible Fedora KDE demo environment, and refreshed GitHub/KDE Store media assets.
+
+## Quick Links
+
+- **Latest release:** [GitHub Releases](https://github.com/multidraxter-bit/plasma-ai-usage-monitor/releases)
+- **Demo environment guide:** [docs/demo/fedora-kde-vm.md](docs/demo/fedora-kde-vm.md)
+- **Manual store handoff:** [docs/store/submission-checklist.md](docs/store/submission-checklist.md)
+- **Screenshot playbook:** [assets/screenshots/README.md](assets/screenshots/README.md)
+
+> **Demo Mode:** Contributors can run the widget in a deterministic offline mode for testing and screenshots. Start `python scripts/demo/mock_server.py`, then run Plasma with `PLASMA_AI_MONITOR_DEMO=1 plasmashell --replace &`.
 
 **Supported providers:** Loofi Server, OpenAI, Azure OpenAI, Anthropic (Claude), Google Gemini, Mistral AI, DeepSeek, Groq, xAI (Grok), OpenRouter, Together AI, Cohere, Google Veo
 
@@ -109,7 +121,7 @@ _\*\* Estimated from token usage and per-model pricing tables. Labeled "Est. Cos
 
 ## Screenshots
 
-Real widget captures from the Fedora KDE container workflow:
+Current canonical asset names live under `assets/screenshots/` and are intentionally stable so README, AppStream, and KDE Store references do not need to change when the images are refreshed.
 
 ### Main window
 
@@ -136,9 +148,9 @@ Real widget captures from the Fedora KDE container workflow:
 cmake
 extra-cmake-modules
 gcc-c++
+qt6-qtbase
 qt6-qtbase-devel
 qt6-qtdeclarative-devel
-qt6-qtbase-sql
 libplasma-devel
 kf6-kwallet-devel
 kf6-ki18n-devel
@@ -274,7 +286,7 @@ chmod +x install.sh
 ```bash
 # Install build dependencies (Fedora)
 sudo dnf install cmake extra-cmake-modules gcc-c++ \
-    qt6-qtbase-devel qt6-qtdeclarative-devel qt6-qtbase-sql \
+    qt6-qtbase qt6-qtbase-devel qt6-qtdeclarative-devel \
     libplasma-devel kf6-kwallet-devel kf6-ki18n-devel kf6-knotifications-devel \
     kf6-kcoreaddons-devel
 
@@ -573,12 +585,15 @@ Check that the History tab is enabled in configuration. Data is stored in `~/.lo
 
 ## Documentation
 
-| Document                                   | Description                                                    |
-| ------------------------------------------ | -------------------------------------------------------------- |
-| [CHANGELOG.md](CHANGELOG.md)               | Full version history from v1.0.0 to present                    |
-| [SECURITY.md](SECURITY.md)                 | Security policy, vulnerability reporting, and design decisions |
-| [CONTRIBUTING.md](CONTRIBUTING.md)         | Development setup, coding standards, and contribution workflow |
-| [docs/walkthrough.md](docs/walkthrough.md) | Sprint notes and walkthrough context                           |
+| Document                                                                 | Description                                                    |
+| ------------------------------------------------------------------------ | -------------------------------------------------------------- |
+| [CHANGELOG.md](CHANGELOG.md)                                             | Full version history from v1.0.0 to present                    |
+| [SECURITY.md](SECURITY.md)                                               | Security policy, vulnerability reporting, and design decisions |
+| [CONTRIBUTING.md](CONTRIBUTING.md)                                       | Development setup, coding standards, and contribution workflow |
+| [docs/demo/fedora-kde-vm.md](docs/demo/fedora-kde-vm.md)                 | Fedora KDE VM workflow for live testing and screenshot capture |
+| [docs/store/submission-checklist.md](docs/store/submission-checklist.md) | Manual GitHub + KDE Store update checklist                     |
+| [assets/screenshots/README.md](assets/screenshots/README.md)             | Canonical shot list and screenshot quality guide               |
+| [docs/walkthrough.md](docs/walkthrough.md)                               | Current documentation map and historical walkthrough note      |
 
 ## Changelog
 
@@ -616,4 +631,4 @@ GPL-3.0-or-later. See [LICENSE](LICENSE) for the full text.
 
 ## Author
 
-**Loofi** — [github.com/loofitheboss](https://github.com/loofitheboss)
+**Loofi** — [github.com/multidraxter-bit](https://github.com/multidraxter-bit)

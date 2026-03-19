@@ -6,7 +6,7 @@
 #include <QUrl>
 
 namespace {
-constexpr auto DEFAULT_LOOFI_SERVER_URL = "http://192.168.1.3:3000";
+constexpr auto DEFAULT_LOOFI_SERVER_URL = "http://127.0.0.1:3000";
 }
 
 LoofiServerProvider::LoofiServerProvider(QObject *parent)

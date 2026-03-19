@@ -77,9 +77,9 @@ fedora_packages=(
   cmake
   extra-cmake-modules
   gcc-c++
+  qt6-qtbase
   qt6-qtbase-devel
   qt6-qtdeclarative-devel
-  qt6-qtbase-sql
   libplasma-devel
   kf6-kwallet-devel
   kf6-ki18n-devel

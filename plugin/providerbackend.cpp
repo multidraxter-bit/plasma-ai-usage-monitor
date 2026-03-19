@@ -333,6 +333,10 @@ void ProviderBackend::setCustomBaseUrl(const QString &url)
 
 QString ProviderBackend::effectiveBaseUrl(const char *defaultUrl) const
 {
+    if (qEnvironmentVariableIsSet("PLASMA_AI_MONITOR_DEMO")) {
+        return QStringLiteral("http://localhost:8080");
+    }
+
     if (!m_customBaseUrl.isEmpty()) {
         // Remove trailing slash for consistency
         QString url = m_customBaseUrl;

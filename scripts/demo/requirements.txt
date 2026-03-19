@@ -1,0 +1,2 @@
+# Reserved for future demo-only Python dependencies.
+# The current mock server uses only the Python standard library.

@@ -1,7 +1,7 @@
 # Roadmap — Plasma AI Usage Monitor
 
 > **Current version:** v3.8.1 (release packaging + build fix hotpatch)
-> **Last updated:** 2026-03-15
+> **Last updated:** 2026-03-16
 
 ---
 
@@ -18,11 +18,54 @@
 | v3.5.1  | **Pulse**      | Release Workflow Hotfix (AppStream icon validation)               | Released |
 | v3.5.0  | **Pulse**      | Packaging Consistency Hardening                                   | Released |
 | v3.4.0  | **Pulse**      | Subscription Cost Aggregation + Copilot Activity Detection        | Released |
-| v4.0.0  | **Horizon**    | UX Polish + Provider Expansion                                    | Active   |
+| v3.9.0  | **Showcase**   | Stabilization + Demo Environment + Store-Ready Assets             | Active   |
+| v4.0.0  | **Horizon**    | UX Polish + Provider Expansion                                    | Planned  |
 | v5.0.0  | **Lighthouse** | Intelligence + Forecasting                                        | Planned  |
 | v6.0.0  | **Nexus**      | Team + Multi-User                                                 | Planned  |
 | v7.0.0  | **Forge**      | Extensibility + Ecosystem                                         | Planned  |
 | v8.0.0  | **Cosmos**     | Cross-Platform + Cloud                                            | Planned  |
+
+---
+
+## v3.9.0 — "Showcase" (Stabilization + Demo Environment + Store-Ready Assets)
+
+**Goal:** Ship a trust-restoring release that hardens user-visible reliability, creates a reproducible Fedora KDE demo workflow, and refreshes screenshots plus listing assets for GitHub and KDE Store.
+
+### Stability Hardening
+
+| Feature                              | Description                                                                                                 | Priority |
+| ------------------------------------ | ----------------------------------------------------------------------------------------------------------- | -------- |
+| **Update-check source of truth**     | Point release checks and update notifications at the live GitHub repo owner and cover the flow with tests   | High     |
+| **Shipped-provider HTTP coverage**   | Add mocked tests for the remaining shipped providers so coverage matches the supported-provider list        | High     |
+| **Main popup orchestration cleanup** | Reduce startup and refresh fragility in `main.qml` around timers, notification flow, and snapshot recording | High     |
+| **Browser sync diagnostics**         | Improve failure messaging and graceful fallback for Browser Sync so it stays useful when sessions drift     | Medium   |
+| **Loofi demo endpoint polish**       | Remove or override personal/dev-local defaults from demo-facing surfaces before store/media capture         | Medium   |
+
+### Demo Environment & Live Test Workflow
+
+| Feature                           | Description                                                                                               | Priority |
+| --------------------------------- | --------------------------------------------------------------------------------------------------------- | -------- |
+| **Fedora KDE VM guide**           | Document a Windows-hosted Fedora 43 KDE virtual machine workflow for real widget testing and capture      | High     |
+| **Repo-local demo venv contract** | Standardize a Linux-side `.venv` inside the shared workspace for demo helpers and mock services           | High     |
+| **Mock provider server**          | Provide a lightweight local server that feeds deterministic screenshot-safe data through custom base URLs | High     |
+| **Demo preset mapping**           | Define the canonical provider/tool states, values, and configuration used for screenshots and manual QA   | High     |
+| **Capture helper scripts**        | Add small scripts for bootstrapping the demo environment and starting the mock server                     | Medium   |
+
+### GitHub / KDE Store Asset Refresh
+
+| Feature                       | Description                                                                                                    | Priority |
+| ----------------------------- | -------------------------------------------------------------------------------------------------------------- | -------- |
+| **Canonical screenshot pack** | Replace the existing README shots with a polished set that shows the panel, live dashboard, history, and setup | High     |
+| **Screenshot playbook**       | Document capture quality rules, filenames, layout, and scene setup so assets stay consistent                   | High     |
+| **README polish**             | Strengthen release/demo/store messaging and link the new demo/store docs                                       | Medium   |
+| **AppStream screenshots**     | Add screenshot metadata so Discover/AppStream surfaces can reuse the GitHub-hosted media                       | Medium   |
+| **Manual store handoff pack** | Prepare a checklist and listing copy for manual GitHub release + KDE Store updates                             | Medium   |
+
+### Release Constraints
+
+- The `.plasmoid` archive layout is valid for Plasma/KDE Store ingestion, but the widget still depends on the separately installed compiled QML plugin.
+- This release should make the install story clearer and more professional; it does **not** yet promise a fully self-contained 1-click store install.
+- `v4.0.0 "Horizon"` remains the next feature-expansion release after the stabilization/media pack lands.
 
 ---
 
@@ -296,7 +339,7 @@
 
 | Version | Date       | Highlights                                                                                                                                                                            |
 | ------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| v3.8.1  | 2026-03-15 | KDE Store archive layout fix, release metadata cleanup, RPM dependency correction, and compile-fix follow-up release                                                                   |
+| v3.8.1  | 2026-03-15 | KDE Store archive layout fix, release metadata cleanup, RPM dependency correction, and compile-fix follow-up release                                                                  |
 | v3.8.0  | 2026-03-08 | Guided uninstall flow, stale user-local install detection, improved install/reload UX, and actionable provider error hints in cards                                                   |
 | v3.6.0  | 2026-02-26 | Azure OpenAI provider backend dispatch + normalization, provider test coverage, and full UI/config wiring (providers, alerts, budgets)                                                |
 | v3.5.2  | 2026-02-26 | Source tarball packaging switched to tracked-file archiving to prevent CI tar race failures in release workflow                                                                       |

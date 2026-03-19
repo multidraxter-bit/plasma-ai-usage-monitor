@@ -50,6 +50,18 @@ void UpdateChecker::setCheckIntervalHours(int h)
     }
 }
 
+QString UpdateChecker::releaseApiUrl() const { return m_releaseApiUrl; }
+void UpdateChecker::setReleaseApiUrl(const QString &url)
+{
+    const QString trimmed = url.trimmed();
+    if (trimmed.isEmpty() || m_releaseApiUrl == trimmed) {
+        return;
+    }
+
+    m_releaseApiUrl = trimmed;
+    Q_EMIT releaseApiUrlChanged();
+}
+
 bool UpdateChecker::checking() const { return m_checking; }
 QString UpdateChecker::latestVersion() const { return m_latestVersion; }
 
@@ -62,8 +74,7 @@ void UpdateChecker::checkForUpdate()
     m_checking = true;
     Q_EMIT checkingChanged();
 
-    QNetworkRequest req(QUrl(
-        QStringLiteral("https://api.github.com/repos/loofitheboss/plasma-ai-usage-monitor/releases/latest")));
+    QNetworkRequest req{QUrl(m_releaseApiUrl)};
     req.setTransferTimeout(30000);
     req.setRawHeader("Accept", "application/vnd.github+json");
     req.setRawHeader("User-Agent", "plasma-ai-usage-monitor/" + m_currentVersion.toUtf8());

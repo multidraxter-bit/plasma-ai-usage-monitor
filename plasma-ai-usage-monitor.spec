@@ -1,5 +1,5 @@
 Name:           plasma-ai-usage-monitor
-Version:        3.8.1
+Version:        3.9.0
 Release:        1%{?dist}
 Summary:        KDE Plasma 6 widget to monitor AI API token usage, rate limits, and costs
 License:        GPL-3.0-or-later
@@ -23,7 +23,7 @@ Requires:       plasma-workspace >= 6.0
 Requires:       kf6-kwallet
 Requires:       kf6-kirigami
 Requires:       kf6-kcmutils
-Requires:       qt6-qtbase-sql
+Requires:       qt6-qtbase
 
 %description
 A native KDE Plasma 6 plasmoid that monitors AI API token usage,

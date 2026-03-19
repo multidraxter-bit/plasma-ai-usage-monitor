@@ -11,6 +11,8 @@
 #include <QNetworkReply>
 #include <KLocalizedString>
 
+#include "browsercookieextractor.h"
+
 ClaudeCodeMonitor::ClaudeCodeMonitor(QObject *parent)
     : SubscriptionToolBackend(parent)
     , m_watcher(new QFileSystemWatcher(this))
@@ -211,11 +213,18 @@ double ClaudeCodeMonitor::defaultCostForPlan(const QString &plan) const
 
 void ClaudeCodeMonitor::syncFromBrowser(const QString &cookieHeader, int browserType)
 {
-    Q_UNUSED(browserType);
-
     if (isSyncing()) return;
     setSyncing(true);
     setSyncStatus(QStringLiteral("Syncing..."));
+
+    if (browserType != BrowserCookieExtractor::Firefox) {
+        setSyncing(false);
+        setSyncStatus(i18n("Browser unsupported"));
+        const QString message = i18n("Browser Sync currently supports Firefox only");
+        Q_EMIT syncDiagnostic(toolName(), QStringLiteral("unsupported_browser"), message);
+        Q_EMIT syncCompleted(false, message);
+        return;
+    }
 
     if (cookieHeader.isEmpty()) {
         setSyncing(false);
@@ -232,7 +241,9 @@ void ClaudeCodeMonitor::syncFromBrowser(const QString &cookieHeader, int browser
 void ClaudeCodeMonitor::fetchAccountInfo(const QString &cookieHeader)
 {
     // Use /api/bootstrap to get account info and organization UUID
-    QUrl url(QStringLiteral("https://claude.ai/api/bootstrap"));
+    QUrl url = qEnvironmentVariableIsSet("PLASMA_AI_MONITOR_DEMO") 
+        ? QUrl(QStringLiteral("http://localhost:8080/claude/api/bootstrap"))
+        : QUrl(QStringLiteral("https://claude.ai/api/bootstrap"));
 
     QNetworkRequest request(url);
     request.setRawHeader("Cookie", cookieHeader.toUtf8());
@@ -351,7 +362,9 @@ void ClaudeCodeMonitor::fetchAccountInfo(const QString &cookieHeader)
 
 void ClaudeCodeMonitor::fetchUsageData(const QString &orgUuid, const QString &cookieHeader)
 {
-    QUrl url(QStringLiteral("https://claude.ai/api/organizations/%1/usage").arg(orgUuid));
+    QUrl url = qEnvironmentVariableIsSet("PLASMA_AI_MONITOR_DEMO")
+        ? QUrl(QStringLiteral("http://localhost:8080/claude/api/organizations/%1/usage").arg(orgUuid))
+        : QUrl(QStringLiteral("https://claude.ai/api/organizations/%1/usage").arg(orgUuid));
 
     QNetworkRequest request(url);
     request.setRawHeader("Cookie", cookieHeader.toUtf8());

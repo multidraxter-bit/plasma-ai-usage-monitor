@@ -113,6 +113,7 @@ ColumnLayout {
                     }
 
                     PlasmaComponents.ToolButton {
+                        activeFocusOnTab: true
                         icon.name: toolCard.collapsed ? "arrow-down" : "arrow-up"
                         display: PlasmaComponents.AbstractButton.IconOnly
                         Layout.preferredWidth: Kirigami.Units.iconSizes.small
@@ -659,6 +660,7 @@ ColumnLayout {
                         if (status === i18n("Synced"))
                             return Kirigami.Theme.positiveTextColor;
                         if (status === i18n("Session expired") || status === i18n("Not logged in")
+                            || status === i18n("Browser unsupported")
                             || status === i18n("Sync failed") || status === i18n("Invalid response")
                             || status === i18n("No organization"))
                             return Kirigami.Theme.negativeTextColor;
@@ -710,6 +712,7 @@ ColumnLayout {
                 Item { Layout.fillWidth: true }
 
                 PlasmaComponents.ToolButton {
+                        activeFocusOnTab: true
                     icon.name: "view-refresh"
                     text: toolCard.monitor?.syncing ? i18n("Syncing...") : i18n("Sync")
                     font.pointSize: Kirigami.Theme.smallFont.pointSize
@@ -724,6 +727,7 @@ ColumnLayout {
                 }
 
                 PlasmaComponents.ToolButton {
+                        activeFocusOnTab: true
                     icon.name: "list-add"
                     text: i18n("+1 Usage")
                     font.pointSize: Kirigami.Theme.smallFont.pointSize
@@ -734,6 +738,7 @@ ColumnLayout {
                 }
 
                 PlasmaComponents.ToolButton {
+                        activeFocusOnTab: true
                     icon.name: "edit-clear"
                     text: i18n("Reset")
                     font.pointSize: Kirigami.Theme.smallFont.pointSize

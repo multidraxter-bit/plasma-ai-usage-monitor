@@ -10,7 +10,7 @@ Fedora 43 KDE (or any distro with KDE Plasma 6):
 
 ```bash
 sudo dnf install cmake extra-cmake-modules gcc-c++ \
-    qt6-qtbase-devel qt6-qtdeclarative-devel qt6-qtbase-sql \
+    qt6-qtbase qt6-qtbase-devel qt6-qtdeclarative-devel \
     libplasma-devel kf6-kwallet-devel kf6-ki18n-devel kf6-knotifications-devel
 ```
 

@@ -11,7 +11,13 @@ cmake_install.cmake
 Makefile
 *_autogen/
 .vscode/
+.venv/
+.venv-*/
+.demo-output/
+__pycache__/
+*.pyc
 
 # Claude Code temp directories
 tmpclaude-*
 .tmp-*.log
+*.plasmoid
