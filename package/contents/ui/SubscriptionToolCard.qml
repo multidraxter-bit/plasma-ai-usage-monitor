@@ -20,7 +20,6 @@ ColumnLayout {
     required property string toolColor
     required property var monitor
     property bool collapsed: false
-    readonly property bool narrowCard: toolCard.width < Kirigami.Units.gridUnit * 18
 
     spacing: 0
 
@@ -80,136 +79,101 @@ ColumnLayout {
             }
             spacing: Kirigami.Units.mediumSpacing
 
-            // ═══ Header section ═══
-            ColumnLayout {
+            // ═══ Header row ═══
+            RowLayout {
                 Layout.fillWidth: true
                 spacing: Kirigami.Units.smallSpacing
 
-                RowLayout {
+                // Tool color indicator
+                Rectangle {
+                    width: 4
+                    Layout.preferredHeight: toolLabel.implicitHeight
+                    radius: 2
+                    color: toolCard.toolColor
+                }
+
+                Kirigami.Icon {
+                    source: toolCard.toolIcon
+                    Layout.preferredWidth: Kirigami.Units.iconSizes.small
+                    Layout.preferredHeight: Kirigami.Units.iconSizes.small
+                }
+
+                PlasmaExtras.Heading {
+                    id: toolLabel
+                    level: 4
+                    text: toolCard.toolName
                     Layout.fillWidth: true
-                    spacing: Kirigami.Units.smallSpacing
+                }
 
-                    Rectangle {
-                        width: 4
-                        Layout.preferredHeight: toolLabel.implicitHeight
-                        radius: 2
+                // Plan tier badge
+                Rectangle {
+                    visible: (toolCard.monitor?.planTier ?? "") !== ""
+                    width: tierLabel.implicitWidth + Kirigami.Units.smallSpacing * 2
+                    height: tierLabel.implicitHeight + Kirigami.Units.smallSpacing
+                    radius: height / 2
+                    color: Qt.alpha(toolCard.toolColor, 0.2)
+
+                    PlasmaComponents.Label {
+                        id: tierLabel
+                        anchors.centerIn: parent
+                        text: toolCard.monitor?.planTier ?? ""
+                        font.pointSize: Kirigami.Theme.smallFont.pointSize
                         color: toolCard.toolColor
-                    }
-
-                    Kirigami.Icon {
-                        source: toolCard.toolIcon
-                        Layout.preferredWidth: Kirigami.Units.iconSizes.small
-                        Layout.preferredHeight: Kirigami.Units.iconSizes.small
-                    }
-
-                    PlasmaExtras.Heading {
-                        id: toolLabel
-                        level: 4
-                        text: toolCard.toolName
-                        Layout.fillWidth: true
-                        wrapMode: toolCard.narrowCard ? Text.WordWrap : Text.NoWrap
-                        elide: Text.ElideRight
-                        maximumLineCount: toolCard.narrowCard ? 2 : 1
-                    }
-
-                    PlasmaComponents.ToolButton {
-                        icon.name: toolCard.collapsed ? "arrow-down" : "arrow-up"
-                        display: PlasmaComponents.AbstractButton.IconOnly
-                        Layout.preferredWidth: Kirigami.Units.iconSizes.small
-                        Layout.preferredHeight: Kirigami.Units.iconSizes.small
-                        onClicked: toolCard.collapsed = !toolCard.collapsed
-                        PlasmaComponents.ToolTip { text: toolCard.collapsed ? i18n("Expand") : i18n("Collapse") }
                     }
                 }
 
-                Flow {
-                    Layout.fillWidth: true
-                    width: parent.width
-                    spacing: Kirigami.Units.smallSpacing
+                // Subscription cost badge
+                Rectangle {
+                    visible: toolCard.monitor?.hasSubscriptionCost ?? false
+                    width: costLabel.implicitWidth + Kirigami.Units.smallSpacing * 2
+                    height: costLabel.implicitHeight + Kirigami.Units.smallSpacing
+                    radius: height / 2
+                    color: Qt.alpha(Kirigami.Theme.textColor, 0.08)
 
-                    Rectangle {
-                        visible: (toolCard.monitor?.planTier ?? "") !== ""
-                        width: Math.min(tierLabel.implicitWidth + Kirigami.Units.smallSpacing * 2,
-                                        toolCard.narrowCard ? Kirigami.Units.gridUnit * 8 : Kirigami.Units.gridUnit * 10)
-                        height: tierLabel.implicitHeight + Kirigami.Units.smallSpacing
-                        radius: height / 2
-                        color: Qt.alpha(toolCard.toolColor, 0.2)
-                        clip: true
-
-                        PlasmaComponents.Label {
-                            id: tierLabel
-                            anchors.centerIn: parent
-                            width: parent.width - Kirigami.Units.smallSpacing * 2
-                            text: toolCard.monitor?.planTier ?? ""
-                            font.pointSize: Kirigami.Theme.smallFont.pointSize
-                            color: toolCard.toolColor
-                            elide: Text.ElideRight
-                            horizontalAlignment: Text.AlignHCenter
-                        }
+                    PlasmaComponents.Label {
+                        id: costLabel
+                        anchors.centerIn: parent
+                        text: "$" + (toolCard.monitor?.subscriptionCost ?? 0).toFixed(0) + "/mo"
+                        font.pointSize: Kirigami.Theme.smallFont.pointSize
+                        opacity: 0.7
                     }
+                }
 
-                    Rectangle {
-                        visible: toolCard.monitor?.hasSubscriptionCost ?? false
-                        width: costLabel.implicitWidth + Kirigami.Units.smallSpacing * 2
-                        height: costLabel.implicitHeight + Kirigami.Units.smallSpacing
-                        radius: height / 2
-                        color: Qt.alpha(Kirigami.Theme.textColor, 0.08)
-
-                        PlasmaComponents.Label {
-                            id: costLabel
-                            anchors.centerIn: parent
-                            text: "$" + (toolCard.monitor?.subscriptionCost ?? 0).toFixed(0) + "/mo"
-                            font.pointSize: Kirigami.Theme.smallFont.pointSize
-                            opacity: 0.7
-                        }
+                // Status indicator
+                PlasmaComponents.Label {
+                    font.pointSize: Kirigami.Theme.smallFont.pointSize
+                    elide: Text.ElideRight
+                    text: {
+                        if (!toolCard.monitor) return i18n("N/A");
+                        if (!toolCard.monitor.installed) return i18n("Not Installed");
+                        if (toolCard.monitor.limitReached) return i18n("Limit Reached");
+                        return i18n("Active");
                     }
-
-                    Rectangle {
-                        width: toolStatusLabel.implicitWidth + Kirigami.Units.smallSpacing * 2
-                        height: toolStatusLabel.implicitHeight + 4
-                        radius: height / 2
-                        color: {
-                            if (!toolCard.monitor || !toolCard.monitor.installed) return Qt.alpha(Kirigami.Theme.textColor, 0.08);
-                            if (toolCard.monitor.limitReached) return Qt.alpha(Kirigami.Theme.negativeTextColor, 0.15);
-                            return Qt.alpha(Kirigami.Theme.positiveTextColor, 0.15);
-                        }
-
-                        PlasmaComponents.Label {
-                            id: toolStatusLabel
-                            anchors.centerIn: parent
-                            font.pointSize: Kirigami.Theme.smallFont.pointSize
-                            elide: Text.ElideRight
-                            text: {
-                                if (!toolCard.monitor) return i18n("N/A");
-                                if (!toolCard.monitor.installed) return i18n("Not Installed");
-                                if (toolCard.monitor.limitReached) return i18n("Limit Reached");
-                                return i18n("Active");
-                            }
-                            color: {
-                                if (!toolCard.monitor) return Kirigami.Theme.disabledTextColor;
-                                if (!toolCard.monitor.installed) return Kirigami.Theme.disabledTextColor;
-                                if (toolCard.monitor.limitReached) return Kirigami.Theme.negativeTextColor;
-                                return Kirigami.Theme.positiveTextColor;
-                            }
-                        }
+                    color: {
+                        if (!toolCard.monitor) return Kirigami.Theme.disabledTextColor;
+                        if (!toolCard.monitor.installed) return Kirigami.Theme.disabledTextColor;
+                        if (toolCard.monitor.limitReached) return Kirigami.Theme.negativeTextColor;
+                        return Kirigami.Theme.positiveTextColor;
                     }
+                }
 
-                    Rectangle {
-                        visible: toolCard.collapsed && (toolCard.monitor?.usageLimit ?? 0) > 0
-                        width: collapsedUsageLabel.implicitWidth + Kirigami.Units.smallSpacing * 2
-                        height: collapsedUsageLabel.implicitHeight + 4
-                        radius: height / 2
-                        color: Qt.alpha(Kirigami.Theme.textColor, 0.08)
+                // Compact usage when collapsed
+                PlasmaComponents.Label {
+                    visible: toolCard.collapsed && (toolCard.monitor?.usageLimit ?? 0) > 0
+                    text: (toolCard.monitor?.usageCount ?? 0) + "/" + (toolCard.monitor?.usageLimit ?? 0)
+                    font.bold: true
+                    font.pointSize: Kirigami.Theme.smallFont.pointSize
+                    opacity: 0.7
+                }
 
-                        PlasmaComponents.Label {
-                            id: collapsedUsageLabel
-                            anchors.centerIn: parent
-                            text: (toolCard.monitor?.usageCount ?? 0) + "/" + (toolCard.monitor?.usageLimit ?? 0)
-                            font.bold: true
-                            font.pointSize: Kirigami.Theme.smallFont.pointSize
-                            opacity: 0.75
-                        }
-                    }
+                // Collapse/expand toggle
+                PlasmaComponents.ToolButton {
+                    icon.name: toolCard.collapsed ? "arrow-down" : "arrow-up"
+                    display: PlasmaComponents.AbstractButton.IconOnly
+                    Layout.preferredWidth: Kirigami.Units.iconSizes.small
+                    Layout.preferredHeight: Kirigami.Units.iconSizes.small
+                    onClicked: toolCard.collapsed = !toolCard.collapsed
+                    PlasmaComponents.ToolTip { text: toolCard.collapsed ? i18n("Expand") : i18n("Collapse") }
                 }
             }
 
@@ -228,6 +192,56 @@ ColumnLayout {
             Kirigami.Separator {
                 Layout.fillWidth: true
                 visible: !toolCard.collapsed && (toolCard.monitor?.installed ?? false)
+            }
+
+            Flow {
+                Layout.fillWidth: true
+                visible: !toolCard.collapsed && (toolCard.monitor?.installed ?? false)
+                spacing: Kirigami.Units.smallSpacing
+
+                Repeater {
+                    model: toolCard.quickStats()
+
+                    Rectangle {
+                        readonly property int columnCount: toolCard.width > Kirigami.Units.gridUnit * 18 ? 3 : 2
+                        width: Math.max(Kirigami.Units.gridUnit * 5.5,
+                                        (toolCard.width - (Kirigami.Units.largeSpacing * 2) - (Kirigami.Units.smallSpacing * (columnCount - 1))) / columnCount)
+                        height: toolQuickStatColumn.implicitHeight + Kirigami.Units.smallSpacing * 2
+                        radius: Kirigami.Units.smallSpacing
+                        color: Qt.alpha(modelData.tint || toolCard.toolColor, 0.09)
+                        border.width: 1
+                        border.color: Qt.alpha(modelData.tint || toolCard.toolColor, 0.18)
+
+                        ColumnLayout {
+                            id: toolQuickStatColumn
+                            anchors.fill: parent
+                            anchors.margins: Kirigami.Units.smallSpacing
+                            spacing: 2
+
+                            PlasmaComponents.Label {
+                                text: modelData.label
+                                font.pointSize: Kirigami.Theme.smallFont.pointSize
+                                opacity: 0.62
+                                elide: Text.ElideRight
+                            }
+
+                            PlasmaComponents.Label {
+                                text: modelData.value
+                                font.bold: true
+                                color: modelData.tint || Kirigami.Theme.textColor
+                                elide: Text.ElideRight
+                            }
+
+                            PlasmaComponents.Label {
+                                visible: (modelData.detail || "") !== ""
+                                text: modelData.detail || ""
+                                font.pointSize: Kirigami.Theme.smallFont.pointSize
+                                opacity: 0.55
+                                elide: Text.ElideRight
+                            }
+                        }
+                    }
+                }
             }
 
             // ═══ Session info (Claude: current session % used) ═══
@@ -761,5 +775,80 @@ ColumnLayout {
 
     function formatRelativeTime(dateTime) {
         return Utils.formatRelativeTime(dateTime, Qt, i18n);
+    }
+
+    function quickStats() {
+        if (!(toolCard.monitor?.installed ?? false))
+            return [];
+
+        var stats = [];
+        var primaryLimit = toolCard.monitor?.usageLimit ?? 0;
+        var primaryUsage = toolCard.monitor?.usageCount ?? 0;
+        var percentUsed = toolCard.monitor?.percentUsed ?? 0;
+
+        if (primaryLimit > 0) {
+            stats.push({
+                label: toolCard.monitor?.periodLabel ?? i18n("Current period"),
+                value: primaryUsage + " / " + primaryLimit,
+                detail: Math.round(percentUsed) + "% " + i18n("used"),
+                tint: usageColor(percentUsed)
+            });
+        }
+
+        if (toolCard.monitor?.hasSecondaryLimit ?? false) {
+            stats.push({
+                label: toolCard.monitor?.secondaryPeriodLabel ?? i18n("Secondary limit"),
+                value: (toolCard.monitor?.secondaryUsageCount ?? 0) + " / " + (toolCard.monitor?.secondaryUsageLimit ?? 0),
+                detail: Math.round(toolCard.monitor?.secondaryPercentUsed ?? 0) + "% " + i18n("used"),
+                tint: usageColor(toolCard.monitor?.secondaryPercentUsed ?? 0)
+            });
+        } else if (toolCard.monitor?.hasSessionInfo ?? false) {
+            stats.push({
+                label: i18n("Current session"),
+                value: Math.round(toolCard.monitor?.sessionPercentUsed ?? 0) + "%",
+                detail: i18n("session usage"),
+                tint: usageColor(toolCard.monitor?.sessionPercentUsed ?? 0)
+            });
+        }
+
+        if (toolCard.monitor?.hasSubscriptionCost ?? false) {
+            stats.push({
+                label: i18n("Plan cost"),
+                value: "$" + (toolCard.monitor?.subscriptionCost ?? 0).toFixed(0) + "/mo",
+                detail: toolCard.monitor?.planTier ?? "",
+                tint: toolCard.toolColor
+            });
+        } else if ((toolCard.monitor?.syncStatus ?? "") !== "" && toolCard.monitor?.syncStatus !== "idle") {
+            stats.push({
+                label: i18n("Browser sync"),
+                value: toolCard.monitor?.syncStatus ?? "",
+                detail: toolCard.monitor?.timeUntilReset ?? "",
+                tint: (toolCard.monitor?.syncStatus ?? "") === i18n("Synced")
+                    ? Kirigami.Theme.positiveTextColor
+                    : Kirigami.Theme.neutralTextColor
+            });
+        }
+
+        if (toolCard.monitor?.hasCredits ?? false) {
+            stats.push({
+                label: i18n("Credits"),
+                value: "$" + (toolCard.monitor?.remainingCredits ?? 0).toFixed(2),
+                detail: i18n("remaining"),
+                tint: (toolCard.monitor?.remainingCredits ?? 0) <= 0
+                    ? Kirigami.Theme.negativeTextColor
+                    : toolCard.toolColor
+            });
+        } else if ((toolCard.monitor?.timeUntilReset ?? "") !== "") {
+            stats.push({
+                label: i18n("Reset"),
+                value: toolCard.monitor?.timeUntilReset ?? "",
+                detail: toolCard.monitor?.lastActivity?.getTime() > 0
+                    ? i18n("Last %1", formatRelativeTime(toolCard.monitor?.lastActivity))
+                    : "",
+                tint: toolCard.toolColor
+            });
+        }
+
+        return stats;
     }
 }

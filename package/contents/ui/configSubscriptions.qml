@@ -157,8 +157,7 @@ KCM.SimpleKCM {
             Layout.fillWidth: true
             wrapMode: Text.WordWrap
             text: i18n("Track usage limits for AI coding tools with fixed subscription quotas. "
-                     + "These tools don't expose public APIs for quota checking, so usage is "
-                     + "tracked locally via filesystem monitoring and manual counting.")
+                     + "These tools usually do not expose public quota APIs, so this page combines local counters, browser session sync, and optional manual adjustments.")
             font.pointSize: Kirigami.Theme.smallFont.pointSize
             opacity: 0.7
         }

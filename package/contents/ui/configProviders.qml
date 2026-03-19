@@ -169,6 +169,14 @@ KCM.SimpleKCM {
     Kirigami.FormLayout {
         anchors.fill: parent
 
+        QQC2.Label {
+            Layout.fillWidth: true
+            wrapMode: Text.WordWrap
+            text: i18n("Enable the providers you actively use, keep their admin or billing credentials in KWallet, and point custom endpoints at self-hosted or compatible services when needed.")
+            font.pointSize: Kirigami.Theme.smallFont.pointSize
+            opacity: 0.72
+        }
+
         // ══════════════════════════════════════════════
         // ── Loofi Server ──
         // ══════════════════════════════════════════════

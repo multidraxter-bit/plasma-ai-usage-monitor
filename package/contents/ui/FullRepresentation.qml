@@ -24,9 +24,7 @@ PlasmaExtras.Representation {
     property bool historyLoading: false
     property int onboardingStep: 0
     readonly property bool narrowPopup: width < Kirigami.Units.gridUnit * 22
-    readonly property bool compactHistoryControls: width < Kirigami.Units.gridUnit * 18
-    readonly property bool compactSectionHeaders: width < Kirigami.Units.gridUnit * 19
-    readonly property bool compactCompareRanking: width < Kirigami.Units.gridUnit * 20
+    readonly property bool compactOverview: width < Kirigami.Units.gridUnit * 18
     readonly property int enabledProviderCount: {
         var providers = root.allProviders ?? [];
         var count = 0;
@@ -39,9 +37,6 @@ PlasmaExtras.Representation {
     readonly property bool hasAnyConnectedProvider: connectedProviderCount > 0
 
     readonly property bool compareMode: historyModeCombo.currentValue === "compare"
-    readonly property bool detailHistoryHasSelection: selectedDetailProviderDbName() !== ""
-    readonly property bool detailHistoryReady: detailHistoryState() === "ready"
-    readonly property bool compareHistoryReady: compareHistoryState() === "ready"
     readonly property bool onboardingVisible: !hasAnyProvider()
         && !plasmoid.configuration.setupWizardCompleted
         && !plasmoid.configuration.setupWizardDismissed
@@ -263,11 +258,7 @@ PlasmaExtras.Representation {
                 Layout.fillHeight: true
 
                 contentItem: Flickable {
-                    flickableDirection: Flickable.VerticalFlick
-                    contentWidth: width
                     contentHeight: liveColumn.implicitHeight
-                    interactive: contentHeight > height
-                    boundsBehavior: Flickable.StopAtBounds
                     clip: true
 
                     ColumnLayout {
@@ -279,135 +270,130 @@ PlasmaExtras.Representation {
                             Layout.fillWidth: true
                             Layout.leftMargin: Kirigami.Units.smallSpacing
                             Layout.rightMargin: Kirigami.Units.smallSpacing
-                            Layout.topMargin: Kirigami.Units.smallSpacing
                             radius: Kirigami.Units.cornerRadius
                             color: Qt.alpha(Kirigami.Theme.highlightColor, 0.06)
                             border.width: 1
                             border.color: Qt.alpha(Kirigami.Theme.highlightColor, 0.22)
                             visible: hasAnyProvider()
 
-                            GridLayout {
+                            ColumnLayout {
                                 anchors.fill: parent
                                 anchors.margins: Kirigami.Units.smallSpacing
-                                columns: fullRoot.narrowPopup ? 2 : 4
-                                columnSpacing: Kirigami.Units.smallSpacing
-                                rowSpacing: Kirigami.Units.smallSpacing
+                                spacing: Kirigami.Units.smallSpacing
 
-                                Rectangle {
+                                Flow {
                                     Layout.fillWidth: true
-                                    radius: Kirigami.Units.smallSpacing
-                                    color: Qt.alpha(Kirigami.Theme.backgroundColor, 0.65)
-                                    border.width: 1
-                                    border.color: Qt.alpha(Kirigami.Theme.textColor, 0.08)
-                                    implicitHeight: summaryProvidersColumn.implicitHeight + Kirigami.Units.smallSpacing * 2
+                                    spacing: Kirigami.Units.smallSpacing
 
                                     ColumnLayout {
-                                        id: summaryProvidersColumn
-                                        anchors.fill: parent
-                                        anchors.margins: Kirigami.Units.smallSpacing
+                                        width: fullRoot.compactOverview
+                                            ? parent.width
+                                            : Math.max(0, parent.width - overviewStatusBadge.width - Kirigami.Units.smallSpacing)
                                         spacing: 2
 
-                                        PlasmaComponents.Label {
-                                            text: i18n("Providers")
-                                            font.pointSize: Kirigami.Theme.smallFont.pointSize
-                                            opacity: 0.65
-                                            wrapMode: Text.WordWrap
-                                            maximumLineCount: 2
+                                        PlasmaExtras.Heading {
+                                            level: 4
+                                            text: i18n("Realtime Overview")
                                         }
 
                                         PlasmaComponents.Label {
-                                            text: i18n("%1 enabled", fullRoot.enabledProviderCount)
-                                            font.bold: true
+                                            wrapMode: Text.WordWrap
+                                            text: fullRoot.hasAnyConnectedProvider
+                                                ? i18n("%1 live, %2 tool monitors enabled.",
+                                                       fullRoot.connectedProviderCount,
+                                                       root.enabledToolCount ?? 0)
+                                                : i18n("Enable providers and monitors to populate this dashboard.")
+                                            opacity: 0.7
+                                            maximumLineCount: fullRoot.compactOverview ? 2 : -1
+                                            elide: fullRoot.compactOverview ? Text.ElideRight : Text.ElideNone
                                         }
                                     }
-                                }
 
-                                Rectangle {
-                                    Layout.fillWidth: true
-                                    radius: Kirigami.Units.smallSpacing
-                                    color: Qt.alpha(Kirigami.Theme.backgroundColor, 0.65)
-                                    border.width: 1
-                                    border.color: Qt.alpha(Kirigami.Theme.textColor, 0.08)
-                                    implicitHeight: summaryConnectedColumn.implicitHeight + Kirigami.Units.smallSpacing * 2
-
-                                    ColumnLayout {
-                                        id: summaryConnectedColumn
-                                        anchors.fill: parent
-                                        anchors.margins: Kirigami.Units.smallSpacing
-                                        spacing: 2
+                                    Rectangle {
+                                        id: overviewStatusBadge
+                                        radius: Kirigami.Units.smallSpacing
+                                        color: Qt.alpha(fullRoot.hasAnyConnectedProvider
+                                                           ? Kirigami.Theme.positiveTextColor
+                                                           : Kirigami.Theme.neutralTextColor, 0.12)
+                                        border.width: 1
+                                        border.color: Qt.alpha(fullRoot.hasAnyConnectedProvider
+                                                                  ? Kirigami.Theme.positiveTextColor
+                                                                  : Kirigami.Theme.neutralTextColor, 0.22)
+                                        implicitWidth: overviewStatusLabel.implicitWidth + Kirigami.Units.largeSpacing
+                                        implicitHeight: overviewStatusLabel.implicitHeight + Kirigami.Units.smallSpacing * 2
 
                                         PlasmaComponents.Label {
-                                            text: i18n("Connected")
-                                            font.pointSize: Kirigami.Theme.smallFont.pointSize
-                                            opacity: 0.65
-                                            wrapMode: Text.WordWrap
-                                            maximumLineCount: 2
-                                        }
-
-                                        PlasmaComponents.Label {
-                                            text: i18n("%1 active", fullRoot.connectedProviderCount)
+                                            id: overviewStatusLabel
+                                            anchors.centerIn: parent
+                                            text: fullRoot.hasAnyConnectedProvider ? i18n("Healthy") : i18n("Waiting for data")
                                             font.bold: true
                                             color: fullRoot.hasAnyConnectedProvider
                                                 ? Kirigami.Theme.positiveTextColor
-                                                : Kirigami.Theme.disabledTextColor
+                                                : Kirigami.Theme.neutralTextColor
                                         }
                                     }
                                 }
 
-                                Rectangle {
+                                Flow {
                                     Layout.fillWidth: true
-                                    radius: Kirigami.Units.smallSpacing
-                                    color: Qt.alpha(Kirigami.Theme.backgroundColor, 0.65)
-                                    border.width: 1
-                                    border.color: Qt.alpha(Kirigami.Theme.textColor, 0.08)
-                                    implicitHeight: summaryCostColumn.implicitHeight + Kirigami.Units.smallSpacing * 2
+                                    spacing: Kirigami.Units.smallSpacing
 
-                                    ColumnLayout {
-                                        id: summaryCostColumn
-                                        anchors.fill: parent
-                                        anchors.margins: Kirigami.Units.smallSpacing
-                                        spacing: 2
+                                    Repeater {
+                                        model: [
+                                            {
+                                                label: i18n("Providers"),
+                                                value: i18n("%1 enabled", fullRoot.enabledProviderCount),
+                                                tint: Kirigami.Theme.textColor
+                                            },
+                                            {
+                                                label: i18n("Connected"),
+                                                value: i18n("%1 active", fullRoot.connectedProviderCount),
+                                                tint: fullRoot.hasAnyConnectedProvider
+                                                    ? Kirigami.Theme.positiveTextColor
+                                                    : Kirigami.Theme.disabledTextColor
+                                            },
+                                            {
+                                                label: i18n("Total Cost"),
+                                                value: "$" + (root.totalCost ?? 0).toFixed(2),
+                                                tint: Kirigami.Theme.textColor
+                                            },
+                                            {
+                                                label: i18n("Tool Monitors"),
+                                                value: i18n("%1 enabled", root.enabledToolCount ?? 0),
+                                                tint: Kirigami.Theme.textColor
+                                            }
+                                        ]
 
-                                        PlasmaComponents.Label {
-                                            text: i18n("Total Cost")
-                                            font.pointSize: Kirigami.Theme.smallFont.pointSize
-                                            opacity: 0.65
-                                            wrapMode: Text.WordWrap
-                                            maximumLineCount: 2
-                                        }
+                                        Rectangle {
+                                            width: fullRoot.narrowPopup
+                                                ? (parent.width - Kirigami.Units.smallSpacing) / 2
+                                                : (parent.width - Kirigami.Units.smallSpacing * 3) / 4
+                                            height: summaryCardColumn.implicitHeight + Kirigami.Units.smallSpacing * 2
+                                            radius: Kirigami.Units.smallSpacing
+                                            color: Qt.alpha(Kirigami.Theme.backgroundColor, 0.65)
+                                            border.width: 1
+                                            border.color: Qt.alpha(Kirigami.Theme.textColor, 0.08)
 
-                                        PlasmaComponents.Label {
-                                            text: "$" + (root.totalCost ?? 0).toFixed(2)
-                                            font.bold: true
-                                        }
-                                    }
-                                }
+                                            ColumnLayout {
+                                                id: summaryCardColumn
+                                                anchors.fill: parent
+                                                anchors.margins: Kirigami.Units.smallSpacing
+                                                spacing: 2
 
-                                Rectangle {
-                                    Layout.fillWidth: true
-                                    radius: Kirigami.Units.smallSpacing
-                                    color: Qt.alpha(Kirigami.Theme.backgroundColor, 0.65)
-                                    border.width: 1
-                                    border.color: Qt.alpha(Kirigami.Theme.textColor, 0.08)
-                                    implicitHeight: summaryToolsColumn.implicitHeight + Kirigami.Units.smallSpacing * 2
+                                                PlasmaComponents.Label {
+                                                    text: modelData.label
+                                                    font.pointSize: Kirigami.Theme.smallFont.pointSize
+                                                    opacity: 0.65
+                                                    elide: Text.ElideRight
+                                                }
 
-                                    ColumnLayout {
-                                        id: summaryToolsColumn
-                                        anchors.fill: parent
-                                        anchors.margins: Kirigami.Units.smallSpacing
-                                        spacing: 2
-
-                                        PlasmaComponents.Label {
-                                            text: i18n("Tool Monitors")
-                                            font.pointSize: Kirigami.Theme.smallFont.pointSize
-                                            opacity: 0.65
-                                            wrapMode: Text.WordWrap
-                                            maximumLineCount: 2
-                                        }
-
-                                        PlasmaComponents.Label {
-                                            text: i18n("%1 enabled", root.enabledToolCount ?? 0)
-                                            font.bold: true
+                                                PlasmaComponents.Label {
+                                                    text: modelData.value
+                                                    font.bold: true
+                                                    color: modelData.tint
+                                                    elide: Text.ElideRight
+                                                }
+                                            }
                                         }
                                     }
                                 }
@@ -422,41 +408,35 @@ PlasmaExtras.Representation {
                             subscriptionTools: root.allSubscriptionTools ?? []
                         }
 
-                        ColumnLayout {
+                        RowLayout {
                             Layout.fillWidth: true
                             Layout.leftMargin: Kirigami.Units.smallSpacing
                             Layout.rightMargin: Kirigami.Units.smallSpacing
                             visible: fullRoot.enabledProviderCount > 0
-                            spacing: fullRoot.compactSectionHeaders ? 2 : Kirigami.Units.smallSpacing
 
-                            RowLayout {
+                            PlasmaExtras.Heading {
+                                level: 5
+                                text: i18n("Providers")
                                 Layout.fillWidth: true
-                                spacing: Kirigami.Units.smallSpacing
+                                opacity: 0.78
+                            }
 
-                                PlasmaExtras.Heading {
-                                    level: 5
-                                    text: i18n("Providers")
-                                    Layout.fillWidth: true
-                                    opacity: 0.78
-                                }
+                            Rectangle {
+                                radius: Kirigami.Units.smallSpacing
+                                color: Qt.alpha(Kirigami.Theme.highlightColor, 0.12)
+                                border.width: 1
+                                border.color: Qt.alpha(Kirigami.Theme.highlightColor, 0.26)
+                                implicitWidth: providerStatusLabel.implicitWidth + Kirigami.Units.smallSpacing * 2
+                                implicitHeight: providerStatusLabel.implicitHeight + Kirigami.Units.smallSpacing
 
-                                Rectangle {
-                                    radius: Kirigami.Units.smallSpacing
-                                    color: Qt.alpha(Kirigami.Theme.highlightColor, 0.12)
-                                    border.width: 1
-                                    border.color: Qt.alpha(Kirigami.Theme.highlightColor, 0.26)
-                                    implicitWidth: providerStatusLabel.implicitWidth + Kirigami.Units.smallSpacing * 2
-                                    implicitHeight: providerStatusLabel.implicitHeight + Kirigami.Units.smallSpacing
-
-                                    PlasmaComponents.Label {
-                                        id: providerStatusLabel
-                                        anchors.centerIn: parent
-                                        text: i18n("%1/%2 connected", fullRoot.connectedProviderCount, fullRoot.enabledProviderCount)
-                                        font.pointSize: Kirigami.Theme.smallFont.pointSize
-                                        color: fullRoot.hasAnyConnectedProvider
-                                            ? Kirigami.Theme.textColor
-                                            : Kirigami.Theme.disabledTextColor
-                                    }
+                                PlasmaComponents.Label {
+                                    id: providerStatusLabel
+                                    anchors.centerIn: parent
+                                    text: i18n("%1/%2 connected", fullRoot.connectedProviderCount, fullRoot.enabledProviderCount)
+                                    font.pointSize: Kirigami.Theme.smallFont.pointSize
+                                    color: fullRoot.hasAnyConnectedProvider
+                                        ? Kirigami.Theme.textColor
+                                        : Kirigami.Theme.disabledTextColor
                                 }
                             }
                         }
@@ -476,6 +456,8 @@ PlasmaExtras.Representation {
 
                             ProviderCard {
                                 Layout.fillWidth: true
+                                Layout.leftMargin: Kirigami.Units.smallSpacing
+                                Layout.rightMargin: Kirigami.Units.smallSpacing
                                 visible: modelData.enabled
                                 providerName: modelData.name
                                 providerIcon: modelData.backend?.iconName ?? "globe"
@@ -486,34 +468,28 @@ PlasmaExtras.Representation {
                             }
                         }
 
-                        ColumnLayout {
+                        RowLayout {
                             Layout.fillWidth: true
                             Layout.leftMargin: Kirigami.Units.smallSpacing
                             Layout.rightMargin: Kirigami.Units.smallSpacing
                             Layout.topMargin: Kirigami.Units.largeSpacing
                             visible: root.enabledToolCount > 0
-                            spacing: fullRoot.compactSectionHeaders ? 2 : Kirigami.Units.smallSpacing
 
-                            RowLayout {
+                            PlasmaExtras.Heading {
+                                level: 5
+                                text: i18n("Subscription Tools")
                                 Layout.fillWidth: true
-                                spacing: Kirigami.Units.smallSpacing
+                                opacity: 0.7
+                            }
 
-                                PlasmaExtras.Heading {
-                                    level: 5
-                                    text: i18n("Subscription Tools")
-                                    Layout.fillWidth: true
-                                    opacity: 0.7
-                                }
-
-                                PlasmaComponents.ToolButton {
-                                    icon.name: "view-refresh"
-                                    display: PlasmaComponents.AbstractButton.IconOnly
-                                    Layout.preferredWidth: Kirigami.Units.iconSizes.small
-                                    Layout.preferredHeight: Kirigami.Units.iconSizes.small
-                                    visible: plasmoid.configuration.browserSyncEnabled
-                                    onClicked: root.performBrowserSync()
-                                    PlasmaComponents.ToolTip { text: i18n("Sync usage data from browser") }
-                                }
+                            PlasmaComponents.ToolButton {
+                                icon.name: "view-refresh"
+                                display: PlasmaComponents.AbstractButton.IconOnly
+                                Layout.preferredWidth: Kirigami.Units.iconSizes.small
+                                Layout.preferredHeight: Kirigami.Units.iconSizes.small
+                                visible: plasmoid.configuration.browserSyncEnabled
+                                onClicked: root.performBrowserSync()
+                                PlasmaComponents.ToolTip { text: i18n("Sync usage data from browser") }
                             }
                         }
 
@@ -536,7 +512,12 @@ PlasmaExtras.Representation {
                             }
                         }
 
-                        Item { Layout.fillHeight: true }
+                        Item {
+                            Layout.fillHeight: true
+                            Layout.preferredHeight: root.enabledToolCount > 0 || fullRoot.enabledProviderCount > 1
+                                ? Kirigami.Units.smallSpacing
+                                : 0
+                        }
                     }
                 }
             }
@@ -566,7 +547,6 @@ PlasmaExtras.Representation {
 
                         PlasmaComponents.Label {
                             text: i18n("View:")
-                            visible: !fullRoot.compactHistoryControls
                             font.pointSize: Kirigami.Theme.smallFont.pointSize
                             opacity: 0.7
                         }
@@ -580,17 +560,15 @@ PlasmaExtras.Representation {
                             textRole: "text"
                             valueRole: "value"
                             currentIndex: 0
-                            Layout.preferredWidth: fullRoot.compactHistoryControls ? Kirigami.Units.gridUnit * 5.5
-                                : (fullRoot.narrowPopup ? Kirigami.Units.gridUnit * 6 : implicitWidth)
+                            Layout.preferredWidth: fullRoot.narrowPopup ? Kirigami.Units.gridUnit * 6 : implicitWidth
                             onCurrentIndexChanged: {
                                 refreshHistory();
                             }
-                            PlasmaComponents.ToolTip { text: i18n("History view mode") }
                         }
 
                         PlasmaComponents.Label {
                             text: i18n("Source:")
-                            visible: fullRoot.compareMode && !fullRoot.compactHistoryControls
+                            visible: fullRoot.compareMode
                             font.pointSize: Kirigami.Theme.smallFont.pointSize
                             opacity: 0.7
                         }
@@ -605,13 +583,11 @@ PlasmaExtras.Representation {
                             textRole: "text"
                             valueRole: "value"
                             currentIndex: 0
-                            Layout.preferredWidth: fullRoot.compactHistoryControls ? Kirigami.Units.gridUnit * 7
-                                : (fullRoot.narrowPopup ? Kirigami.Units.gridUnit * 8 : implicitWidth)
+                            Layout.preferredWidth: fullRoot.narrowPopup ? Kirigami.Units.gridUnit * 8 : implicitWidth
                             onCurrentIndexChanged: {
                                 resetCompareMetric();
                                 refreshHistory();
                             }
-                            PlasmaComponents.ToolTip { text: i18n("Comparison source") }
                         }
 
                         QQC2.ComboBox {
@@ -620,17 +596,15 @@ PlasmaExtras.Representation {
                             model: getEnabledProviderEntries()
                             textRole: "label"
                             valueRole: "dbName"
-                            Layout.preferredWidth: fullRoot.compactHistoryControls ? Kirigami.Units.gridUnit * 7.5
-                                : (fullRoot.narrowPopup ? Kirigami.Units.gridUnit * 9 : Kirigami.Units.gridUnit * 11)
+                            Layout.preferredWidth: fullRoot.narrowPopup ? Kirigami.Units.gridUnit * 9 : Kirigami.Units.gridUnit * 11
                             onCurrentIndexChanged: {
                                 if (!fullRoot.compareMode) refreshHistory();
                             }
-                            PlasmaComponents.ToolTip { text: i18n("History provider") }
                         }
 
                         PlasmaComponents.Label {
                             text: i18n("Metric:")
-                            visible: fullRoot.compareMode && !fullRoot.compactHistoryControls
+                            visible: fullRoot.compareMode
                             font.pointSize: Kirigami.Theme.smallFont.pointSize
                             opacity: 0.7
                         }
@@ -641,17 +615,14 @@ PlasmaExtras.Representation {
                             model: getCompareMetricOptions(compareSourceCombo.currentValue)
                             textRole: "text"
                             valueRole: "value"
-                            Layout.preferredWidth: fullRoot.compactHistoryControls ? Kirigami.Units.gridUnit * 7
-                                : (fullRoot.narrowPopup ? Kirigami.Units.gridUnit * 8 : implicitWidth)
+                            Layout.preferredWidth: fullRoot.narrowPopup ? Kirigami.Units.gridUnit * 8 : implicitWidth
                             onCurrentIndexChanged: {
                                 if (fullRoot.compareMode) refreshHistory();
                             }
-                            PlasmaComponents.ToolTip { text: i18n("Comparison metric") }
                         }
 
                         PlasmaComponents.Label {
                             text: i18n("Range:")
-                            visible: !fullRoot.compactHistoryControls
                             font.pointSize: Kirigami.Theme.smallFont.pointSize
                             opacity: 0.7
                         }
@@ -660,10 +631,8 @@ PlasmaExtras.Representation {
                             id: timeRangeCombo
                             model: [i18n("24 hours"), i18n("7 days"), i18n("30 days")]
                             currentIndex: 1
-                            Layout.preferredWidth: fullRoot.compactHistoryControls ? Kirigami.Units.gridUnit * 5.5
-                                : (fullRoot.narrowPopup ? Kirigami.Units.gridUnit * 6 : implicitWidth)
+                            Layout.preferredWidth: fullRoot.narrowPopup ? Kirigami.Units.gridUnit * 6 : implicitWidth
                             onCurrentIndexChanged: refreshHistory()
-                            PlasmaComponents.ToolTip { text: i18n("Time range") }
                         }
 
                         PlasmaComponents.ToolButton {
@@ -688,16 +657,13 @@ PlasmaExtras.Representation {
                     ColumnLayout {
                         anchors.fill: parent
                         spacing: Kirigami.Units.smallSpacing
-                        visible: !fullRoot.compareMode && fullRoot.detailHistoryHasSelection
+                        visible: !fullRoot.compareMode
 
                         UsageChart {
                             id: historyChart
                             Layout.fillWidth: true
                             Layout.preferredHeight: Kirigami.Units.gridUnit * 10
                             Layout.margins: Kirigami.Units.smallSpacing
-                            showMetricBar: fullRoot.detailHistoryHasSelection
-                            showChartContent: fullRoot.detailHistoryReady
-                            showEmptyState: false
                             chartData: fullRoot.detailSnapshots
                         }
 
@@ -705,8 +671,6 @@ PlasmaExtras.Representation {
                             id: trendSummary
                             Layout.fillWidth: true
                             Layout.margins: Kirigami.Units.smallSpacing
-                            visible: fullRoot.detailHistoryReady
-                            showEmptyState: false
                             summaryData: fullRoot.detailSummaryData
                             dailyCosts: fullRoot.detailDailyCosts
                             provider: fullRoot.detailProviderLabel
@@ -716,7 +680,9 @@ PlasmaExtras.Representation {
                     PlasmaExtras.PlaceholderMessage {
                         anchors.centerIn: parent
                         width: parent.width - Kirigami.Units.largeSpacing * 2
-                        visible: detailHistoryState() === "select-provider"
+                        visible: !fullRoot.compareMode
+                                 && !fullRoot.historyLoading
+                                 && selectedDetailProviderDbName() === ""
                         iconName: "office-chart-line"
                         text: i18n("Select a provider")
                         explanation: i18n("Choose a provider to view historical trends")
@@ -725,7 +691,10 @@ PlasmaExtras.Representation {
                     PlasmaExtras.PlaceholderMessage {
                         anchors.centerIn: parent
                         width: parent.width - Kirigami.Units.largeSpacing * 2
-                        visible: detailHistoryState() === "no-data"
+                        visible: !fullRoot.compareMode
+                                 && !fullRoot.historyLoading
+                                 && selectedDetailProviderDbName() !== ""
+                                 && fullRoot.detailSnapshots.length === 0
                         iconName: "view-calendar-timeline"
                         text: i18n("No historical data")
                         explanation: i18n("No snapshots were found for this provider and time range")
@@ -734,14 +703,13 @@ PlasmaExtras.Representation {
                     ColumnLayout {
                         anchors.fill: parent
                         spacing: Kirigami.Units.smallSpacing
-                        visible: fullRoot.compareHistoryReady
+                        visible: fullRoot.compareMode
 
                         MultiSeriesChart {
                             id: compareChart
                             Layout.fillWidth: true
                             Layout.preferredHeight: Kirigami.Units.gridUnit * 11
                             Layout.margins: Kirigami.Units.smallSpacing
-                            showEmptyState: false
                             metric: currentCompareMetric()
                             seriesData: fullRoot.compareSeriesData
                         }
@@ -772,81 +740,45 @@ PlasmaExtras.Representation {
                                 Repeater {
                                     model: compareRanking()
 
-                                    ColumnLayout {
+                                    RowLayout {
                                         Layout.fillWidth: true
-                                        spacing: fullRoot.compactCompareRanking ? 2 : 0
+                                        spacing: Kirigami.Units.smallSpacing
 
-                                        RowLayout {
-                                            Layout.fillWidth: true
-                                            spacing: Kirigami.Units.smallSpacing
-
-                                            PlasmaComponents.Label {
-                                                text: (index + 1) + "."
-                                                opacity: 0.6
-                                            }
-
-                                            Rectangle {
-                                                width: 8
-                                                height: 8
-                                                radius: 4
-                                                color: modelData.color
-                                            }
-
-                                            PlasmaComponents.Label {
-                                                text: modelData.name
-                                                Layout.fillWidth: true
-                                                elide: fullRoot.compactCompareRanking ? Text.ElideNone : Text.ElideRight
-                                                wrapMode: fullRoot.compactCompareRanking ? Text.WordWrap : Text.NoWrap
-                                                maximumLineCount: fullRoot.compactCompareRanking ? 2 : 1
-                                            }
-
-                                            PlasmaComponents.Label {
-                                                visible: !fullRoot.compactCompareRanking
-                                                text: formatCompareValue(modelData.latestValue)
-                                                font.bold: true
-                                            }
-
-                                            PlasmaComponents.Label {
-                                                visible: !fullRoot.compactCompareRanking
-                                                text: modelData.deltaPercent > 0
-                                                    ? i18n("↑ %1%", Math.abs(modelData.deltaPercent).toFixed(1))
-                                                    : (modelData.deltaPercent < 0
-                                                       ? i18n("↓ %1%", Math.abs(modelData.deltaPercent).toFixed(1))
-                                                       : i18n("→ 0%"))
-                                                color: modelData.deltaPercent > 0
-                                                    ? Kirigami.Theme.negativeTextColor
-                                                    : (modelData.deltaPercent < 0
-                                                       ? Kirigami.Theme.positiveTextColor
-                                                       : Kirigami.Theme.disabledTextColor)
-                                                font.pointSize: Kirigami.Theme.smallFont.pointSize
-                                            }
+                                        PlasmaComponents.Label {
+                                            text: (index + 1) + "."
+                                            opacity: 0.6
                                         }
 
-                                        RowLayout {
+                                        Rectangle {
+                                            width: 8
+                                            height: 8
+                                            radius: 4
+                                            color: modelData.color
+                                        }
+
+                                        PlasmaComponents.Label {
+                                            text: modelData.name
                                             Layout.fillWidth: true
-                                            visible: fullRoot.compactCompareRanking
-                                            spacing: Kirigami.Units.smallSpacing
+                                            elide: Text.ElideRight
+                                        }
 
-                                            Item { Layout.fillWidth: true }
+                                        PlasmaComponents.Label {
+                                            text: formatCompareValue(modelData.latestValue)
+                                            font.bold: true
+                                        }
 
-                                            PlasmaComponents.Label {
-                                                text: formatCompareValue(modelData.latestValue)
-                                                font.bold: true
-                                            }
-
-                                            PlasmaComponents.Label {
-                                                text: modelData.deltaPercent > 0
-                                                    ? i18n("↑ %1%", Math.abs(modelData.deltaPercent).toFixed(1))
-                                                    : (modelData.deltaPercent < 0
-                                                       ? i18n("↓ %1%", Math.abs(modelData.deltaPercent).toFixed(1))
-                                                       : i18n("→ 0%"))
-                                                color: modelData.deltaPercent > 0
-                                                    ? Kirigami.Theme.negativeTextColor
-                                                    : (modelData.deltaPercent < 0
-                                                       ? Kirigami.Theme.positiveTextColor
-                                                       : Kirigami.Theme.disabledTextColor)
-                                                font.pointSize: Kirigami.Theme.smallFont.pointSize
-                                            }
+                                        PlasmaComponents.Label {
+                                            text: modelData.deltaPercent > 0
+                                                ? i18n("↑ %1%", Math.abs(modelData.deltaPercent).toFixed(1))
+                                                : (modelData.deltaPercent < 0
+                                                   ? i18n("↓ %1%", Math.abs(modelData.deltaPercent).toFixed(1))
+                                                   : i18n("→ 0%"))
+                                            color: modelData.deltaPercent > 0
+                                                ? Kirigami.Theme.negativeTextColor
+                                                : (modelData.deltaPercent < 0
+                                                   ? Kirigami.Theme.positiveTextColor
+                                                   : Kirigami.Theme.disabledTextColor)
+                                            font.pointSize: Kirigami.Theme.smallFont.pointSize
                                         }
                                     }
                                 }
@@ -857,7 +789,10 @@ PlasmaExtras.Representation {
                     PlasmaExtras.PlaceholderMessage {
                         anchors.centerIn: parent
                         width: parent.width - Kirigami.Units.largeSpacing * 2
-                        visible: compareHistoryState() === "no-data"
+                        visible: fullRoot.compareMode
+                                 && !fullRoot.historyLoading
+                                 && canRefreshHistory()
+                                 && !hasCompareData()
                         iconName: "office-chart-line"
                         text: i18n("No comparison data")
                         explanation: i18n("No data was found for the selected source, metric, and range")
@@ -866,7 +801,9 @@ PlasmaExtras.Representation {
                     PlasmaExtras.PlaceholderMessage {
                         anchors.centerIn: parent
                         width: parent.width - Kirigami.Units.largeSpacing * 2
-                        visible: compareHistoryState() === "no-sources"
+                        visible: fullRoot.compareMode
+                                 && !fullRoot.historyLoading
+                                 && !canRefreshHistory()
                         iconName: "dialog-information"
                         text: i18n("No sources available")
                         explanation: i18n("Enable at least one provider or subscription tool to compare trends")
@@ -906,9 +843,6 @@ PlasmaExtras.Representation {
 
                     PlasmaComponents.ToolButton {
                         icon.name: "document-export"
-                        display: fullRoot.compactHistoryControls
-                            ? PlasmaComponents.AbstractButton.IconOnly
-                            : PlasmaComponents.AbstractButton.TextBesideIcon
                         text: i18n("CSV")
                         enabled: canExportCurrentView()
                         onClicked: exportData("csv")
@@ -917,9 +851,6 @@ PlasmaExtras.Representation {
 
                     PlasmaComponents.ToolButton {
                         icon.name: "document-export"
-                        display: fullRoot.compactHistoryControls
-                            ? PlasmaComponents.AbstractButton.IconOnly
-                            : PlasmaComponents.AbstractButton.TextBesideIcon
                         text: i18n("JSON")
                         enabled: canExportCurrentView()
                         onClicked: exportData("json")
@@ -1073,22 +1004,6 @@ PlasmaExtras.Representation {
             return getEnabledProviderDbNames().length > 0;
         }
         return selectedDetailProviderDbName() !== "";
-    }
-
-    function detailHistoryState() {
-        if (fullRoot.compareMode) return "hidden";
-        if (fullRoot.historyLoading) return "loading";
-        if (!fullRoot.detailHistoryHasSelection) return "select-provider";
-        if (fullRoot.detailSnapshots.length === 0) return "no-data";
-        return "ready";
-    }
-
-    function compareHistoryState() {
-        if (!fullRoot.compareMode) return "hidden";
-        if (fullRoot.historyLoading) return "loading";
-        if (!canRefreshHistory()) return "no-sources";
-        if (!hasCompareData()) return "no-data";
-        return "ready";
     }
 
     function refreshHistory() {

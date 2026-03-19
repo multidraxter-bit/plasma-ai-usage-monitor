@@ -24,6 +24,14 @@ KCM.SimpleKCM {
     Kirigami.FormLayout {
         anchors.fill: parent
 
+        QQC2.Label {
+            Layout.fillWidth: true
+            wrapMode: Text.WordWrap
+            text: i18n("Tune how often providers refresh and choose what the panel should surface when you need a faster glance than opening the full popup.")
+            font.pointSize: Kirigami.Theme.smallFont.pointSize
+            opacity: 0.72
+        }
+
         // ── Global Refresh Interval ──
         ColumnLayout {
             Kirigami.FormData.label: i18n("Default refresh interval:")
