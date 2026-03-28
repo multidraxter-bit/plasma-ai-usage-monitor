@@ -294,6 +294,7 @@ PlasmaExtras.Representation {
                         spacing: Kirigami.Units.mediumSpacing
 
                         Rectangle {
+                            id: summaryGridContainer
                             Layout.fillWidth: true
                             Layout.leftMargin: Kirigami.Units.smallSpacing
                             Layout.rightMargin: Kirigami.Units.smallSpacing
@@ -303,8 +304,10 @@ PlasmaExtras.Representation {
                             border.width: 1
                             border.color: Qt.alpha(Kirigami.Theme.highlightColor, 0.22)
                             visible: hasAnyProvider()
+                            implicitHeight: summaryGridLayout.implicitHeight + Kirigami.Units.smallSpacing * 2
 
                             GridLayout {
+                                id: summaryGridLayout
                                 anchors.fill: parent
                                 anchors.margins: Kirigami.Units.smallSpacing
                                 columns: fullRoot.narrowPopup ? 2 : 4
