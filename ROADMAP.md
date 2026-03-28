@@ -1,7 +1,7 @@
 # Roadmap — Plasma AI Usage Monitor
 
-> **Current version:** v3.8.1 (release packaging + build fix hotpatch)
-> **Last updated:** 2026-03-16
+> **Current version:** v3.9.1 (UI polish + Budget Health)
+> **Last updated:** 2026-03-28
 
 ---
 
@@ -9,6 +9,8 @@
 
 | Version | Codename       | Theme                                                             | Status   |
 | ------- | -------------- | ----------------------------------------------------------------- | -------- |
+| v3.9.1  | **Showcase**   | UI polish + Budget Health progress visualization                  | Released |
+| v3.9.0  | **Showcase**   | Mock server + Fedora KDE VM demo workflow hardening               | Released |
 | v3.8.1  | **Pulse**      | Release packaging + build fix hotpatch                            | Released |
 | v3.8.0  | **Pulse**      | Install UX polish + stale local install shadow detection          | Released |
 | v3.7.0  | **Pulse**      | Azure OpenAI Dedicated Provider (no OpenAI aliasing)              | Released |

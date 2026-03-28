@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.9.1] — 2026-03-28
+
+### Added
+
+- Add budget health progress bar to `CostSummaryCard.qml` that visually indicates spending relative to total daily/monthly budgets
+- Add color-coded thresholds (Green/Yellow/Red) to the new budget health bar for at-a-glance status monitoring
+
+### Fixed
+
+- Fix UI overlap in the "Live" tab by making the summary grid height dynamic, ensuring it expands correctly on narrow displays or small popups
+
 ## [3.9.0] — 2026-03-19
 
 ### Added
