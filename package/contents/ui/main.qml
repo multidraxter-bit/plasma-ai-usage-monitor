@@ -606,6 +606,17 @@ PlasmoidItem {
         return total;
     }
 
+    readonly property double totalMonthlyCost: {
+        var total = 0;
+        for (var i = 0; i < allProviders.length; i++) {
+            if (allProviders[i].enabled && allProviders[i].backend.connected)
+                total += allProviders[i].backend.monthlyCost;
+        }
+        return total;
+    }
+
+    property double totalMonthlyProjection: 0.0
+
     // ── Functions ──
 
     function formatCompactMetric(value) {
@@ -654,6 +665,31 @@ PlasmoidItem {
         );
     }
 
+    function calculateMonthlyProjection() {
+        if (!usageDatabase.enabled) return;
+
+        var now = new Date();
+        var sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+
+        var avgDailySum = 0;
+        var providers = allProviders;
+
+        for (var i = 0; i < providers.length; i++) {
+            if (providers[i].enabled) {
+                var summary = usageDatabase.getSummary(providers[i].dbName, sevenDaysAgo, now);
+                if (summary && summary.avgDailyCost) {
+                    avgDailySum += summary.avgDailyCost;
+                }
+            }
+        }
+
+        // Days remaining in month
+        var lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+        var daysRemaining = Math.max(0, lastDay - now.getDate());
+
+        totalMonthlyProjection = totalMonthlyCost + (avgDailySum * daysRemaining);
+    }
+
     // Connect common signal handlers for all providers (avoids 7× copy-paste)
     function connectProviderSignals() {
         for (var i = 0; i < allProviders.length; i++) {
@@ -683,6 +719,7 @@ PlasmoidItem {
     function makeSnapshotHandler(dbName, backend) {
         return function() {
             recordProviderSnapshot(dbName, backend);
+            calculateMonthlyProjection(); // Trigger update
         };
     }
 
@@ -939,6 +976,14 @@ PlasmoidItem {
         interval: 5000 // 5 second delay for sync
         repeat: false
         onTriggered: performBrowserSync()
+    }
+
+    Timer {
+        id: projectionStartupTimer
+        interval: 1000
+        running: true
+        repeat: false
+        onTriggered: calculateMonthlyProjection()
     }
 
     // React to config changes
