@@ -152,6 +152,15 @@ ColumnLayout {
                     }
                 }
 
+                PlasmaComponents.Label {
+                    Layout.fillWidth: true
+                    visible: costCard.costViewMode === 2 && root.totalMonthlyProjection > 0
+                    text: i18n("Projected: $%1", root.totalMonthlyProjection.toFixed(2))
+                    font.pointSize: Kirigami.Theme.smallFont.pointSize
+                    opacity: 0.6
+                    horizontalAlignment: costCard.narrowCard ? Text.AlignLeft : Text.AlignRight
+                }
+
                 // NEW: Budget Health Progress Bar
                 ColumnLayout {
                     Layout.fillWidth: true
