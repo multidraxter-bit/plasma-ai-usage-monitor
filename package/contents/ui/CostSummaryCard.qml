@@ -51,6 +51,24 @@ ColumnLayout {
         return total;
     }
 
+    readonly property double totalDailyBudget: {
+        var total = 0;
+        for (var i = 0; i < providers.length; i++) {
+            if (providers[i].enabled && providers[i].backend)
+                total += providers[i].backend.dailyBudget;
+        }
+        return total;
+    }
+
+    readonly property double totalMonthlyBudget: {
+        var total = 0;
+        for (var i = 0; i < providers.length; i++) {
+            if (providers[i].enabled && providers[i].backend)
+                total += providers[i].backend.monthlyBudget;
+        }
+        return total;
+    }
+
     spacing: 0
 
     // View mode: 0=cumulative, 1=daily, 2=monthly
@@ -131,6 +149,56 @@ ColumnLayout {
                         if (cost > 50) return Kirigami.Theme.negativeTextColor;
                         if (cost > 20) return Kirigami.Theme.neutralTextColor;
                         return Kirigami.Theme.textColor;
+                    }
+                }
+
+                // NEW: Budget Health Progress Bar
+                ColumnLayout {
+                    Layout.fillWidth: true
+                    spacing: 2
+                    visible: {
+                        var budget = costCard.costViewMode === 1 ? costCard.totalDailyBudget : costCard.totalMonthlyBudget;
+                        return budget > 0 && costCard.costViewMode !== 0; // Only show for Day/Month
+                    }
+
+                    Rectangle {
+                        id: budgetBarBg
+                        Layout.fillWidth: true
+                        height: 6
+                        radius: 3
+                        color: Qt.alpha(Kirigami.Theme.textColor, 0.1)
+
+                        Rectangle {
+                            id: budgetBarFill
+                            height: parent.height
+                            radius: parent.radius
+                            width: {
+                                var cost = costCard.costViewMode === 1 ? costCard.totalDailyCost : costCard.totalMonthlyCost;
+                                var budget = costCard.costViewMode === 1 ? costCard.totalDailyBudget : costCard.totalMonthlyBudget;
+                                if (budget <= 0) return 0;
+                                return Math.min(parent.width, (cost / budget) * parent.width);
+                            }
+                            color: {
+                                var cost = costCard.costViewMode === 1 ? costCard.totalDailyCost : costCard.totalMonthlyCost;
+                                var budget = costCard.costViewMode === 1 ? costCard.totalDailyBudget : costCard.totalMonthlyBudget;
+                                var percent = (cost / budget) * 100;
+                                if (percent >= 95) return Kirigami.Theme.negativeTextColor;
+                                if (percent >= 80) return Kirigami.Theme.neutralTextColor;
+                                return Kirigami.Theme.positiveTextColor;
+                            }
+                            Behavior on width { NumberAnimation { duration: 400; easing.type: Easing.OutCubic } }
+                        }
+                    }
+
+                    PlasmaComponents.Label {
+                        Layout.fillWidth: true
+                        font.pointSize: Kirigami.Theme.smallFont.pointSize
+                        opacity: 0.6
+                        horizontalAlignment: Text.AlignRight
+                        text: {
+                            var budget = costCard.costViewMode === 1 ? costCard.totalDailyBudget : costCard.totalMonthlyBudget;
+                            return i18n("Budget: $%1", budget.toFixed(2));
+                        }
                     }
                 }
             }
