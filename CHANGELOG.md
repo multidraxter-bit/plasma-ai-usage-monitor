@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.9.2] — 2026-03-28
+
+### Added
+
+- Add monthly cost projection ("Projected: $X") to the Cost Summary card based on last 7 days of spending trends
+- Implement auto-updating projection logic in the main applet controller
+
 ## [3.9.1] — 2026-03-28
 
 ### Added
