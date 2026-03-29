@@ -66,6 +66,9 @@
         <entry name="ollamaRefreshInterval" type="Int">
             <default>0</default>
         </entry>
+        <entry name="bedrockRefreshInterval" type="Int">
+            <default>0</default>
+        </entry>
     </group>
 
     <group name="Providers">
@@ -83,6 +86,20 @@
         </entry>
         <entry name="ollamaServerUrl" type="String">
             <default>http://localhost:11434</default>
+        </entry>
+
+        <!-- AWS Bedrock -->
+        <entry name="bedrockEnabled" type="Bool">
+            <default>false</default>
+        </entry>
+        <entry name="bedrockModel" type="String">
+            <default>anthropic.claude-3-5-sonnet-20240620-v1:0</default>
+        </entry>
+        <entry name="bedrockRegion" type="String">
+            <default>us-east-1</default>
+        </entry>
+        <entry name="bedrockProfile" type="String">
+            <default>default</default>
         </entry>
         <entry name="ollamaIntelligenceModel" type="String">
             <default>qwen2.5:1.5b</default>

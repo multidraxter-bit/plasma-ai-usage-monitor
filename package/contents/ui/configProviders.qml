@@ -18,6 +18,11 @@ KCM.SimpleKCM {
     property alias cfg_loofiEnabled: loofiSwitch.checked
     property alias cfg_loofiServerUrl: loofiServerUrlField.text
 
+    property alias cfg_bedrockEnabled: bedrockSwitch.checked
+    property alias cfg_bedrockModel: bedrockModelField.text
+    property alias cfg_bedrockRegion: bedrockRegionField.text
+    property alias cfg_bedrockProfile: bedrockProfileField.text
+
     property alias cfg_openaiEnabled: openaiSwitch.checked
     property alias cfg_openaiModel: openaiModelField.text
     property alias cfg_openaiProjectId: openaiProjectField.text
@@ -83,6 +88,8 @@ KCM.SimpleKCM {
     property bool cohereKeyDirty: false
     property bool googleveoKeyDirty: false
     property bool azureKeyDirty: false
+    property bool bedrockKeyDirty: false
+    property bool bedrockSecretDirty: false
 
     // ── KWallet Integration ──
     SecretsManager {
@@ -116,7 +123,9 @@ KCM.SimpleKCM {
             { name: "together", field: togetherKeyField, dirtyProp: "togetherKeyDirty" },
             { name: "cohere", field: cohereKeyField, dirtyProp: "cohereKeyDirty" },
             { name: "googleveo", field: googleveoKeyField, dirtyProp: "googleveoKeyDirty" },
-            { name: "azure", field: azureKeyField, dirtyProp: "azureKeyDirty" }
+            { name: "azure", field: azureKeyField, dirtyProp: "azureKeyDirty" },
+            { name: "bedrock", field: bedrockKeyField, dirtyProp: "bedrockKeyDirty" },
+            { name: "bedrockSecret", field: bedrockSecretField, dirtyProp: "bedrockSecretDirty" }
         ];
 
         for (var i = 0; i < providers.length; i++) {
@@ -143,7 +152,9 @@ KCM.SimpleKCM {
             { name: "together", field: togetherKeyField, dirty: togetherKeyDirty },
             { name: "cohere", field: cohereKeyField, dirty: cohereKeyDirty },
             { name: "googleveo", field: googleveoKeyField, dirty: googleveoKeyDirty },
-            { name: "azure", field: azureKeyField, dirty: azureKeyDirty }
+            { name: "azure", field: azureKeyField, dirty: azureKeyDirty },
+            { name: "bedrock", field: bedrockKeyField, dirty: bedrockKeyDirty },
+            { name: "bedrockSecret", field: bedrockSecretField, dirty: bedrockSecretDirty }
         ];
 
         for (var i = 0; i < providers.length; i++) {
@@ -230,6 +241,91 @@ KCM.SimpleKCM {
             opacity: 0.5
             wrapMode: Text.WordWrap
             Layout.fillWidth: true
+        }
+
+        // ══════════════════════════════════════════════
+        // ── AWS Bedrock ──
+        // ══════════════════════════════════════════════
+
+        Kirigami.Separator {
+            Kirigami.FormData.isSection: true
+            Kirigami.FormData.label: i18n("AWS Bedrock")
+        }
+
+        QQC2.Switch {
+            id: bedrockSwitch
+            Kirigami.FormData.label: i18n("Enable:")
+            checked: plasmoid.configuration.bedrockEnabled
+        }
+
+        QQC2.TextField {
+            id: bedrockModelField
+            Kirigami.FormData.label: i18n("Model ID:")
+            enabled: bedrockSwitch.checked
+            placeholderText: "anthropic.claude-3-5-sonnet-20240620-v1:0"
+            Layout.fillWidth: true
+        }
+
+        QQC2.TextField {
+            id: bedrockRegionField
+            Kirigami.FormData.label: i18n("AWS Region:")
+            enabled: bedrockSwitch.checked
+            placeholderText: "us-east-1"
+            Layout.fillWidth: true
+        }
+
+        QQC2.TextField {
+            id: bedrockProfileField
+            Kirigami.FormData.label: i18n("AWS Profile:")
+            enabled: bedrockSwitch.checked
+            placeholderText: "default"
+            Layout.fillWidth: true
+            QQC2.ToolTip.text: i18n("The AWS profile to use from ~/.aws/credentials (currently ignored, use keys below)")
+        }
+
+        RowLayout {
+            Kirigami.FormData.label: i18n("Access Key ID:")
+            Layout.fillWidth: true
+            spacing: Kirigami.Units.smallSpacing
+
+            QQC2.TextField {
+                id: bedrockKeyField
+                enabled: bedrockSwitch.checked
+                placeholderText: "AKIA..."
+                Layout.fillWidth: true
+                onTextEdited: providersPage.bedrockKeyDirty = true
+            }
+        }
+
+        RowLayout {
+            Kirigami.FormData.label: i18n("Secret Access Key:")
+            Layout.fillWidth: true
+            spacing: Kirigami.Units.smallSpacing
+
+            QQC2.TextField {
+                id: bedrockSecretField
+                enabled: bedrockSwitch.checked
+                echoMode: bedrockSecretVisible.checked ? TextInput.Normal : TextInput.Password
+                placeholderText: i18n("AWS Secret Key")
+                Layout.fillWidth: true
+                onTextEdited: providersPage.bedrockSecretDirty = true
+            }
+
+            QQC2.ToolButton {
+                id: bedrockSecretVisible
+                checkable: true; checked: false
+                icon.name: checked ? "password-show-off" : "password-show-on"
+                display: QQC2.AbstractButton.IconOnly
+                QQC2.ToolTip.text: checked ? i18n("Hide key") : i18n("Show key")
+                QQC2.ToolTip.visible: hovered
+            }
+        }
+
+        QQC2.Label {
+            visible: bedrockSwitch.checked
+            text: i18n("Requires 'bedrock:ListInvocations' and 'cloudwatch:GetMetricData' permissions.")
+            font.pointSize: Kirigami.Theme.smallFont.pointSize
+            opacity: 0.6; wrapMode: Text.WordWrap; Layout.fillWidth: true
         }
 
         // ══════════════════════════════════════════════

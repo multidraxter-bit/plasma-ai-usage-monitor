@@ -52,6 +52,7 @@ PlasmoidItem {
     property alias azure: azureBackend
     property alias loofi: loofiBackend
     property alias ollama: ollamaBackend
+    property alias bedrock: bedrockBackend
     property alias usageDb: usageDatabase
 
     // Subscription tool monitors
@@ -227,6 +228,15 @@ PlasmoidItem {
     OllamaProvider {
         id: ollamaBackend
         customBaseUrl: plasmoid.configuration.ollamaServerUrl
+    }
+
+    BedrockProvider {
+        id: bedrockBackend
+        model: plasmoid.configuration.bedrockModel
+        region: plasmoid.configuration.bedrockRegion
+        dailyBudget: (plasmoid.configuration.bedrockDailyBudget || 0) / 100.0
+        monthlyBudget: (plasmoid.configuration.bedrockMonthlyBudget || 0) / 100.0
+        budgetWarningPercent: plasmoid.configuration.budgetWarningPercent
     }
 
     // ── Subscription Tool Monitors ──
@@ -643,6 +653,7 @@ PlasmoidItem {
 
     readonly property var allProviders: [
         { name: "Ollama", dbName: "Ollama", configKey: "ollama", backend: ollamaBackend, enabled: plasmoid.configuration.ollamaEnabled, color: "#9B9B9B", requiresApiKey: false },
+        { name: "AWS Bedrock", dbName: "Bedrock", configKey: "bedrock", backend: bedrockBackend, enabled: plasmoid.configuration.bedrockEnabled, color: "#FF9900" },
         { name: "Loofi Server", dbName: "LoofiServer", configKey: "loofi", backend: loofiBackend, enabled: plasmoid.configuration.loofiEnabled, color: "#FF6B35", requiresApiKey: false },
         { name: "OpenAI", dbName: "OpenAI", configKey: "openai", backend: openaiBackend, enabled: plasmoid.configuration.openaiEnabled, color: "#10A37F" },
         { name: "Anthropic", dbName: "Anthropic", configKey: "anthropic", backend: anthropicBackend, enabled: plasmoid.configuration.anthropicEnabled, color: "#D4A574" },
