@@ -21,6 +21,8 @@
 #include "claudecodemonitor.h"
 #include "codexclimonitor.h"
 #include "copilotmonitor.h"
+#include "cursormonitor.h"
+#include "windsurfmonitor.h"
 #include "browsercookieextractor.h"
 #include "loofiserverprovider.h"
 
@@ -58,6 +60,8 @@ void AiUsagePlugin::registerTypes(const char *uri)
     qmlRegisterType<ClaudeCodeMonitor>(uri, 1, 0, "ClaudeCodeMonitor");
     qmlRegisterType<CodexCliMonitor>(uri, 1, 0, "CodexCliMonitor");
     qmlRegisterType<CopilotMonitor>(uri, 1, 0, "CopilotMonitor");
+    qmlRegisterType<CursorMonitor>(uri, 1, 0, "CursorMonitor");
+    qmlRegisterType<WindsurfMonitor>(uri, 1, 0, "WindsurfMonitor");
 
     // Browser cookie extraction for sync
     qmlRegisterType<BrowserCookieExtractor>(uri, 1, 0, "BrowserCookieExtractor");

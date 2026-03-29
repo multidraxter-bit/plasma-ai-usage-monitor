@@ -22,6 +22,8 @@ set(aiusagemonitor_SRCS
     claudecodemonitor.cpp
     codexclimonitor.cpp
     copilotmonitor.cpp
+    cursormonitor.cpp
+    windsurfmonitor.cpp
     browsercookieextractor.cpp
     loofiserverprovider.cpp
 )
@@ -51,6 +53,8 @@ set(aiusagemonitor_HDRS
     claudecodemonitor.h
     codexclimonitor.h
     copilotmonitor.h
+    cursormonitor.h
+    windsurfmonitor.h
     browsercookieextractor.h
     loofiserverprovider.h
 )
