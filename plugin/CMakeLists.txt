@@ -29,6 +29,7 @@ set(aiusagemonitor_SRCS
     ollamaprovider.cpp
     intelligencebackend.cpp
     awssigv4signer.cpp
+    bedrockprovider.cpp
 )
 
 set(aiusagemonitor_HDRS
@@ -63,6 +64,7 @@ set(aiusagemonitor_HDRS
     ollamaprovider.h
     intelligencebackend.h
     awssigv4signer.h
+    bedrockprovider.h
 )
 
 add_library(aiusagemonitorplugin SHARED ${aiusagemonitor_SRCS} ${aiusagemonitor_HDRS})
