@@ -80,7 +80,7 @@ void BedrockProvider::refresh() {
     AwsSigV4Signer::sign(request, payload, creds, m_region, "monitoring");
 
     QNetworkReply *reply = networkManager()->post(request, payload);
-    connect(reply, &QNetworkReply::finished, this, &BedrockProvider::onCloudWatchReply);
+    connect(reply, &QNetworkReply::finished, this, [this, reply]() { onCloudWatchReply(reply); });
     trackReply(reply);
 }
 

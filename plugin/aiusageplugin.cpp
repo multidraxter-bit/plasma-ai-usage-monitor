@@ -28,6 +28,7 @@
 #include "ollamaprovider.h"
 #include "intelligencebackend.h"
 #include "bedrockprovider.h"
+#include "forecastengine.h"
 
 #include <QQmlEngine>
 #include <QJSEngine>
@@ -81,8 +82,12 @@ void AiUsagePlugin::registerTypes(const char *uri)
     // AWS Bedrock
     qmlRegisterType<BedrockProvider>(uri, 1, 0, "BedrockProvider");
 
-    // Register abstract base classes
- as uncreatable (for type info in QML)
+    // Forecast
+    qmlRegisterSingletonType<ForecastEngine>(uri, 1, 0, "ForecastEngine", [](QQmlEngine *, QJSEngine *) -> QObject * {
+        return new ForecastEngine();
+    });
+
+    // Register abstract base classes as uncreatable (for type info in QML)
     qmlRegisterUncreatableType<ProviderBackend>(uri, 1, 0, "ProviderBackend",
         QStringLiteral("ProviderBackend is abstract; use a specific provider type."));
     qmlRegisterUncreatableType<SubscriptionToolBackend>(uri, 1, 0, "SubscriptionToolBackend",

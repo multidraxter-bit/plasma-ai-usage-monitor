@@ -1,4 +1,5 @@
 #include "intelligencebackend.h"
+#include "forecastengine.h"
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonArray>
@@ -33,19 +34,33 @@ void IntelligenceBackend::generate(const QString &ollamaUrl, const QString &mode
 
     QString history = m_database->getRecentHistoryJson(7);
     
+    // Calculate forecast for the prompt
+    ForecastEngine engine;
+    QJsonDocument doc = QJsonDocument::fromJson(history.toUtf8());
+    QJsonArray providers = doc.object().value("providers").toArray();
+    QString forecastInfo;
+    for (const QJsonValue &v : providers) {
+        QJsonObject p = v.toObject();
+        QVariantList daily = p.value("dailyBreakdown").toArray().toVariantList();
+        if (daily.size() >= 2) {
+            double projected = engine.calculateMonthlyProjection(daily);
+            forecastInfo += QString("%1: Projected EOM cost $%2\n").arg(p.value("name").toString()).arg(projected, 0, 'f', 2);
+        }
+    }
+
     QString systemPrompt = QStringLiteral(
         "You are an AI financial analyst for the 'Plasma AI Usage Monitor'. "
-        "Analyze the following 7-day usage history and provide insights in a structured format. "
-        "Focus on cost-saving and unusual patterns. "
+        "Analyze the following 7-day usage history and projections to provide insights in a structured format. "
+        "Focus on cost-saving, trend analysis, and budget warnings. "
         "Format your response EXACTLY like this:\n"
-        "[BANNER] (One short sentence for a dashboard alert, e.g. 'Spending is up 20%')\n"
-        "[SNIPPET] (One very short sentence for a card summary, e.g. 'Trending higher')\n"
-        "[FULL] (A detailed 2-3 paragraph analysis with specific recommendations)\n"
+        "[BANNER] (One short sentence for a dashboard alert, e.g. 'Projected to exceed budget by $5')\n"
+        "[SNIPPET] (One very short sentence for a card summary, e.g. 'Trending +15%')\n"
+        "[FULL] (A detailed 2-3 paragraph analysis with specific recommendations based on history and EOM projection)\n"
     );
 
     QJsonObject root;
     root[QStringLiteral("model")] = modelName;
-    root[QStringLiteral("prompt")] = systemPrompt + "\n\nUsage History:\n" + history;
+    root[QStringLiteral("prompt")] = systemPrompt + "\n\nUsage History:\n" + history + "\n\nForecasts:\n" + forecastInfo;
     root[QStringLiteral("stream")] = false;
 
     QNetworkRequest request(QUrl(ollamaUrl + QStringLiteral("/api/generate")));

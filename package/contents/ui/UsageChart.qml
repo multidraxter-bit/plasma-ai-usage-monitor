@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Layouts
 import org.kde.plasma.components as PlasmaComponents
 import org.kde.kirigami as Kirigami
+import com.github.loofi.aiusagemonitor 1.0
 
 /**
  * Canvas-based line/area chart for visualizing usage history data.
@@ -193,6 +194,41 @@ Item {
                 ctx.bezierCurveTo(cp2.cp1x, cp2.cp1y, cp2.cp2x, cp2.cp2y, points[p].x, points[p].y);
             }
             ctx.stroke();
+
+            // ── Draw projection (Dashed) ──
+            if (chartRoot.metric === "cost" && values.length >= 3) {
+                var history = [];
+                for (var hidx = 0; hidx < values.length; hidx++) {
+                    history.push({ cost: values[hidx] });
+                }
+                
+                var lastP = points[points.length - 1];
+                
+                // Project 15% further on X axis for visual hint
+                var projX = lastP.x + chartW * 0.15;
+                if (projX > marginLeft + chartW) projX = marginLeft + chartW;
+                
+                // Calculate projected Y (slope-based)
+                var slope = ForecastEngine.calculateTrendSlope(history);
+                var projY = lastP.y - (slope / (maxVal - minVal)) * chartH * (values.length * 0.15);
+                if (projY < marginTop) projY = marginTop;
+                if (projY > marginTop + chartH) projY = marginTop + chartH;
+
+                ctx.beginPath();
+                ctx.strokeStyle = chartRoot.lineColor;
+                ctx.lineWidth = 2;
+                ctx.setLineDash([5, 5]);
+                ctx.moveTo(lastP.x, lastP.y);
+                ctx.lineTo(projX, projY);
+                ctx.stroke();
+                ctx.setLineDash([]);
+                
+                // Label the projection
+                ctx.fillStyle = chartRoot.lineColor;
+                ctx.font = "italic 9px sans-serif";
+                ctx.textAlign = "left";
+                ctx.fillText(i18n("Projected"), projX + 4, projY + 3);
+            }
 
             // ── Draw data points (if not too many) ──
             if (values.length <= 50) {

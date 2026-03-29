@@ -30,6 +30,7 @@ set(aiusagemonitor_SRCS
     intelligencebackend.cpp
     awssigv4signer.cpp
     bedrockprovider.cpp
+    forecastengine.cpp
 )
 
 set(aiusagemonitor_HDRS
@@ -65,6 +66,7 @@ set(aiusagemonitor_HDRS
     intelligencebackend.h
     awssigv4signer.h
     bedrockprovider.h
+    forecastengine.h
 )
 
 add_library(aiusagemonitorplugin SHARED ${aiusagemonitor_SRCS} ${aiusagemonitor_HDRS})

@@ -559,6 +559,7 @@ ColumnLayout {
                     }
 
                     QQC2.ProgressBar {
+                        id: monthlyProgressBar
                         Layout.fillWidth: true
                         Layout.preferredHeight: 4
                         from: 0
@@ -569,6 +570,22 @@ ColumnLayout {
                             implicitHeight: 4
                             radius: 2
                             color: Qt.alpha(Kirigami.Theme.textColor, 0.1)
+                            
+                            // Ghost segment for forecast
+                            Rectangle {
+                                property real estCost: card.backend?.estimatedMonthlyCost ?? 0
+                                property real curCost: card.backend?.monthlyCost ?? 0
+                                property real budget: card.backend?.monthlyBudget ?? 1
+                                
+                                visible: estCost > curCost && budget > 0
+                                x: Math.min(parent.width, (curCost / budget) * parent.width)
+                                width: Math.min(parent.width - x, ((estCost - curCost) / budget) * parent.width)
+                                height: parent.height
+                                radius: 2
+                                color: Qt.alpha(budgetColor(estCost, budget), 0.3)
+                                border.width: 1
+                                border.color: Qt.alpha(budgetColor(estCost, budget), 0.5)
+                            }
                         }
 
                         contentItem: Rectangle {
