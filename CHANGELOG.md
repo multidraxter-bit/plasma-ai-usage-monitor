@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [4.0.0] — 2026-03-29
+
+### Added
+
+- Add **Cursor AI** activity tracking via filesystem monitoring of `~/.cursor/chats` and `ai-code-tracking.db`
+- Add **Windsurf (Codeium)** activity tracking via filesystem monitoring of `~/.codeium/`
+- Add plan presets and quota tracking for Cursor (Free/Pro/Business) and Windsurf (Individual/Pro/Teams)
+- Support automatic subscription cost aggregation for new IDE tools in the monthly summary totals
+- Implement intelligent activity debouncing (10s) to ensure accurate usage counting without double-triggering
+
 ## [3.9.2] — 2026-03-28
 
 ### Added

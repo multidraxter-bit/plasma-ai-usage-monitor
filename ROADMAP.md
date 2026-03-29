@@ -1,7 +1,7 @@
 # Roadmap — Plasma AI Usage Monitor
 
-> **Current version:** v3.9.2 (UI polish + Cost Projection)
-> **Last updated:** 2026-03-28
+> **Current version:** v4.0.0 (Horizon: IDE Tracking)
+> **Last updated:** 2026-03-29
 
 ---
 
@@ -9,6 +9,7 @@
 
 | Version | Codename       | Theme                                                             | Status   |
 | ------- | -------------- | ----------------------------------------------------------------- | -------- |
+| v4.0.0  | **Horizon**    | Cursor AI & Windsurf IDE tracking + aggregate costs               | Released |
 | v3.9.2  | **Showcase**   | Predictive cost forecasting + UI polish                           | Released |
 | v3.9.1  | **Showcase**   | Budget Health progress visualization                              | Released |
 | v3.9.0  | **Showcase**   | Mock server + Fedora KDE VM demo workflow hardening               | Released |
