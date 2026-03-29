@@ -61,6 +61,7 @@ PlasmoidItem {
     property alias copilot: copilotMonitor
     property alias cursor: cursorMonitor
     property alias windsurf: windsurfMonitor
+    property alias jetbrains: jetbrainsMonitor
     property alias intelligence: intelligenceBackend
 
     // Notification cooldown tracking
@@ -408,6 +409,32 @@ PlasmoidItem {
         }
     }
 
+    JetBrainsMonitor {
+        id: jetbrainsMonitor
+        enabled: plasmoid.configuration.jetbrainsEnabled
+        usageLimit: plasmoid.configuration.jetbrainsCustomLimit
+
+        Component.onCompleted: {
+            checkToolInstalled();
+            var plans = availablePlans();
+            var idx = plasmoid.configuration.jetbrainsPlan;
+            if (idx >= 0 && idx < plans.length) {
+                planTier = plans[idx];
+                if (usageLimit === 0) usageLimit = defaultLimitForPlan(plans[idx]);
+            }
+        }
+
+        onLimitWarning: function(tool, percent) {
+            handleToolLimitWarning(tool, percent);
+        }
+        onLimitReached: function(tool) {
+            handleToolLimitReached(tool);
+        }
+        onUsageUpdated: {
+            recordToolUsageSnapshot(jetbrainsMonitor);
+        }
+    }
+
     // ── Subscription Notification ──
 
     Notification {
@@ -674,7 +701,8 @@ PlasmoidItem {
         { name: "Codex CLI", monitor: codexCliMonitor, enabled: plasmoid.configuration.codexEnabled, notify: plasmoid.configuration.codexNotifications },
         { name: "GitHub Copilot", monitor: copilotMonitor, enabled: plasmoid.configuration.copilotEnabled, notify: plasmoid.configuration.copilotNotifications },
         { name: "Cursor AI", monitor: cursorMonitor, enabled: plasmoid.configuration.cursorEnabled, notify: plasmoid.configuration.cursorNotifications },
-        { name: "Windsurf", monitor: windsurfMonitor, enabled: plasmoid.configuration.windsurfEnabled, notify: plasmoid.configuration.windsurfNotifications }
+        { name: "Windsurf", monitor: windsurfMonitor, enabled: plasmoid.configuration.windsurfEnabled, notify: plasmoid.configuration.windsurfNotifications },
+        { name: "JetBrains AI", monitor: jetbrainsMonitor, enabled: plasmoid.configuration.jetbrainsEnabled, notify: plasmoid.configuration.jetbrainsNotifications }
     ]
 
     readonly property int enabledToolCount: {
@@ -1151,6 +1179,10 @@ PlasmoidItem {
         function onWindsurfEnabledChanged() {
             windsurfMonitor.enabled = plasmoid.configuration.windsurfEnabled;
             if (windsurfMonitor.enabled) windsurfMonitor.checkToolInstalled();
+        }
+        function onJetbrainsEnabledChanged() {
+            jetbrainsMonitor.enabled = plasmoid.configuration.jetbrainsEnabled;
+            if (jetbrainsMonitor.enabled) jetbrainsMonitor.checkToolInstalled();
         }
     }
 }
