@@ -57,6 +57,8 @@ PlasmoidItem {
     property alias claudeCode: claudeCodeMonitor
     property alias codexCli: codexCliMonitor
     property alias copilot: copilotMonitor
+    property alias cursor: cursorMonitor
+    property alias windsurf: windsurfMonitor
 
     // Notification cooldown tracking
     property var lastNotificationTimes: ({})
@@ -318,6 +320,58 @@ PlasmoidItem {
         }
     }
 
+    CursorMonitor {
+        id: cursorMonitor
+        enabled: plasmoid.configuration.cursorEnabled
+        usageLimit: plasmoid.configuration.cursorCustomLimit
+
+        Component.onCompleted: {
+            checkToolInstalled();
+            var plans = availablePlans();
+            var idx = plasmoid.configuration.cursorPlan;
+            if (idx >= 0 && idx < plans.length) {
+                planTier = plans[idx];
+                if (usageLimit === 0) usageLimit = defaultLimitForPlan(plans[idx]);
+            }
+        }
+
+        onLimitWarning: function(tool, percent) {
+            handleToolLimitWarning(tool, percent);
+        }
+        onLimitReached: function(tool) {
+            handleToolLimitReached(tool);
+        }
+        onUsageUpdated: {
+            recordToolUsageSnapshot(cursorMonitor);
+        }
+    }
+
+    WindsurfMonitor {
+        id: windsurfMonitor
+        enabled: plasmoid.configuration.windsurfEnabled
+        usageLimit: plasmoid.configuration.windsurfCustomLimit
+
+        Component.onCompleted: {
+            checkToolInstalled();
+            var plans = availablePlans();
+            var idx = plasmoid.configuration.windsurfPlan;
+            if (idx >= 0 && idx < plans.length) {
+                planTier = plans[idx];
+                if (usageLimit === 0) usageLimit = defaultLimitForPlan(plans[idx]);
+            }
+        }
+
+        onLimitWarning: function(tool, percent) {
+            handleToolLimitWarning(tool, percent);
+        }
+        onLimitReached: function(tool) {
+            handleToolLimitReached(tool);
+        }
+        onUsageUpdated: {
+            recordToolUsageSnapshot(windsurfMonitor);
+        }
+    }
+
     // ── Subscription Notification ──
 
     Notification {
@@ -571,7 +625,9 @@ PlasmoidItem {
     readonly property var allSubscriptionTools: [
         { name: "Claude Code", monitor: claudeCodeMonitor, enabled: plasmoid.configuration.claudeCodeEnabled, notify: plasmoid.configuration.claudeCodeNotifications },
         { name: "Codex CLI", monitor: codexCliMonitor, enabled: plasmoid.configuration.codexEnabled, notify: plasmoid.configuration.codexNotifications },
-        { name: "GitHub Copilot", monitor: copilotMonitor, enabled: plasmoid.configuration.copilotEnabled, notify: plasmoid.configuration.copilotNotifications }
+        { name: "GitHub Copilot", monitor: copilotMonitor, enabled: plasmoid.configuration.copilotEnabled, notify: plasmoid.configuration.copilotNotifications },
+        { name: "Cursor AI", monitor: cursorMonitor, enabled: plasmoid.configuration.cursorEnabled, notify: plasmoid.configuration.cursorNotifications },
+        { name: "Windsurf", monitor: windsurfMonitor, enabled: plasmoid.configuration.windsurfEnabled, notify: plasmoid.configuration.windsurfNotifications }
     ]
 
     readonly property int enabledToolCount: {
@@ -1036,6 +1092,14 @@ PlasmoidItem {
         function onCopilotEnabledChanged() {
             copilotMonitor.enabled = plasmoid.configuration.copilotEnabled;
             if (copilotMonitor.enabled) copilotMonitor.checkToolInstalled();
+        }
+        function onCursorEnabledChanged() {
+            cursorMonitor.enabled = plasmoid.configuration.cursorEnabled;
+            if (cursorMonitor.enabled) cursorMonitor.checkToolInstalled();
+        }
+        function onWindsurfEnabledChanged() {
+            windsurfMonitor.enabled = plasmoid.configuration.windsurfEnabled;
+            if (windsurfMonitor.enabled) windsurfMonitor.checkToolInstalled();
         }
     }
 }
