@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [4.2.0] — 2026-03-29
+
+### Added
+
+- Add **Chrome / Chromium Browser Sync** support:
+    - Extract session cookies from Chrome, Chromium, Brave, and Edge on Linux
+    - Multi-browser quota syncing for Claude Code and Codex CLI
+- Modernize **Dashboard UI** with a responsive card-based grid:
+    - New 2-column layout for wide popups/dashboards
+    - Unified styling across all provider and tool cards
+    - Optimized information density and visual hierarchy
+
 ## [4.1.0] — 2026-03-29
 
 ### Added

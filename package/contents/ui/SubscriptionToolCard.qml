@@ -29,10 +29,10 @@ ColumnLayout {
         Layout.fillWidth: true
         Layout.preferredHeight: toolContent.implicitHeight + Kirigami.Units.largeSpacing * 2
         radius: Kirigami.Units.cornerRadius
-        color: Qt.tint(Kirigami.Theme.backgroundColor, Qt.alpha(toolCard.toolColor, 0.035))
+        color: Qt.darker(Kirigami.Theme.backgroundColor, 1.05)
         border.width: 1
         border.color: {
-            if (!(toolCard.monitor?.installed ?? false)) return Qt.alpha(Kirigami.Theme.textColor, 0.12);
+            if (!(toolCard.monitor?.installed ?? false)) return Qt.alpha(Kirigami.Theme.textColor, 0.1);
             if (toolCard.monitor?.limitReached ?? false) return Qt.alpha(Kirigami.Theme.negativeTextColor, 0.3);
             return Qt.alpha(toolCard.toolColor, 0.24);
         }

@@ -421,11 +421,11 @@
         </entry>
         <entry name="browserSyncBrowser" type="Int">
             <default>0</default>
-            <label>Browser type: 0=Firefox (supported). Legacy non-zero values are treated as Firefox.</label>
+            <label>Browser type: 0=Firefox, 1=Chrome, 2=Chromium, 3=Brave, 4=Edge</label>
         </entry>
         <entry name="browserSyncProfile" type="String">
             <default></default>
-            <label>Firefox profile name to use for browser sync (empty = auto/default)</label>
+            <label>Specific profile name/directory to use (empty = auto/default)</label>
         </entry>
         <entry name="browserSyncInterval" type="Int">
             <default>300</default>

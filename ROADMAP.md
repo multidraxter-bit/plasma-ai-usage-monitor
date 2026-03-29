@@ -1,6 +1,6 @@
 # Roadmap — Plasma AI Usage Monitor
 
-> **Current version:** v4.1.0 (Horizon: Local LLM)
+> **Current version:** v4.2.0 (Horizon: Dashboard Grid)
 > **Last updated:** 2026-03-29
 
 ---
@@ -9,9 +9,9 @@
 
 | Version | Codename       | Theme                                                             | Status   |
 | ------- | -------------- | ----------------------------------------------------------------- | -------- |
+| v4.2.0  | **Horizon**    | Dashboard Grid Overhaul + Chrome/Chromium Sync                    | Released |
 | v4.1.0  | **Horizon**    | Local LLM monitoring (Ollama)                                     | Released |
 | v4.0.0  | **Horizon**    | Cursor AI & Windsurf IDE tracking + aggregate costs               | Released |
-| v3.9.2  | **Showcase**   | Predictive cost forecasting + UI polish                           | Released |
 | v3.9.1  | **Showcase**   | Budget Health progress visualization                              | Released |
 | v3.9.0  | **Showcase**   | Mock server + Fedora KDE VM demo workflow hardening               | Released |
 | v3.8.1  | **Pulse**      | Release packaging + build fix hotpatch                            | Released |
