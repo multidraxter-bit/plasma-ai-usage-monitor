@@ -21,3 +21,4 @@ __pycache__/
 tmpclaude-*
 .tmp-*.log
 *.plasmoid
+.worktrees/
