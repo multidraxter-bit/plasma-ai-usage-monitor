@@ -94,6 +94,11 @@ public:
                                        const QDateTime &to) const;
 
     /**
+     * Get recent history summarized as a JSON string for AI analysis.
+     */
+    Q_INVOKABLE QString getRecentHistoryJson(int days) const;
+
+    /**
      * Get all providers that have recorded data.
      */
     Q_INVOKABLE QStringList getProviders() const;

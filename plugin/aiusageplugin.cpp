@@ -26,6 +26,7 @@
 #include "browsercookieextractor.h"
 #include "loofiserverprovider.h"
 #include "ollamaprovider.h"
+#include "intelligencebackend.h"
 
 #include <QQmlEngine>
 #include <QJSEngine>
@@ -73,7 +74,11 @@ void AiUsagePlugin::registerTypes(const char *uri)
     // Ollama
     qmlRegisterType<OllamaProvider>(uri, 1, 0, "OllamaProvider");
 
-    // Register abstract base classes as uncreatable (for type info in QML)
+    // Intelligence
+    qmlRegisterType<IntelligenceBackend>(uri, 1, 0, "IntelligenceBackend");
+
+    // Register abstract base classes
+ as uncreatable (for type info in QML)
     qmlRegisterUncreatableType<ProviderBackend>(uri, 1, 0, "ProviderBackend",
         QStringLiteral("ProviderBackend is abstract; use a specific provider type."));
     qmlRegisterUncreatableType<SubscriptionToolBackend>(uri, 1, 0, "SubscriptionToolBackend",

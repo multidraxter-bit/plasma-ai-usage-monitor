@@ -27,6 +27,8 @@ set(aiusagemonitor_SRCS
     browsercookieextractor.cpp
     loofiserverprovider.cpp
     ollamaprovider.cpp
+    intelligencebackend.cpp
+    awssigv4signer.cpp
 )
 
 set(aiusagemonitor_HDRS
@@ -59,6 +61,8 @@ set(aiusagemonitor_HDRS
     browsercookieextractor.h
     loofiserverprovider.h
     ollamaprovider.h
+    intelligencebackend.h
+    awssigv4signer.h
 )
 
 add_library(aiusagemonitorplugin SHARED ${aiusagemonitor_SRCS} ${aiusagemonitor_HDRS})

@@ -807,6 +807,66 @@ void UsageDatabase::init()
     }
 }
 
+QString UsageDatabase::getRecentHistoryJson(int days) const
+{
+    if (!m_db.isOpen()) return QStringLiteral("{}");
+
+    QDateTime to = QDateTime::currentDateTime();
+    QDateTime from = to.addDays(-days);
+
+    QJsonObject root;
+    root[QStringLiteral("days")] = days;
+    root[QStringLiteral("from")] = from.toString(Qt::ISODate);
+    root[QStringLiteral("to")] = to.toString(Qt::ISODate);
+
+    QJsonArray providersArray;
+    QStringList providers = getProviders();
+    for (const QString &provider : providers) {
+        QVariantMap summary = getSummary(provider, from, to);
+        if (summary.isEmpty()) continue;
+
+        QJsonObject pObj;
+        pObj[QStringLiteral("name")] = provider;
+        pObj[QStringLiteral("totalCost")] = summary[QStringLiteral("totalCost")].toDouble();
+        pObj[QStringLiteral("totalRequests")] = summary[QStringLiteral("totalRequests")].toInt();
+        pObj[QStringLiteral("avgDailyCost")] = summary[QStringLiteral("avgDailyCost")].toDouble();
+        pObj[QStringLiteral("peakTokenUsage")] = summary[QStringLiteral("peakTokenUsage")].toLongLong();
+        
+        QJsonArray dailyArray;
+        QVariantList dailyCosts = getDailyCosts(provider, from, to);
+        for (const QVariant &v : dailyCosts) {
+            QVariantMap m = v.toMap();
+            QJsonObject dObj;
+            dObj[QStringLiteral("date")] = m[QStringLiteral("date")].toString();
+            dObj[QStringLiteral("cost")] = m[QStringLiteral("totalCost")].toDouble();
+            dailyArray.append(dObj);
+        }
+        pObj[QStringLiteral("dailyBreakdown")] = dailyArray;
+        
+        providersArray.append(pObj);
+    }
+    root[QStringLiteral("providers")] = providersArray;
+
+    QJsonArray toolsArray;
+    QStringList tools = getToolNames();
+    for (const QString &tool : tools) {
+        QVariantList snapshots = getToolSnapshots(tool, from, to);
+        if (snapshots.isEmpty()) continue;
+        
+        QJsonObject tObj;
+        tObj[QStringLiteral("name")] = tool;
+        QVariantMap latest = snapshots.last().toMap();
+        tObj[QStringLiteral("plan")] = latest[QStringLiteral("planTier")].toString();
+        tObj[QStringLiteral("limit")] = latest[QStringLiteral("usageLimit")].toInt();
+        tObj[QStringLiteral("usage")] = latest[QStringLiteral("usageCount")].toInt();
+        
+        toolsArray.append(tObj);
+    }
+    root[QStringLiteral("subscriptionTools")] = toolsArray;
+
+    return QJsonDocument(root).toJson(QJsonDocument::Compact);
+}
+
 void UsageDatabase::pruneOldData()
 {
     if (!m_initialized)
