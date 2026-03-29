@@ -33,6 +33,18 @@ KCM.SimpleKCM {
     property alias cfg_copilotNotifications: copilotNotifySwitch.checked
     property alias cfg_copilotOrgName: copilotOrgField.text
 
+    // ── Windsurf ──
+    property alias cfg_windsurfEnabled: windsurfSwitch.checked
+    property alias cfg_windsurfPlan: windsurfPlanCombo.currentIndex
+    property alias cfg_windsurfCustomLimit: windsurfLimitSpin.value
+    property alias cfg_windsurfNotifications: windsurfNotifySwitch.checked
+
+    // ── JetBrains AI ──
+    property alias cfg_jetbrainsEnabled: jetbrainsSwitch.checked
+    property alias cfg_jetbrainsPlan: jetbrainsPlanCombo.currentIndex
+    property alias cfg_jetbrainsCustomLimit: jetbrainsLimitSpin.value
+    property alias cfg_jetbrainsNotifications: jetbrainsNotifySwitch.checked
+
     // Track key dirtiness for Copilot PAT
     property bool copilotTokenDirty: false
 
@@ -99,6 +111,16 @@ KCM.SimpleKCM {
 
     CopilotMonitor {
         id: copilotDetector
+        Component.onCompleted: checkToolInstalled()
+    }
+
+    WindsurfMonitor {
+        id: windsurfDetector
+        Component.onCompleted: checkToolInstalled()
+    }
+
+    JetBrainsMonitor {
+        id: jetbrainsDetector
         Component.onCompleted: checkToolInstalled()
     }
 
@@ -492,6 +514,140 @@ KCM.SimpleKCM {
             text: plasmoid.configuration.copilotOrgName
             placeholderText: i18n("my-org-name")
             Layout.fillWidth: true
+        }
+
+        // ══════════════════════════════════════════════
+        // ── Windsurf (Codeium) ──
+        // ══════════════════════════════════════════════
+
+        Kirigami.Separator {
+            Kirigami.FormData.isSection: true
+            Kirigami.FormData.label: i18n("Windsurf (Codeium)")
+        }
+
+        RowLayout {
+            Kirigami.FormData.label: i18n("Enable:")
+            spacing: Kirigami.Units.largeSpacing
+
+            QQC2.Switch {
+                id: windsurfSwitch
+                checked: plasmoid.configuration.windsurfEnabled
+            }
+
+            QQC2.Label {
+                Layout.fillWidth: true
+                elide: Text.ElideRight
+                text: windsurfDetector.installed
+                    ? "✓ " + i18n("Detected")
+                    : "✗ " + i18n("Not found")
+                color: windsurfDetector.installed
+                    ? Kirigami.Theme.positiveTextColor
+                    : Kirigami.Theme.disabledTextColor
+                font.pointSize: Kirigami.Theme.smallFont.pointSize
+            }
+        }
+
+        QQC2.ComboBox {
+            id: windsurfPlanCombo
+            Kirigami.FormData.label: i18n("Plan:")
+            enabled: windsurfSwitch.checked
+            Layout.fillWidth: true
+            model: windsurfDetector.availablePlans()
+            currentIndex: plasmoid.configuration.windsurfPlan
+            onCurrentIndexChanged: {
+                var plans = windsurfDetector.availablePlans();
+                if (currentIndex >= 0 && currentIndex < plans.length) {
+                    var def = windsurfDetector.defaultLimitForPlan(plans[currentIndex]);
+                    if (windsurfLimitSpin.value === 0) windsurfLimitSpin.value = def;
+                }
+            }
+        }
+
+        RowLayout {
+            Kirigami.FormData.label: i18n("Monthly flow actions:")
+            spacing: Kirigami.Units.smallSpacing
+
+            QQC2.SpinBox {
+                id: windsurfLimitSpin
+                enabled: windsurfSwitch.checked
+                from: 0; to: 99999
+                value: plasmoid.configuration.windsurfCustomLimit
+                editable: true
+            }
+        }
+
+        QQC2.Switch {
+            id: windsurfNotifySwitch
+            Kirigami.FormData.label: i18n("Notifications:")
+            enabled: windsurfSwitch.checked
+            checked: plasmoid.configuration.windsurfNotifications
+        }
+
+        // ══════════════════════════════════════════════
+        // ── JetBrains AI Assistant ──
+        // ══════════════════════════════════════════════
+
+        Kirigami.Separator {
+            Kirigami.FormData.isSection: true
+            Kirigami.FormData.label: i18n("JetBrains AI Assistant")
+        }
+
+        RowLayout {
+            Kirigami.FormData.label: i18n("Enable:")
+            spacing: Kirigami.Units.largeSpacing
+
+            QQC2.Switch {
+                id: jetbrainsSwitch
+                checked: plasmoid.configuration.jetbrainsEnabled
+            }
+
+            QQC2.Label {
+                Layout.fillWidth: true
+                elide: Text.ElideRight
+                text: jetbrainsDetector.installed
+                    ? "✓ " + i18n("Detected")
+                    : "✗ " + i18n("Not found")
+                color: jetbrainsDetector.installed
+                    ? Kirigami.Theme.positiveTextColor
+                    : Kirigami.Theme.disabledTextColor
+                font.pointSize: Kirigami.Theme.smallFont.pointSize
+            }
+        }
+
+        QQC2.ComboBox {
+            id: jetbrainsPlanCombo
+            Kirigami.FormData.label: i18n("Plan:")
+            enabled: jetbrainsSwitch.checked
+            Layout.fillWidth: true
+            model: jetbrainsDetector.availablePlans()
+            currentIndex: plasmoid.configuration.jetbrainsPlan
+            onCurrentIndexChanged: {
+                var plans = jetbrainsDetector.availablePlans();
+                if (currentIndex >= 0 && currentIndex < plans.length) {
+                    var def = jetbrainsDetector.defaultLimitForPlan(plans[currentIndex]);
+                    if (jetbrainsLimitSpin.value === 0) jetbrainsLimitSpin.value = def;
+                }
+            }
+        }
+
+        RowLayout {
+            Kirigami.FormData.label: i18n("Monthly requests:")
+            spacing: Kirigami.Units.smallSpacing
+
+            QQC2.SpinBox {
+                id: jetbrainsLimitSpin
+                enabled: jetbrainsSwitch.checked
+                from: 0; to: 99999
+                value: plasmoid.configuration.jetbrainsCustomLimit
+                editable: true
+            }
+        }
+
+        QQC2.Switch {
+            id: jetbrainsNotifySwitch
+            Kirigami.FormData.label: i18n("Notifications:")
+            enabled: jetbrainsSwitch.checked
+            checked: plasmoid.configuration.jetbrainsNotifications
         }
 
         // ══════════════════════════════════════════════
