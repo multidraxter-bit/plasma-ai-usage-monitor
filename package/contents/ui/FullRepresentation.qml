@@ -495,15 +495,32 @@ PlasmaExtras.Representation {
                         Repeater {
                             model: root.allProviders ?? []
 
-                            ProviderCard {
+                            Loader {
                                 Layout.fillWidth: true
                                 visible: modelData.enabled
-                                providerName: modelData.name
-                                providerIcon: modelData.backend?.iconName ?? "globe"
-                                providerColor: modelData.color
-                                backend: modelData.backend ?? null
-                                showCost: true
-                                showUsage: true
+                                sourceComponent: modelData.configKey === "ollama" ? ollamaCardComp : standardProviderCardComp
+
+                                property var providerData: modelData
+
+                                Component {
+                                    id: standardProviderCardComp
+                                    ProviderCard {
+                                        providerName: providerData.name
+                                        providerIcon: providerData.backend?.iconName ?? "globe"
+                                        providerColor: providerData.color
+                                        backend: providerData.backend ?? null
+                                        showCost: true
+                                        showUsage: true
+                                    }
+                                }
+
+                                Component {
+                                    id: ollamaCardComp
+                                    OllamaCard {
+                                        backend: providerData.backend
+                                        providerColor: providerData.color
+                                    }
+                                }
                             }
                         }
 

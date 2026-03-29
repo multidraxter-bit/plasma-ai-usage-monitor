@@ -1,6 +1,6 @@
 # Roadmap — Plasma AI Usage Monitor
 
-> **Current version:** v4.0.0 (Horizon: IDE Tracking)
+> **Current version:** v4.1.0 (Horizon: Local LLM)
 > **Last updated:** 2026-03-29
 
 ---
@@ -9,6 +9,7 @@
 
 | Version | Codename       | Theme                                                             | Status   |
 | ------- | -------------- | ----------------------------------------------------------------- | -------- |
+| v4.1.0  | **Horizon**    | Local LLM monitoring (Ollama)                                     | Released |
 | v4.0.0  | **Horizon**    | Cursor AI & Windsurf IDE tracking + aggregate costs               | Released |
 | v3.9.2  | **Showcase**   | Predictive cost forecasting + UI polish                           | Released |
 | v3.9.1  | **Showcase**   | Budget Health progress visualization                              | Released |

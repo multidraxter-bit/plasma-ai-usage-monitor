@@ -51,6 +51,7 @@ PlasmoidItem {
     property alias googleveo: googleveoBackend
     property alias azure: azureBackend
     property alias loofi: loofiBackend
+    property alias ollama: ollamaBackend
     property alias usageDb: usageDatabase
 
     // Subscription tool monitors
@@ -201,6 +202,11 @@ PlasmoidItem {
     LoofiServerProvider {
         id: loofiBackend
         customBaseUrl: plasmoid.configuration.loofiServerUrl
+    }
+
+    OllamaProvider {
+        id: ollamaBackend
+        customBaseUrl: plasmoid.configuration.ollamaServerUrl
     }
 
     // ── Subscription Tool Monitors ──
@@ -575,6 +581,15 @@ PlasmoidItem {
             if (canRefreshBackend(loofiBackend, false)) loofiBackend.refresh();
         }
     }
+    Timer {
+        id: ollamaRefreshTimer
+        interval: (plasmoid.configuration.ollamaRefreshInterval || 30) * 1000
+        running: plasmoid.configuration.ollamaEnabled
+        repeat: true
+        onTriggered: {
+            if (canRefreshBackend(ollamaBackend, false)) ollamaBackend.refresh();
+        }
+    }
 
     // Daily prune timer (runs once every 24h)
     Timer {
@@ -607,6 +622,7 @@ PlasmoidItem {
     // ── Helper: all provider info ──
 
     readonly property var allProviders: [
+        { name: "Ollama", dbName: "Ollama", configKey: "ollama", backend: ollamaBackend, enabled: plasmoid.configuration.ollamaEnabled, color: "#9B9B9B", requiresApiKey: false },
         { name: "Loofi Server", dbName: "LoofiServer", configKey: "loofi", backend: loofiBackend, enabled: plasmoid.configuration.loofiEnabled, color: "#FF6B35", requiresApiKey: false },
         { name: "OpenAI", dbName: "OpenAI", configKey: "openai", backend: openaiBackend, enabled: plasmoid.configuration.openaiEnabled, color: "#10A37F" },
         { name: "Anthropic", dbName: "Anthropic", configKey: "anthropic", backend: anthropicBackend, enabled: plasmoid.configuration.anthropicEnabled, color: "#D4A574" },
@@ -1056,8 +1072,12 @@ PlasmoidItem {
         function onGoogleveoEnabledChanged() { loadApiKeys(); }
         function onAzureEnabledChanged() { loadApiKeys(); }
         function onLoofiEnabledChanged() { refreshAll(); }
+        function onOllamaEnabledChanged() { refreshAll(); }
         function onLoofiServerUrlChanged() {
             if (plasmoid.configuration.loofiEnabled) loofiBackend.refresh();
+        }
+        function onOllamaServerUrlChanged() {
+            if (plasmoid.configuration.ollamaEnabled) ollamaBackend.refresh();
         }
         function onBrowserSyncProfileChanged() {
             browserCookies.selectedFirefoxProfile = plasmoid.configuration.browserSyncProfile;

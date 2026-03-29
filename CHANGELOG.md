@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [4.1.0] — 2026-03-29
+
+### Added
+
+- Add **Local LLM Monitoring (Ollama)** support:
+    - Real-time server status (Online/Offline) detection
+    - Active models list with their respective memory footprints
+    - VRAM and System RAM usage breakdown
+    - Specialized `OllamaCard` for resource-centric visualization
+    - Configurable Ollama server URL and refresh intervals
+
 ## [4.0.0] — 2026-03-29
 
 ### Added
