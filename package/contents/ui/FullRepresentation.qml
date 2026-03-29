@@ -281,304 +281,314 @@ PlasmaExtras.Representation {
                 Layout.fillHeight: true
 
                 contentItem: Flickable {
-                    flickableDirection: Flickable.VerticalFlick
-                    contentWidth: width
-                    contentHeight: liveColumn.implicitHeight
-                    interactive: contentHeight > height
-                    boundsBehavior: Flickable.StopAtBounds
-                    clip: true
+                flickableDirection: Flickable.VerticalFlick
+                contentWidth: width
+                contentHeight: liveGrid.implicitHeight + Kirigami.Units.mediumSpacing * 2
+                interactive: contentHeight > height
+                boundsBehavior: Flickable.StopAtBounds
+                clip: true
 
-                    ColumnLayout {
-                        id: liveColumn
-                        width: parent.width
-                        spacing: Kirigami.Units.mediumSpacing
+                GridLayout {
+                    id: liveGrid
+                    width: parent.width
+                    columns: fullRoot.narrowPopup ? 1 : 2
+                    columnSpacing: Kirigami.Units.largeSpacing
+                    rowSpacing: Kirigami.Units.largeSpacing
+                    Layout.margins: Kirigami.Units.mediumSpacing
 
-                        Rectangle {
-                            id: summaryGridContainer
-                            Layout.fillWidth: true
-                            Layout.leftMargin: Kirigami.Units.smallSpacing
-                            Layout.rightMargin: Kirigami.Units.smallSpacing
-                            Layout.topMargin: Kirigami.Units.smallSpacing
-                            radius: Kirigami.Units.cornerRadius
-                            color: Qt.alpha(Kirigami.Theme.highlightColor, 0.06)
-                            border.width: 1
-                            border.color: Qt.alpha(Kirigami.Theme.highlightColor, 0.22)
-                            visible: hasAnyProvider()
-                            implicitHeight: summaryGridLayout.implicitHeight + Kirigami.Units.smallSpacing * 2
+                    Rectangle {
+                        id: summaryGridContainer
+                        Layout.fillWidth: true
+                        Layout.columnSpan: liveGrid.columns
+                        Layout.leftMargin: Kirigami.Units.smallSpacing
+                        Layout.rightMargin: Kirigami.Units.smallSpacing
+                        Layout.topMargin: Kirigami.Units.smallSpacing
+                        radius: Kirigami.Units.cornerRadius
+                        color: Qt.alpha(Kirigami.Theme.highlightColor, 0.06)
+                        border.width: 1
+                        border.color: Qt.alpha(Kirigami.Theme.highlightColor, 0.22)
+                        visible: hasAnyProvider()
+                        implicitHeight: summaryGridLayout.implicitHeight + Kirigami.Units.smallSpacing * 2
 
-                            GridLayout {
-                                id: summaryGridLayout
-                                anchors.fill: parent
-                                anchors.margins: Kirigami.Units.smallSpacing
-                                columns: fullRoot.narrowPopup ? 2 : 4
-                                columnSpacing: Kirigami.Units.smallSpacing
-                                rowSpacing: Kirigami.Units.smallSpacing
+                        GridLayout {
+                            id: summaryGridLayout
+                            anchors.fill: parent
+                            anchors.margins: Kirigami.Units.smallSpacing
+                            columns: fullRoot.narrowPopup ? 2 : 4
+                            columnSpacing: Kirigami.Units.smallSpacing
+                            rowSpacing: Kirigami.Units.smallSpacing
 
-                                Rectangle {
-                                    Layout.fillWidth: true
-                                    radius: Kirigami.Units.smallSpacing
-                                    color: Qt.alpha(Kirigami.Theme.backgroundColor, 0.65)
-                                    border.width: 1
-                                    border.color: Qt.alpha(Kirigami.Theme.textColor, 0.08)
-                                    implicitHeight: summaryProvidersColumn.implicitHeight + Kirigami.Units.smallSpacing * 2
+                            Rectangle {
+                                Layout.fillWidth: true
+                                radius: Kirigami.Units.smallSpacing
+                                color: Qt.alpha(Kirigami.Theme.backgroundColor, 0.65)
+                                border.width: 1
+                                border.color: Qt.alpha(Kirigami.Theme.textColor, 0.08)
+                                implicitHeight: summaryProvidersColumn.implicitHeight + Kirigami.Units.smallSpacing * 2
 
-                                    ColumnLayout {
-                                        id: summaryProvidersColumn
-                                        anchors.fill: parent
-                                        anchors.margins: Kirigami.Units.smallSpacing
-                                        spacing: 2
+                                ColumnLayout {
+                                    id: summaryProvidersColumn
+                                    anchors.fill: parent
+                                    anchors.margins: Kirigami.Units.smallSpacing
+                                    spacing: 2
 
-                                        PlasmaComponents.Label {
-                                            text: i18n("Providers")
-                                            font.pointSize: Kirigami.Theme.smallFont.pointSize
-                                            opacity: 0.65
-                                            wrapMode: Text.WordWrap
-                                            maximumLineCount: 2
-                                        }
-
-                                        PlasmaComponents.Label {
-                                            text: i18n("%1 enabled", fullRoot.enabledProviderCount)
-                                            font.bold: true
-                                        }
+                                    PlasmaComponents.Label {
+                                        text: i18n("Providers")
+                                        font.pointSize: Kirigami.Theme.smallFont.pointSize
+                                        opacity: 0.65
+                                        wrapMode: Text.WordWrap
+                                        maximumLineCount: 2
                                     }
-                                }
 
-                                Rectangle {
-                                    Layout.fillWidth: true
-                                    radius: Kirigami.Units.smallSpacing
-                                    color: Qt.alpha(Kirigami.Theme.backgroundColor, 0.65)
-                                    border.width: 1
-                                    border.color: Qt.alpha(Kirigami.Theme.textColor, 0.08)
-                                    implicitHeight: summaryConnectedColumn.implicitHeight + Kirigami.Units.smallSpacing * 2
-
-                                    ColumnLayout {
-                                        id: summaryConnectedColumn
-                                        anchors.fill: parent
-                                        anchors.margins: Kirigami.Units.smallSpacing
-                                        spacing: 2
-
-                                        PlasmaComponents.Label {
-                                            text: i18n("Connected")
-                                            font.pointSize: Kirigami.Theme.smallFont.pointSize
-                                            opacity: 0.65
-                                            wrapMode: Text.WordWrap
-                                            maximumLineCount: 2
-                                        }
-
-                                        PlasmaComponents.Label {
-                                            text: i18n("%1 active", fullRoot.connectedProviderCount)
-                                            font.bold: true
-                                            color: fullRoot.hasAnyConnectedProvider
-                                                ? Kirigami.Theme.positiveTextColor
-                                                : Kirigami.Theme.disabledTextColor
-                                        }
-                                    }
-                                }
-
-                                Rectangle {
-                                    Layout.fillWidth: true
-                                    radius: Kirigami.Units.smallSpacing
-                                    color: Qt.alpha(Kirigami.Theme.backgroundColor, 0.65)
-                                    border.width: 1
-                                    border.color: Qt.alpha(Kirigami.Theme.textColor, 0.08)
-                                    implicitHeight: summaryCostColumn.implicitHeight + Kirigami.Units.smallSpacing * 2
-
-                                    ColumnLayout {
-                                        id: summaryCostColumn
-                                        anchors.fill: parent
-                                        anchors.margins: Kirigami.Units.smallSpacing
-                                        spacing: 2
-
-                                        PlasmaComponents.Label {
-                                            text: i18n("Total Cost")
-                                            font.pointSize: Kirigami.Theme.smallFont.pointSize
-                                            opacity: 0.65
-                                            wrapMode: Text.WordWrap
-                                            maximumLineCount: 2
-                                        }
-
-                                        PlasmaComponents.Label {
-                                            text: "$" + (root.totalCost ?? 0).toFixed(2)
-                                            font.bold: true
-                                        }
-                                    }
-                                }
-
-                                Rectangle {
-                                    Layout.fillWidth: true
-                                    radius: Kirigami.Units.smallSpacing
-                                    color: Qt.alpha(Kirigami.Theme.backgroundColor, 0.65)
-                                    border.width: 1
-                                    border.color: Qt.alpha(Kirigami.Theme.textColor, 0.08)
-                                    implicitHeight: summaryToolsColumn.implicitHeight + Kirigami.Units.smallSpacing * 2
-
-                                    ColumnLayout {
-                                        id: summaryToolsColumn
-                                        anchors.fill: parent
-                                        anchors.margins: Kirigami.Units.smallSpacing
-                                        spacing: 2
-
-                                        PlasmaComponents.Label {
-                                            text: i18n("Tool Monitors")
-                                            font.pointSize: Kirigami.Theme.smallFont.pointSize
-                                            opacity: 0.65
-                                            wrapMode: Text.WordWrap
-                                            maximumLineCount: 2
-                                        }
-
-                                        PlasmaComponents.Label {
-                                            text: i18n("%1 enabled", root.enabledToolCount ?? 0)
-                                            font.bold: true
-                                        }
+                                    PlasmaComponents.Label {
+                                        text: i18n("%1 enabled", fullRoot.enabledProviderCount)
+                                        font.bold: true
                                     }
                                 }
                             }
-                        }
 
-                        CostSummaryCard {
-                            Layout.fillWidth: true
-                            Layout.margins: Kirigami.Units.smallSpacing
-                            visible: hasCostData()
-                            providers: root.allProviders ?? []
-                            subscriptionTools: root.allSubscriptionTools ?? []
-                        }
-
-                        ColumnLayout {
-                            Layout.fillWidth: true
-                            Layout.leftMargin: Kirigami.Units.smallSpacing
-                            Layout.rightMargin: Kirigami.Units.smallSpacing
-                            visible: fullRoot.enabledProviderCount > 0
-                            spacing: fullRoot.compactSectionHeaders ? 2 : Kirigami.Units.smallSpacing
-
-                            RowLayout {
+                            Rectangle {
                                 Layout.fillWidth: true
-                                spacing: Kirigami.Units.smallSpacing
+                                radius: Kirigami.Units.smallSpacing
+                                color: Qt.alpha(Kirigami.Theme.backgroundColor, 0.65)
+                                border.width: 1
+                                border.color: Qt.alpha(Kirigami.Theme.textColor, 0.08)
+                                implicitHeight: summaryConnectedColumn.implicitHeight + Kirigami.Units.smallSpacing * 2
 
-                                PlasmaExtras.Heading {
-                                    level: 5
-                                    text: i18n("Providers")
-                                    Layout.fillWidth: true
-                                    opacity: 0.78
-                                }
-
-                                Rectangle {
-                                    radius: Kirigami.Units.smallSpacing
-                                    color: Qt.alpha(Kirigami.Theme.highlightColor, 0.12)
-                                    border.width: 1
-                                    border.color: Qt.alpha(Kirigami.Theme.highlightColor, 0.26)
-                                    implicitWidth: providerStatusLabel.implicitWidth + Kirigami.Units.smallSpacing * 2
-                                    implicitHeight: providerStatusLabel.implicitHeight + Kirigami.Units.smallSpacing
+                                ColumnLayout {
+                                    id: summaryConnectedColumn
+                                    anchors.fill: parent
+                                    anchors.margins: Kirigami.Units.smallSpacing
+                                    spacing: 2
 
                                     PlasmaComponents.Label {
-                                        id: providerStatusLabel
-                                        anchors.centerIn: parent
-                                        text: i18n("%1/%2 connected", fullRoot.connectedProviderCount, fullRoot.enabledProviderCount)
+                                        text: i18n("Connected")
                                         font.pointSize: Kirigami.Theme.smallFont.pointSize
+                                        opacity: 0.65
+                                        wrapMode: Text.WordWrap
+                                        maximumLineCount: 2
+                                    }
+
+                                    PlasmaComponents.Label {
+                                        text: i18n("%1 active", fullRoot.connectedProviderCount)
+                                        font.bold: true
                                         color: fullRoot.hasAnyConnectedProvider
-                                            ? Kirigami.Theme.textColor
+                                            ? Kirigami.Theme.positiveTextColor
                                             : Kirigami.Theme.disabledTextColor
                                     }
                                 }
                             }
-                        }
 
-                        PlasmaExtras.PlaceholderMessage {
-                            Layout.fillWidth: true
-                            Layout.leftMargin: Kirigami.Units.smallSpacing
-                            Layout.rightMargin: Kirigami.Units.smallSpacing
-                            visible: fullRoot.enabledProviderCount > 0 && !fullRoot.hasAnyConnectedProvider
-                            iconName: "network-disconnect"
-                            text: i18n("Providers are enabled but not connected")
-                            explanation: i18n("Verify API keys, endpoint URLs, and connectivity, then use Refresh All.")
-                        }
-
-                        Repeater {
-                            model: root.allProviders ?? []
-
-                            Loader {
+                            Rectangle {
                                 Layout.fillWidth: true
-                                visible: modelData.enabled
-                                sourceComponent: modelData.configKey === "ollama" ? ollamaCardComp : standardProviderCardComp
+                                radius: Kirigami.Units.smallSpacing
+                                color: Qt.alpha(Kirigami.Theme.backgroundColor, 0.65)
+                                border.width: 1
+                                border.color: Qt.alpha(Kirigami.Theme.textColor, 0.08)
+                                implicitHeight: summaryCostColumn.implicitHeight + Kirigami.Units.smallSpacing * 2
 
-                                property var providerData: modelData
+                                ColumnLayout {
+                                    id: summaryCostColumn
+                                    anchors.fill: parent
+                                    anchors.margins: Kirigami.Units.smallSpacing
+                                    spacing: 2
 
-                                Component {
-                                    id: standardProviderCardComp
-                                    ProviderCard {
-                                        providerName: providerData.name
-                                        providerIcon: providerData.backend?.iconName ?? "globe"
-                                        providerColor: providerData.color
-                                        backend: providerData.backend ?? null
-                                        showCost: true
-                                        showUsage: true
+                                    PlasmaComponents.Label {
+                                        text: i18n("Total Cost")
+                                        font.pointSize: Kirigami.Theme.smallFont.pointSize
+                                        opacity: 0.65
+                                        wrapMode: Text.WordWrap
+                                        maximumLineCount: 2
                                     }
-                                }
 
-                                Component {
-                                    id: ollamaCardComp
-                                    OllamaCard {
-                                        backend: providerData.backend
-                                        providerColor: providerData.color
+                                    PlasmaComponents.Label {
+                                        text: "$" + (root.totalCost ?? 0).toFixed(2)
+                                        font.bold: true
                                     }
                                 }
                             }
-                        }
 
-                        ColumnLayout {
+                            Rectangle {
+                                Layout.fillWidth: true
+                                radius: Kirigami.Units.smallSpacing
+                                color: Qt.alpha(Kirigami.Theme.backgroundColor, 0.65)
+                                border.width: 1
+                                border.color: Qt.alpha(Kirigami.Theme.textColor, 0.08)
+                                implicitHeight: summaryToolsColumn.implicitHeight + Kirigami.Units.smallSpacing * 2
+
+                                ColumnLayout {
+                                    id: summaryToolsColumn
+                                    anchors.fill: parent
+                                    anchors.margins: Kirigami.Units.smallSpacing
+                                    spacing: 2
+
+                                    PlasmaComponents.Label {
+                                        text: i18n("Tool Monitors")
+                                        font.pointSize: Kirigami.Theme.smallFont.pointSize
+                                        opacity: 0.65
+                                        wrapMode: Text.WordWrap
+                                        maximumLineCount: 2
+                                    }
+
+                                    PlasmaComponents.Label {
+                                        text: i18n("%1 enabled", root.enabledToolCount ?? 0)
+                                        font.bold: true
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    CostSummaryCard {
+                        Layout.fillWidth: true
+                        Layout.columnSpan: liveGrid.columns
+                        Layout.leftMargin: Kirigami.Units.smallSpacing
+                        Layout.rightMargin: Kirigami.Units.smallSpacing
+                        visible: hasCostData()
+                        providers: root.allProviders ?? []
+                        subscriptionTools: root.allSubscriptionTools ?? []
+                    }
+
+                    ColumnLayout {
+                        Layout.fillWidth: true
+                        Layout.columnSpan: liveGrid.columns
+                        Layout.leftMargin: Kirigami.Units.smallSpacing
+                        Layout.rightMargin: Kirigami.Units.smallSpacing
+                        visible: fullRoot.enabledProviderCount > 0
+                        spacing: fullRoot.compactSectionHeaders ? 2 : Kirigami.Units.smallSpacing
+
+                        RowLayout {
                             Layout.fillWidth: true
-                            Layout.leftMargin: Kirigami.Units.smallSpacing
-                            Layout.rightMargin: Kirigami.Units.smallSpacing
-                            Layout.topMargin: Kirigami.Units.largeSpacing
-                            visible: root.enabledToolCount > 0
-                            spacing: fullRoot.compactSectionHeaders ? 2 : Kirigami.Units.smallSpacing
+                            spacing: Kirigami.Units.smallSpacing
 
-                            RowLayout {
+                            PlasmaExtras.Heading {
+                                level: 5
+                                text: i18n("Providers")
                                 Layout.fillWidth: true
-                                spacing: Kirigami.Units.smallSpacing
+                                opacity: 0.78
+                            }
 
-                                PlasmaExtras.Heading {
-                                    level: 5
-                                    text: i18n("Subscription Tools")
-                                    Layout.fillWidth: true
-                                    opacity: 0.7
-                                }
+                            Rectangle {
+                                radius: Kirigami.Units.smallSpacing
+                                color: Qt.alpha(Kirigami.Theme.highlightColor, 0.12)
+                                border.width: 1
+                                border.color: Qt.alpha(Kirigami.Theme.highlightColor, 0.26)
+                                implicitWidth: providerStatusLabel.implicitWidth + Kirigami.Units.smallSpacing * 2
+                                implicitHeight: providerStatusLabel.implicitHeight + Kirigami.Units.smallSpacing
 
-                                PlasmaComponents.ToolButton {
-                        activeFocusOnTab: true
-                        activeFocusOnTab: true
-                                    icon.name: "view-refresh"
-                                    display: PlasmaComponents.AbstractButton.IconOnly
-                                    Layout.preferredWidth: Kirigami.Units.iconSizes.small
-                                    Layout.preferredHeight: Kirigami.Units.iconSizes.small
-                                    visible: plasmoid.configuration.browserSyncEnabled
-                                    onClicked: root.performBrowserSync()
-                                    PlasmaComponents.ToolTip { text: i18n("Sync usage data from browser") }
+                                PlasmaComponents.Label {
+                                    id: providerStatusLabel
+                                    anchors.centerIn: parent
+                                    text: i18n("%1/%2 connected", fullRoot.connectedProviderCount, fullRoot.enabledProviderCount)
+                                    font.pointSize: Kirigami.Theme.smallFont.pointSize
+                                    color: fullRoot.hasAnyConnectedProvider
+                                        ? Kirigami.Theme.textColor
+                                        : Kirigami.Theme.disabledTextColor
                                 }
                             }
                         }
+                    }
 
-                        Repeater {
-                            model: root.allSubscriptionTools ?? []
+                    PlasmaExtras.PlaceholderMessage {
+                        Layout.fillWidth: true
+                        Layout.columnSpan: liveGrid.columns
+                        Layout.leftMargin: Kirigami.Units.smallSpacing
+                        Layout.rightMargin: Kirigami.Units.smallSpacing
+                        visible: fullRoot.enabledProviderCount > 0 && !fullRoot.hasAnyConnectedProvider
+                        iconName: "network-disconnect"
+                        text: i18n("Providers are enabled but not connected")
+                        explanation: i18n("Verify API keys, endpoint URLs, and connectivity, then use Refresh All.")
+                    }
 
-                            SubscriptionToolCard {
-                                Layout.fillWidth: true
-                                Layout.leftMargin: Kirigami.Units.smallSpacing
-                                Layout.rightMargin: Kirigami.Units.smallSpacing
-                                visible: modelData.enabled
-                                toolName: modelData.name
-                                toolIcon: modelData.monitor?.iconName ?? "utilities-terminal"
-                                toolColor: modelData.monitor?.toolColor ?? Kirigami.Theme.textColor
-                                monitor: modelData.monitor ?? null
+                    Repeater {
+                        model: root.allProviders ?? []
 
-                                onSyncRequested: {
-                                    root.performBrowserSync();
+                        Loader {
+                            Layout.fillWidth: true
+                            visible: modelData.enabled
+                            sourceComponent: modelData.configKey === "ollama" ? ollamaCardComp : standardProviderCardComp
+
+                            property var providerData: modelData
+
+                            Component {
+                                id: standardProviderCardComp
+                                ProviderCard {
+                                    providerName: providerData.name
+                                    providerIcon: providerData.backend?.iconName ?? "globe"
+                                    providerColor: providerData.color
+                                    backend: providerData.backend ?? null
+                                    showCost: true
+                                    showUsage: true
+                                }
+                            }
+
+                            Component {
+                                id: ollamaCardComp
+                                OllamaCard {
+                                    backend: providerData.backend
+                                    providerColor: providerData.color
                                 }
                             }
                         }
+                    }
 
-                        Item { Layout.fillHeight: true }
+                    ColumnLayout {
+                        Layout.fillWidth: true
+                        Layout.columnSpan: liveGrid.columns
+                        Layout.leftMargin: Kirigami.Units.smallSpacing
+                        Layout.rightMargin: Kirigami.Units.smallSpacing
+                        Layout.topMargin: Kirigami.Units.largeSpacing
+                        visible: root.enabledToolCount > 0
+                        spacing: fullRoot.compactSectionHeaders ? 2 : Kirigami.Units.smallSpacing
+
+                        RowLayout {
+                            Layout.fillWidth: true
+                            spacing: Kirigami.Units.smallSpacing
+
+                            PlasmaExtras.Heading {
+                                level: 5
+                                text: i18n("Subscription Tools")
+                                Layout.fillWidth: true
+                                opacity: 0.7
+                            }
+
+                            PlasmaComponents.ToolButton {
+                                activeFocusOnTab: true
+                                icon.name: "view-refresh"
+                                display: PlasmaComponents.AbstractButton.IconOnly
+                                Layout.preferredWidth: Kirigami.Units.iconSizes.small
+                                Layout.preferredHeight: Kirigami.Units.iconSizes.small
+                                visible: plasmoid.configuration.browserSyncEnabled
+                                onClicked: root.performBrowserSync()
+                                PlasmaComponents.ToolTip { text: i18n("Sync usage data from browser") }
+                            }
+                        }
+                    }
+
+                    Repeater {
+                        model: root.allSubscriptionTools ?? []
+
+                        SubscriptionToolCard {
+                            Layout.fillWidth: true
+                            visible: modelData.enabled
+                            toolName: modelData.name
+                            toolIcon: modelData.monitor?.iconName ?? "utilities-terminal"
+                            toolColor: modelData.monitor?.toolColor ?? Kirigami.Theme.textColor
+                            monitor: modelData.monitor ?? null
+
+                            onSyncRequested: {
+                                root.performBrowserSync();
+                            }
+                        }
+                    }
+
+                    Item { 
+                        Layout.fillHeight: true
+                        Layout.columnSpan: liveGrid.columns
                     }
                 }
+                }
+
             }
 
             ColumnLayout {
