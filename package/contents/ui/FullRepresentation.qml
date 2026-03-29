@@ -263,13 +263,16 @@ PlasmaExtras.Representation {
                 width: implicitWidth
             }
             QQC2.TabButton {
-                activeFocusOnTab: true
-                activeFocusOnTab: true
-                text: i18n("History")
-                width: implicitWidth
+               activeFocusOnTab: true
+               text: i18n("History")
+               width: implicitWidth
             }
-        }
-
+            QQC2.TabButton {
+               activeFocusOnTab: true
+               text: i18n("Intelligence")
+               width: implicitWidth
+            }
+            }
         StackLayout {
             Layout.fillWidth: true
             Layout.fillHeight: true
@@ -295,6 +298,16 @@ PlasmaExtras.Representation {
                     columnSpacing: Kirigami.Units.largeSpacing
                     rowSpacing: Kirigami.Units.largeSpacing
                     Layout.margins: Kirigami.Units.mediumSpacing
+
+                    InsightBanner {
+                        id: insightBanner
+                        Layout.fillWidth: true
+                        Layout.columnSpan: liveGrid.columns
+                        Layout.margins: Kirigami.Units.smallSpacing
+                        text: root.intelligence.bannerAlert
+                        visible: text !== ""
+                        onDetailsRequested: tabBar.currentIndex = 2
+                    }
 
                     Rectangle {
                         id: summaryGridContainer
@@ -992,6 +1005,13 @@ PlasmaExtras.Representation {
                         PlasmaComponents.ToolTip { text: i18n("Export current view as JSON") }
                     }
                 }
+            }
+
+            IntelligenceTab {
+                id: intelligenceTab
+                intelligence: root.intelligence
+                ollamaUrl: plasmoid.configuration.ollamaServerUrl || "http://localhost:11434"
+                ollamaModel: plasmoid.configuration.ollamaIntelligenceModel || "qwen2.5:1.5b"
             }
         }
 

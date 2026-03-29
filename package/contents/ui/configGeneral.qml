@@ -20,6 +20,8 @@ KCM.SimpleKCM {
     property alias cfg_xaiRefreshInterval: xaiRefreshSlider.value
     property alias cfg_googleveoRefreshInterval: googleveoRefreshSlider.value
     property alias cfg_loofiRefreshInterval: loofiRefreshSlider.value
+    property alias cfg_ollamaServerUrl: ollamaUrlField.text
+    property alias cfg_ollamaIntelligenceModel: ollamaModelField.text
 
     Kirigami.FormLayout {
         anchors.fill: parent
@@ -255,6 +257,28 @@ KCM.SimpleKCM {
                 font.pointSize: Kirigami.Theme.smallFont.pointSize
                 opacity: 0.7; Layout.alignment: Qt.AlignHCenter
             }
+        }
+
+        // ── AI Intelligence ──
+        Kirigami.Separator {
+            Kirigami.FormData.isSection: true
+            Kirigami.FormData.label: i18n("AI Intelligence (Local Ollama)")
+        }
+
+        QQC2.TextField {
+            id: ollamaUrlField
+            Kirigami.FormData.label: i18n("Ollama Server URL:")
+            placeholderText: "http://localhost:11434"
+            Layout.fillWidth: true
+        }
+
+        QQC2.TextField {
+            id: ollamaModelField
+            Kirigami.FormData.label: i18n("Intelligence Model:")
+            placeholderText: "qwen2.5:1.5b"
+            Layout.fillWidth: true
+            QQC2.ToolTip.text: i18n("Model used for natural language analysis (e.g., llama3, qwen2.5:1.5b)")
+            QQC2.ToolTip.visible: hovered
         }
 
         // ── About ──

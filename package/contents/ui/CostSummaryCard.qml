@@ -290,6 +290,18 @@ ColumnLayout {
                     }
                 }
             }
+
+            PlasmaComponents.Label {
+                Layout.fillWidth: true
+                Layout.topMargin: Kirigami.Units.smallSpacing
+                text: root.intelligence.shortSnippet
+                visible: text !== ""
+                font.pointSize: Kirigami.Theme.smallFont.pointSize
+                font.italic: true
+                color: Kirigami.Theme.highlightColor
+                wrapMode: Text.WordWrap
+                opacity: 0.9
+            }
         }
     }
 }

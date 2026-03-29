@@ -60,6 +60,7 @@ PlasmoidItem {
     property alias copilot: copilotMonitor
     property alias cursor: cursorMonitor
     property alias windsurf: windsurfMonitor
+    property alias intelligence: intelligenceBackend
 
     // Notification cooldown tracking
     property var lastNotificationTimes: ({})
@@ -83,6 +84,25 @@ PlasmoidItem {
         id: usageDatabase
         enabled: plasmoid.configuration.historyEnabled
         retentionDays: plasmoid.configuration.historyRetentionDays
+    }
+
+    // ── AI Intelligence Backend (Ollama) ──
+    IntelligenceBackend {
+        id: intelligenceBackend
+        database: usageDatabase
+        fullInsight: plasmoid.configuration.lastFullInsight
+        shortSnippet: plasmoid.configuration.lastShortSnippet
+        bannerAlert: plasmoid.configuration.lastBannerAlert
+        
+        onFullInsightChanged: plasmoid.configuration.lastFullInsight = fullInsight
+        onShortSnippetChanged: plasmoid.configuration.lastShortSnippet = shortSnippet
+        onBannerAlertChanged: plasmoid.configuration.lastBannerAlert = bannerAlert
+        
+        onGenerationFinished: (success, error) => {
+            if (!success) {
+                sendNotification(i18n("Intelligence Error"), error);
+            }
+        }
     }
 
     // ── C++ Provider Backends ──

@@ -84,6 +84,20 @@
         <entry name="ollamaServerUrl" type="String">
             <default>http://localhost:11434</default>
         </entry>
+        <entry name="ollamaIntelligenceModel" type="String">
+            <default>qwen2.5:1.5b</default>
+        </entry>
+
+        <!-- Insights Persistence -->
+        <entry name="lastFullInsight" type="String">
+            <default></default>
+        </entry>
+        <entry name="lastShortSnippet" type="String">
+            <default></default>
+        </entry>
+        <entry name="lastBannerAlert" type="String">
+            <default></default>
+        </entry>
 
         <!-- OpenAI -->
         <entry name="openaiEnabled" type="Bool">
