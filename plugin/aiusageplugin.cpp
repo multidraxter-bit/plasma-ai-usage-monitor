@@ -27,6 +27,7 @@
 #include "loofiserverprovider.h"
 #include "ollamaprovider.h"
 #include "intelligencebackend.h"
+#include "bedrockprovider.h"
 
 #include <QQmlEngine>
 #include <QJSEngine>
@@ -76,6 +77,9 @@ void AiUsagePlugin::registerTypes(const char *uri)
 
     // Intelligence
     qmlRegisterType<IntelligenceBackend>(uri, 1, 0, "IntelligenceBackend");
+
+    // AWS Bedrock
+    qmlRegisterType<BedrockProvider>(uri, 1, 0, "BedrockProvider");
 
     // Register abstract base classes
  as uncreatable (for type info in QML)
