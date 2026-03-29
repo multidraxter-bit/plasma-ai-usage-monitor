@@ -25,6 +25,7 @@
 #include "windsurfmonitor.h"
 #include "browsercookieextractor.h"
 #include "loofiserverprovider.h"
+#include "ollamaprovider.h"
 
 #include <QQmlEngine>
 #include <QJSEngine>
@@ -68,6 +69,9 @@ void AiUsagePlugin::registerTypes(const char *uri)
 
     // Self-hosted Loofi AI server
     qmlRegisterType<LoofiServerProvider>(uri, 1, 0, "LoofiServerProvider");
+
+    // Ollama
+    qmlRegisterType<OllamaProvider>(uri, 1, 0, "OllamaProvider");
 
     // Register abstract base classes as uncreatable (for type info in QML)
     qmlRegisterUncreatableType<ProviderBackend>(uri, 1, 0, "ProviderBackend",

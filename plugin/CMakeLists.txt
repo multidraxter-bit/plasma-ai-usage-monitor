@@ -26,6 +26,7 @@ set(aiusagemonitor_SRCS
     windsurfmonitor.cpp
     browsercookieextractor.cpp
     loofiserverprovider.cpp
+    ollamaprovider.cpp
 )
 
 set(aiusagemonitor_HDRS
@@ -57,6 +58,7 @@ set(aiusagemonitor_HDRS
     windsurfmonitor.h
     browsercookieextractor.h
     loofiserverprovider.h
+    ollamaprovider.h
 )
 
 add_library(aiusagemonitorplugin SHARED ${aiusagemonitor_SRCS} ${aiusagemonitor_HDRS})
