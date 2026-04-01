@@ -232,14 +232,41 @@ git push origin main --tags
 gh release create vx.y.z ./plasma-ai-usage-monitor-x.y.z.tar.gz ./com.github.loofi.aiusagemonitor.plasmoid --title "vx.y.z"
 ```
 
-If you maintain the Fedora COPR package, submit the same release to COPR after the
-GitHub tag and release exist:
+If you maintain the Fedora COPR package, the `loofitheboss/plasma-ai-usage-monitor`
+project is configured for SCM auto-rebuilds from `main` via GitHub webhooks.
+That means:
+
+- pushes to `main` can trigger a new COPR build
+- tag creation can also notify COPR, but the package tracks `main`, not the tag itself
+- GitHub release publishing is still manual because GitHub Actions are disabled
+
+Typical maintainer release flow:
+
+1. merge the release commit to `main`
+2. create and push the `vx.y.z` tag
+3. publish the GitHub release manually
+4. verify that COPR picked up the release commit and started a build
+
+If you need to force or backfill a COPR build after the GitHub tag and release exist:
 
 ```bash
 just copr-submit PROJECT=loofitheboss/plasma-ai-usage-monitor
 ```
 
 The helper expects `copr-cli` plus a valid `~/.config/copr` API token file.
+
+To verify the current package wiring:
+
+```bash
+curl -s 'https://copr.fedorainfracloud.org/api_3/package/?ownername=loofitheboss&projectname=plasma-ai-usage-monitor&packagename=plasma-ai-usage-monitor&with_latest_build=true'
+```
+
+The response should show:
+
+- `"source_type": "scm"`
+- `"committish": "main"`
+- `"source_build_method": "make_srpm"`
+- `"auto_rebuild": true`
 
 ---
 
