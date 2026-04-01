@@ -19,6 +19,7 @@ Prepare the same assets for the manual GitHub release pack:
 - updated README screenshots
 - changelog section for the release
 - release notes that call out the stabilization, demo workflow, and screenshot refresh
+- confirm the COPR package still points at GitHub SCM on `main` with auto-rebuild enabled
 
 ## KDE Store listing notes
 
@@ -53,9 +54,27 @@ If the store allows additional images, also prepare:
 1. verify the target version in `ROADMAP.md`, `package/metadata.json`, `com.github.loofi.aiusagemonitor.metainfo.xml`, `CMakeLists.txt`, and `plasma-ai-usage-monitor.spec`
 2. push the release commit and tag
 3. create the GitHub release manually and attach the tarball and `.plasmoid` artifacts
-4. update the README-linked screenshots if filenames stayed stable but content changed
-5. upload the refreshed screenshot set and listing copy to KDE Store
-6. confirm the listing language mentions the compiled plugin requirement clearly
+4. check COPR for an SCM-triggered rebuild from `main`; if it does not start, run `just copr-submit PROJECT=loofitheboss/plasma-ai-usage-monitor`
+5. confirm the COPR build succeeded before announcing the release
+6. update the README-linked screenshots if filenames stayed stable but content changed
+7. upload the refreshed screenshot set and listing copy to KDE Store
+8. confirm the listing language mentions the compiled plugin requirement clearly
+
+## COPR verification
+
+Use this to confirm the Fedora update path is still healthy:
+
+```bash
+curl -s 'https://copr.fedorainfracloud.org/api_3/package/?ownername=loofitheboss&projectname=plasma-ai-usage-monitor&packagename=plasma-ai-usage-monitor&with_latest_build=true'
+```
+
+Expected fields:
+
+- `"source_type": "scm"`
+- `"clone_url": "https://github.com/multidraxter-bit/plasma-ai-usage-monitor.git"`
+- `"committish": "main"`
+- `"source_build_method": "make_srpm"`
+- `"auto_rebuild": true`
 
 ## Final review prompts
 
