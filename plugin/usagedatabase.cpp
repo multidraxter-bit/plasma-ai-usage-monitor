@@ -11,6 +11,7 @@
 #include <QMap>
 #include <QTimeZone>
 #include <cmath>
+#include <algorithm>
 
 std::atomic<int> UsageDatabase::s_instanceCounter{0};
 
@@ -22,6 +23,21 @@ struct BucketAggregate {
     int count = 0;
     QDateTime bucketStart;
 };
+
+struct DailyOverviewRow {
+    QString day;
+    double totalCost = 0.0;
+    double totalTokens = 0.0;
+    int providerCount = 0;
+};
+
+double percentChange(double previous, double current)
+{
+    if (qFuzzyIsNull(previous)) {
+        return 0.0;
+    }
+    return ((current - previous) / std::abs(previous)) * 100.0;
+}
 
 QDateTime parseSnapshotTimestamp(const QString &raw)
 {
@@ -154,10 +170,12 @@ void UsageDatabase::createTables()
         "  id INTEGER PRIMARY KEY AUTOINCREMENT,"
         "  timestamp DATETIME DEFAULT (datetime('now')),"
         "  provider TEXT NOT NULL,"
+        "  model TEXT DEFAULT '',"
         "  input_tokens INTEGER DEFAULT 0,"
         "  output_tokens INTEGER DEFAULT 0,"
         "  request_count INTEGER DEFAULT 0,"
         "  cost REAL DEFAULT 0.0,"
+        "  is_estimated_cost INTEGER DEFAULT 0,"
         "  daily_cost REAL DEFAULT 0.0,"
         "  monthly_cost REAL DEFAULT 0.0,"
         "  rl_requests INTEGER DEFAULT 0,"
@@ -207,6 +225,40 @@ void UsageDatabase::createTables()
         "CREATE INDEX IF NOT EXISTS idx_tool_usage_name_time "
         "ON subscription_tool_usage(tool_name, timestamp)"
     ));
+
+    // Migrate older databases created before analyst metadata existed.
+    ensureColumnExists(QStringLiteral("usage_snapshots"),
+                       QStringLiteral("model"),
+                       QStringLiteral("TEXT DEFAULT ''"));
+    ensureColumnExists(QStringLiteral("usage_snapshots"),
+                       QStringLiteral("is_estimated_cost"),
+                       QStringLiteral("INTEGER DEFAULT 0"));
+}
+
+void UsageDatabase::ensureColumnExists(const QString &table,
+                                       const QString &column,
+                                       const QString &definition)
+{
+    QSqlQuery pragma(m_db);
+    if (!pragma.exec(QStringLiteral("PRAGMA table_info(%1)").arg(table))) {
+        qWarning() << "UsageDatabase: Failed to inspect table schema for" << table
+                   << ":" << pragma.lastError().text();
+        return;
+    }
+
+    while (pragma.next()) {
+        if (pragma.value(1).toString() == column) {
+            return;
+        }
+    }
+
+    QSqlQuery alter(m_db);
+    const QString sql = QStringLiteral("ALTER TABLE %1 ADD COLUMN %2 %3")
+        .arg(table, column, definition);
+    if (!alter.exec(sql)) {
+        qWarning() << "UsageDatabase: Failed to add column" << column << "to" << table
+                   << ":" << alter.lastError().text();
+    }
 }
 
 void UsageDatabase::recordSnapshot(const QString &provider,
@@ -219,7 +271,9 @@ void UsageDatabase::recordSnapshot(const QString &provider,
                                     int rateLimitRequests,
                                     int rateLimitRequestsRemaining,
                                     int rateLimitTokens,
-                                    int rateLimitTokensRemaining)
+                                    int rateLimitTokensRemaining,
+                                    const QString &model,
+                                    bool isEstimatedCost)
 {
     if (!m_enabled)
         return;
@@ -242,15 +296,17 @@ void UsageDatabase::recordSnapshot(const QString &provider,
     QSqlQuery query(m_db);
     query.prepare(QStringLiteral(
         "INSERT INTO usage_snapshots "
-        "(provider, input_tokens, output_tokens, request_count, cost, daily_cost, monthly_cost, "
-        "rl_requests, rl_requests_remaining, rl_tokens, rl_tokens_remaining) "
-        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+        "(provider, model, input_tokens, output_tokens, request_count, cost, is_estimated_cost, "
+        "daily_cost, monthly_cost, rl_requests, rl_requests_remaining, rl_tokens, rl_tokens_remaining) "
+        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
     ));
     query.addBindValue(provider);
+    query.addBindValue(model.trimmed());
     query.addBindValue(inputTokens);
     query.addBindValue(outputTokens);
     query.addBindValue(requestCount);
     query.addBindValue(cost);
+    query.addBindValue(isEstimatedCost ? 1 : 0);
     query.addBindValue(dailyCost);
     query.addBindValue(monthlyCost);
     query.addBindValue(rateLimitRequests);
@@ -348,8 +404,8 @@ QVariantList UsageDatabase::getSnapshots(const QString &provider,
 
     QSqlQuery query(m_db);
     query.prepare(QStringLiteral(
-        "SELECT timestamp, input_tokens, output_tokens, request_count, cost, "
-        "daily_cost, monthly_cost, rl_requests, rl_requests_remaining, "
+        "SELECT timestamp, model, input_tokens, output_tokens, request_count, cost, "
+        "is_estimated_cost, daily_cost, monthly_cost, rl_requests, rl_requests_remaining, "
         "rl_tokens, rl_tokens_remaining "
         "FROM usage_snapshots "
         "WHERE provider = ? AND timestamp >= ? AND timestamp <= ? "
@@ -367,16 +423,18 @@ QVariantList UsageDatabase::getSnapshots(const QString &provider,
     while (query.next()) {
         QVariantMap row;
         row[QStringLiteral("timestamp")] = query.value(0).toString();
-        row[QStringLiteral("inputTokens")] = query.value(1).toLongLong();
-        row[QStringLiteral("outputTokens")] = query.value(2).toLongLong();
-        row[QStringLiteral("requestCount")] = query.value(3).toInt();
-        row[QStringLiteral("cost")] = query.value(4).toDouble();
-        row[QStringLiteral("dailyCost")] = query.value(5).toDouble();
-        row[QStringLiteral("monthlyCost")] = query.value(6).toDouble();
-        row[QStringLiteral("rlRequests")] = query.value(7).toInt();
-        row[QStringLiteral("rlRequestsRemaining")] = query.value(8).toInt();
-        row[QStringLiteral("rlTokens")] = query.value(9).toInt();
-        row[QStringLiteral("rlTokensRemaining")] = query.value(10).toInt();
+        row[QStringLiteral("model")] = query.value(1).toString();
+        row[QStringLiteral("inputTokens")] = query.value(2).toLongLong();
+        row[QStringLiteral("outputTokens")] = query.value(3).toLongLong();
+        row[QStringLiteral("requestCount")] = query.value(4).toInt();
+        row[QStringLiteral("cost")] = query.value(5).toDouble();
+        row[QStringLiteral("isEstimatedCost")] = query.value(6).toBool();
+        row[QStringLiteral("dailyCost")] = query.value(7).toDouble();
+        row[QStringLiteral("monthlyCost")] = query.value(8).toDouble();
+        row[QStringLiteral("rlRequests")] = query.value(9).toInt();
+        row[QStringLiteral("rlRequestsRemaining")] = query.value(10).toInt();
+        row[QStringLiteral("rlTokens")] = query.value(11).toInt();
+        row[QStringLiteral("rlTokensRemaining")] = query.value(12).toInt();
         results.append(row);
     }
 
@@ -752,29 +810,30 @@ QString UsageDatabase::exportCsv(const QString &provider,
                                   const QDateTime &to) const
 {
     QString csv;
-    csv += QStringLiteral("timestamp,provider,input_tokens,output_tokens,request_count,"
-                          "cost,daily_cost,monthly_cost,rl_requests,rl_requests_remaining,"
+    csv += QStringLiteral("timestamp,provider,model,input_tokens,output_tokens,request_count,"
+                          "cost,is_estimated_cost,daily_cost,monthly_cost,rl_requests,rl_requests_remaining,"
                           "rl_tokens,rl_tokens_remaining\n");
 
     QVariantList snapshots = getSnapshots(provider, from, to);
     for (const QVariant &snap : snapshots) {
         QVariantMap row = snap.toMap();
-        // Qt's multi-arg .arg() supports at most 9 QString arguments,
-        // so we split into two chained calls.
-        csv += QStringLiteral("%1,%2,%3,%4,%5,%6,%7,%8,%9,")
-                   .arg(row[QStringLiteral("timestamp")].toString(),
-                        provider,
-                        QString::number(row[QStringLiteral("inputTokens")].toLongLong()),
-                        QString::number(row[QStringLiteral("outputTokens")].toLongLong()),
-                        QString::number(row[QStringLiteral("requestCount")].toInt()),
-                        QString::number(row[QStringLiteral("cost")].toDouble(), 'f', 6),
-                        QString::number(row[QStringLiteral("dailyCost")].toDouble(), 'f', 6),
-                        QString::number(row[QStringLiteral("monthlyCost")].toDouble(), 'f', 6),
-                        QString::number(row[QStringLiteral("rlRequests")].toInt()));
-        csv += QStringLiteral("%1,%2,%3\n")
-                   .arg(QString::number(row[QStringLiteral("rlRequestsRemaining")].toInt()),
-                        QString::number(row[QStringLiteral("rlTokens")].toInt()),
-                        QString::number(row[QStringLiteral("rlTokensRemaining")].toInt()));
+        const QStringList fields = {
+            row[QStringLiteral("timestamp")].toString(),
+            provider,
+            row[QStringLiteral("model")].toString(),
+            QString::number(row[QStringLiteral("inputTokens")].toLongLong()),
+            QString::number(row[QStringLiteral("outputTokens")].toLongLong()),
+            QString::number(row[QStringLiteral("requestCount")].toInt()),
+            QString::number(row[QStringLiteral("cost")].toDouble(), 'f', 6),
+            row[QStringLiteral("isEstimatedCost")].toBool() ? QStringLiteral("1") : QStringLiteral("0"),
+            QString::number(row[QStringLiteral("dailyCost")].toDouble(), 'f', 6),
+            QString::number(row[QStringLiteral("monthlyCost")].toDouble(), 'f', 6),
+            QString::number(row[QStringLiteral("rlRequests")].toInt()),
+            QString::number(row[QStringLiteral("rlRequestsRemaining")].toInt()),
+            QString::number(row[QStringLiteral("rlTokens")].toInt()),
+            QString::number(row[QStringLiteral("rlTokensRemaining")].toInt())
+        };
+        csv += fields.join(QLatin1Char(',')) + QLatin1Char('\n');
     }
 
     return csv;
@@ -882,15 +941,20 @@ QVariantMap UsageDatabase::getYearlyActivity(int mode) const
     }
 
     QSqlQuery query(m_db);
-    // Aggregate by date. We take the last 365 days.
-    // Mode 0: daily_cost (financial intensity)
-    // Mode 1: input_tokens + output_tokens (volume intensity)
-    QString valueExpr = (mode == 0) ? QStringLiteral("SUM(daily_cost)") : QStringLiteral("SUM(input_tokens + output_tokens)");
+    QString valueExpr = (mode == 0)
+        ? QStringLiteral("SUM(provider_daily_cost)")
+        : QStringLiteral("SUM(provider_tokens)");
 
     query.prepare(QStringLiteral(
-        "SELECT date(timestamp) as day, %1 as value "
-        "FROM usage_snapshots "
-        "WHERE timestamp >= date('now', '-365 days') "
+        "SELECT day, %1 as value "
+        "FROM ("
+        "  SELECT date(timestamp) as day, provider, "
+        "         MAX(daily_cost) as provider_daily_cost, "
+        "         MAX(input_tokens + output_tokens) as provider_tokens "
+        "  FROM usage_snapshots "
+        "  WHERE timestamp >= date('now', '-365 days') "
+        "  GROUP BY day, provider"
+        ") "
         "GROUP BY day "
         "ORDER BY day ASC"
     ).arg(valueExpr));
@@ -927,14 +991,18 @@ QVariantList UsageDatabase::getEfficiencySeries(int daysCount) const
         return series;
 
     QSqlQuery query(m_db);
-    // Efficiency = Output Tokens / Input Tokens.
-    // We aggregate by day and use CASE to avoid division by zero.
     query.prepare(QStringLiteral(
-        "SELECT date(timestamp) as day, "
-        "SUM(input_tokens) as total_in, "
-        "SUM(output_tokens) as total_out "
-        "FROM usage_snapshots "
-        "WHERE timestamp >= date('now', '-%1 days') "
+        "SELECT day, "
+        "SUM(provider_input) as total_in, "
+        "SUM(provider_output) as total_out "
+        "FROM ("
+        "  SELECT date(timestamp) as day, provider, "
+        "         MAX(input_tokens) as provider_input, "
+        "         MAX(output_tokens) as provider_output "
+        "  FROM usage_snapshots "
+        "  WHERE timestamp >= date('now', '-%1 days') "
+        "  GROUP BY day, provider"
+        ") "
         "GROUP BY day "
         "ORDER BY day ASC"
     ).arg(daysCount));
@@ -965,4 +1033,227 @@ QVariantList UsageDatabase::getEfficiencySeries(int daysCount) const
     }
 
     return series;
+}
+
+QVariantMap UsageDatabase::getAnalystOverview(int days) const
+{
+    QVariantMap result;
+    result[QStringLiteral("averageDailyCost")] = 0.0;
+    result[QStringLiteral("currentDailyCost")] = 0.0;
+    result[QStringLiteral("weekOverWeekPercent")] = 0.0;
+    result[QStringLiteral("volatilityPercent")] = 0.0;
+    result[QStringLiteral("anomalyCount")] = 0;
+    result[QStringLiteral("anomalies")] = QVariantList{};
+    result[QStringLiteral("topDrivers")] = QVariantList{};
+    result[QStringLiteral("topModels")] = QVariantList{};
+    result[QStringLiteral("days")] = QVariantList{};
+
+    if (!m_initialized) {
+        return result;
+    }
+
+    const int clampedDays = qBound(7, days, 365);
+    QList<DailyOverviewRow> dailyRows;
+
+    QSqlQuery dayQuery(m_db);
+    dayQuery.prepare(QStringLiteral(
+        "SELECT day, SUM(provider_daily_cost) as total_cost, "
+        "       SUM(provider_tokens) as total_tokens, COUNT(*) as provider_count "
+        "FROM ("
+        "  SELECT date(timestamp) as day, provider, "
+        "         MAX(daily_cost) as provider_daily_cost, "
+        "         MAX(input_tokens + output_tokens) as provider_tokens "
+        "  FROM usage_snapshots "
+        "  WHERE timestamp >= date('now', '-%1 days') "
+        "  GROUP BY day, provider"
+        ") "
+        "GROUP BY day "
+        "ORDER BY day ASC"
+    ).arg(clampedDays));
+
+    if (!dayQuery.exec()) {
+        qWarning() << "UsageDatabase: getAnalystOverview daily query failed:"
+                   << dayQuery.lastError().text();
+        return result;
+    }
+
+    QVariantList dayMaps;
+    while (dayQuery.next()) {
+        DailyOverviewRow row;
+        row.day = dayQuery.value(0).toString();
+        row.totalCost = dayQuery.value(1).toDouble();
+        row.totalTokens = dayQuery.value(2).toDouble();
+        row.providerCount = dayQuery.value(3).toInt();
+        dailyRows.append(row);
+
+        QVariantMap map;
+        map[QStringLiteral("date")] = row.day;
+        map[QStringLiteral("totalCost")] = row.totalCost;
+        map[QStringLiteral("totalTokens")] = row.totalTokens;
+        map[QStringLiteral("providerCount")] = row.providerCount;
+        dayMaps.append(map);
+    }
+    result[QStringLiteral("days")] = dayMaps;
+
+    if (!dailyRows.isEmpty()) {
+        double sum = 0.0;
+        QList<double> costs;
+        costs.reserve(dailyRows.size());
+        for (const DailyOverviewRow &row : std::as_const(dailyRows)) {
+            sum += row.totalCost;
+            costs.append(row.totalCost);
+        }
+
+        const double averageDailyCost = sum / static_cast<double>(dailyRows.size());
+        const double currentDailyCost = dailyRows.last().totalCost;
+        result[QStringLiteral("averageDailyCost")] = averageDailyCost;
+        result[QStringLiteral("currentDailyCost")] = currentDailyCost;
+
+        double variance = 0.0;
+        if (!qFuzzyIsNull(averageDailyCost)) {
+            for (double cost : std::as_const(costs)) {
+                const double delta = cost - averageDailyCost;
+                variance += delta * delta;
+            }
+            variance /= static_cast<double>(costs.size());
+            result[QStringLiteral("volatilityPercent")] =
+                (std::sqrt(variance) / averageDailyCost) * 100.0;
+        }
+
+        if (dailyRows.size() >= 14) {
+            double previousWeek = 0.0;
+            double currentWeek = 0.0;
+            const int split = dailyRows.size() - 7;
+            for (int i = std::max(0, split - 7); i < split; ++i) {
+                previousWeek += dailyRows.at(i).totalCost;
+            }
+            for (int i = split; i < dailyRows.size(); ++i) {
+                currentWeek += dailyRows.at(i).totalCost;
+            }
+            result[QStringLiteral("weekOverWeekPercent")] =
+                percentChange(previousWeek, currentWeek);
+        }
+
+        QVariantList anomalies;
+        const double baseline = averageDailyCost;
+        for (const DailyOverviewRow &row : std::as_const(dailyRows)) {
+            if (baseline <= 0.0) {
+                continue;
+            }
+            if (row.totalCost < baseline * 1.75 || row.totalCost < baseline + 0.25) {
+                continue;
+            }
+
+            QVariantMap anomaly;
+            anomaly[QStringLiteral("date")] = row.day;
+            anomaly[QStringLiteral("value")] = row.totalCost;
+            anomaly[QStringLiteral("deltaPercent")] = percentChange(baseline, row.totalCost);
+            anomalies.append(anomaly);
+        }
+        result[QStringLiteral("anomalies")] = anomalies;
+        result[QStringLiteral("anomalyCount")] = anomalies.size();
+    }
+
+    QSqlQuery latestQuery(m_db);
+    latestQuery.prepare(QStringLiteral(
+        "SELECT provider, model, cost, is_estimated_cost, daily_cost, monthly_cost "
+        "FROM usage_snapshots "
+        "WHERE id IN ("
+        "  SELECT MAX(id) FROM usage_snapshots "
+        "  WHERE timestamp >= date('now', '-%1 days') "
+        "  GROUP BY provider"
+        ")"
+    ).arg(clampedDays));
+
+    if (!latestQuery.exec()) {
+        qWarning() << "UsageDatabase: getAnalystOverview driver query failed:"
+                   << latestQuery.lastError().text();
+        return result;
+    }
+
+    struct DriverRow {
+        QString provider;
+        QString model;
+        double value = 0.0;
+        bool estimated = false;
+    };
+
+    QList<DriverRow> drivers;
+    QMap<QString, double> modelTotals;
+    QMap<QString, bool> modelEstimated;
+    const int daysInMonth = QDate::currentDate().daysInMonth();
+
+    while (latestQuery.next()) {
+        DriverRow row;
+        row.provider = latestQuery.value(0).toString();
+        row.model = latestQuery.value(1).toString().trimmed();
+        const double cost = latestQuery.value(2).toDouble();
+        row.estimated = latestQuery.value(3).toBool();
+        const double dailyCost = latestQuery.value(4).toDouble();
+        const double monthlyCost = latestQuery.value(5).toDouble();
+
+        row.value = monthlyCost > 0.0 ? monthlyCost
+            : (dailyCost > 0.0 ? dailyCost * static_cast<double>(daysInMonth) : cost);
+        if (row.value <= 0.0) {
+            continue;
+        }
+
+        if (row.model.isEmpty()) {
+            row.model = row.provider;
+        }
+
+        drivers.append(row);
+        modelTotals[row.model] += row.value;
+        modelEstimated[row.model] = modelEstimated.value(row.model, false) || row.estimated;
+    }
+
+    std::sort(drivers.begin(), drivers.end(), [](const DriverRow &lhs, const DriverRow &rhs) {
+        return lhs.value > rhs.value;
+    });
+
+    QVariantList topDrivers;
+    const int driverLimit = std::min(5, static_cast<int>(drivers.size()));
+    for (int i = 0; i < driverLimit; ++i) {
+        const DriverRow &driver = drivers.at(i);
+        QVariantMap map;
+        map[QStringLiteral("provider")] = driver.provider;
+        map[QStringLiteral("model")] = driver.model;
+        map[QStringLiteral("value")] = driver.value;
+        map[QStringLiteral("estimated")] = driver.estimated;
+        topDrivers.append(map);
+    }
+    result[QStringLiteral("topDrivers")] = topDrivers;
+
+    struct ModelRow {
+        QString model;
+        double value = 0.0;
+        bool estimated = false;
+    };
+
+    QList<ModelRow> models;
+    for (auto it = modelTotals.constBegin(); it != modelTotals.constEnd(); ++it) {
+        ModelRow row;
+        row.model = it.key();
+        row.value = it.value();
+        row.estimated = modelEstimated.value(it.key(), false);
+        models.append(row);
+    }
+
+    std::sort(models.begin(), models.end(), [](const ModelRow &lhs, const ModelRow &rhs) {
+        return lhs.value > rhs.value;
+    });
+
+    QVariantList topModels;
+    const int modelLimit = std::min(5, static_cast<int>(models.size()));
+    for (int i = 0; i < modelLimit; ++i) {
+        const ModelRow &model = models.at(i);
+        QVariantMap map;
+        map[QStringLiteral("model")] = model.model;
+        map[QStringLiteral("value")] = model.value;
+        map[QStringLiteral("estimated")] = model.estimated;
+        topModels.append(map);
+    }
+    result[QStringLiteral("topModels")] = topModels;
+
+    return result;
 }

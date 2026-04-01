@@ -46,7 +46,9 @@ public:
                                      int rateLimitRequests,
                                      int rateLimitRequestsRemaining,
                                      int rateLimitTokens,
-                                     int rateLimitTokensRemaining);
+                                     int rateLimitTokensRemaining,
+                                     const QString &model = QString(),
+                                     bool isEstimatedCost = false);
 
     /**
      * Record a usage snapshot for a subscription tool.
@@ -62,6 +64,10 @@ public:
     /**
      * Record a rate limit event (hitting or approaching limits).
      */
+    Q_INVOKABLE void recordRateLimitEvent(const QString &provider,
+                                          const QString &eventType,
+                                          int percentUsed);
+
     /**
      * Query aggregated cost or token usage per day for the last 365 days.
      * Mode 0 = Daily Cost, Mode 1 = Tokens (Input + Output).
@@ -77,6 +83,14 @@ public:
      * Returns a list of maps with: { "date": "YYYY-MM-DD", "value": ... }
      */
     Q_INVOKABLE QVariantList getEfficiencySeries(int days) const;
+
+    /**
+     * Query analyst-friendly summary metrics across all providers for the last N days.
+     * Returns keys including:
+     * - averageDailyCost, currentDailyCost, weekOverWeekPercent, volatilityPercent
+     * - anomalyCount, anomalies, topDrivers, topModels
+     */
+    Q_INVOKABLE QVariantMap getAnalystOverview(int days = 30) const;
 
     /**
      * Query usage snapshots for a provider within a time range.
@@ -187,6 +201,9 @@ Q_SIGNALS:
 private:
     void initDatabase();
     void createTables();
+    void ensureColumnExists(const QString &table,
+                            const QString &column,
+                            const QString &definition);
 
     QSqlDatabase m_db;
     QString m_connectionName;

@@ -51,6 +51,7 @@ class UsageDatabaseAnalystTest : public QObject
 private Q_SLOTS:
     void testYearlyActivity();
     void testEfficiencySeries();
+    void testAnalystOverview();
 };
 
 void UsageDatabaseAnalystTest::testYearlyActivity()
@@ -123,15 +124,15 @@ void UsageDatabaseAnalystTest::testEfficiencySeries()
     QDateTime now = QDateTime::currentDateTimeUtc();
     
     // Day 0: 100 in, 200 out -> efficiency 2.0
-    db.recordSnapshot("p1", 100, 200, 1, 0, 0, 0, 0, 0, 0, 0);
+    db.recordSnapshot("p1", 100, 200, 1, 0.1, 0, 0, 0, 0, 0, 0);
     QVERIFY(updateSnapshotData("p1", 0, 100, 200, now.toString("yyyy-MM-dd HH:mm:ss")));
 
     // Day 1: 100 in, 50 out -> efficiency 0.5
-    db.recordSnapshot("p1", 100, 50, 1, 0, 0, 0, 0, 0, 0, 0);
+    db.recordSnapshot("p1", 100, 50, 1, 0.2, 0, 0, 0, 0, 0, 0);
     QVERIFY(updateSnapshotData("p1", 0, 100, 50, now.addDays(-1).toString("yyyy-MM-dd HH:mm:ss")));
 
     // Day 2: 0 in, 0 out -> handle division by zero (should be 0 or skipped, let's say 0)
-    db.recordSnapshot("p1", 0, 0, 1, 0, 0, 0, 0, 0, 0, 0);
+    db.recordSnapshot("p1", 0, 0, 1, 0.3, 0, 0, 0, 0, 0, 0);
     QVERIFY(updateSnapshotData("p1", 0, 0, 0, now.addDays(-2).toString("yyyy-MM-dd HH:mm:ss")));
 
     QVariantList series = db.getEfficiencySeries(7);
@@ -149,6 +150,84 @@ void UsageDatabaseAnalystTest::testEfficiencySeries()
     QCOMPARE(values[now.toString("yyyy-MM-dd")], 2.0);
     QCOMPARE(values[now.addDays(-1).toString("yyyy-MM-dd")], 0.5);
     QCOMPARE(values[now.addDays(-2).toString("yyyy-MM-dd")], 0.0);
+}
+
+void UsageDatabaseAnalystTest::testAnalystOverview()
+{
+    QTemporaryDir tmp;
+    QVERIFY(tmp.isValid());
+    qputenv("XDG_DATA_HOME", tmp.path().toUtf8());
+
+    UsageDatabase db;
+    db.init();
+
+    const QDateTime now = QDateTime::currentDateTimeUtc();
+
+    for (int dayOffset = 0; dayOffset < 14; ++dayOffset) {
+        const bool recentWeek = dayOffset < 7;
+        double openAiDaily = recentWeek ? 3.0 : 1.0;
+        if (dayOffset == 2) {
+            openAiDaily = 8.0; // intentional anomaly
+        }
+
+        const double openAiMarkerCost = openAiDaily + (dayOffset * 0.001);
+        db.recordSnapshot(QStringLiteral("OpenAI"),
+                          100 + dayOffset,
+                          180 + dayOffset,
+                          5,
+                          openAiMarkerCost,
+                          openAiDaily,
+                          48.0,
+                          100,
+                          80,
+                          1000,
+                          700,
+                          QStringLiteral("gpt-4o"),
+                          false);
+        QVERIFY(updateSnapshotData(QStringLiteral("OpenAI"),
+                                   openAiDaily,
+                                   100 + dayOffset,
+                                   180 + dayOffset,
+                                   now.addDays(-dayOffset).toString(QStringLiteral("yyyy-MM-dd HH:mm:ss"))));
+
+        const double anthropicMarkerCost = 0.6 + (dayOffset * 0.001);
+        db.recordSnapshot(QStringLiteral("Anthropic"),
+                          70 + dayOffset,
+                          90 + dayOffset,
+                          3,
+                          anthropicMarkerCost,
+                          0.6,
+                          0.0,
+                          50,
+                          45,
+                          500,
+                          420,
+                          QStringLiteral("claude-3-5-sonnet"),
+                          true);
+        QVERIFY(updateSnapshotData(QStringLiteral("Anthropic"),
+                                   0.6,
+                                   70 + dayOffset,
+                                   90 + dayOffset,
+                                   now.addDays(-dayOffset).toString(QStringLiteral("yyyy-MM-dd HH:mm:ss"))));
+    }
+
+    const QVariantMap overview = db.getAnalystOverview(30);
+    QVERIFY(overview.contains(QStringLiteral("averageDailyCost")));
+    QVERIFY(overview.contains(QStringLiteral("weekOverWeekPercent")));
+    QVERIFY(overview.contains(QStringLiteral("topDrivers")));
+    QVERIFY(overview.contains(QStringLiteral("topModels")));
+
+    QVERIFY(overview.value(QStringLiteral("averageDailyCost")).toDouble() > 0.0);
+    QVERIFY(overview.value(QStringLiteral("weekOverWeekPercent")).toDouble() > 0.0);
+    QVERIFY(overview.value(QStringLiteral("anomalyCount")).toInt() >= 1);
+
+    const QVariantList drivers = overview.value(QStringLiteral("topDrivers")).toList();
+    QVERIFY(!drivers.isEmpty());
+    QCOMPARE(drivers.first().toMap().value(QStringLiteral("provider")).toString(), QStringLiteral("OpenAI"));
+
+    const QVariantList models = overview.value(QStringLiteral("topModels")).toList();
+    QVERIFY(!models.isEmpty());
+    QCOMPARE(models.first().toMap().value(QStringLiteral("model")).toString(), QStringLiteral("gpt-4o"));
 }
 
 QTEST_MAIN(UsageDatabaseAnalystTest)

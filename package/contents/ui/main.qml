@@ -399,8 +399,9 @@ PlasmoidItem {
         // Fetch data from DB for context
         var activity = usageDatabase.getYearlyActivity(plasmoid.configuration.analystIntensityMode);
         var efficiency = usageDatabase.getEfficiencySeries(14);
+        var overview = usageDatabase.getAnalystOverview(30);
         
-        analystIntelligence.generateInsight(activity.days, efficiency);
+        analystIntelligence.generateInsight(activity.days, efficiency, overview);
     }
 
     // ── UI Representations ──
@@ -655,6 +656,10 @@ PlasmoidItem {
 
     function recordProviderSnapshot(providerName, backend) {
         if (!usageDatabase.enabled) return;
+        var activeModel = "";
+        if (backend && backend.model !== undefined && backend.model !== null) {
+            activeModel = backend.model;
+        }
         usageDatabase.recordSnapshot(
             providerName,
             backend.inputTokens,
@@ -666,7 +671,9 @@ PlasmoidItem {
             backend.rateLimitRequests,
             backend.rateLimitRequestsRemaining,
             backend.rateLimitTokens,
-            backend.rateLimitTokensRemaining
+            backend.rateLimitTokensRemaining,
+            activeModel,
+            backend.isEstimatedCost
         );
     }
 

@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.1.0] — 2026-04-02
+
+### Added
+
+- Add analyst overview aggregation for anomalies, volatility, week-over-week spend, top cost drivers, and model exposure
+- Add model-aware and cost-quality-aware snapshot storage for richer reporting and CSV exports
+- Add provider diagnostics and copyable weekly/monthly report generation to the Analyst tab
+- Add deterministic insight synthesis backed by real usage data instead of placeholder analyst text
+- Add analyst database coverage for overview calculations and daily aggregation behavior
+
+### Changed
+
+- Replace the placeholder Analyst tab with a production operator view built around real history data
+- Fix yearly activity and efficiency aggregations so repeated intra-day snapshots do not overcount usage
+- Wire runtime snapshot recording to persist provider model and estimated-cost metadata
+- Refresh release-facing README, AppStream, RPM, and Browser Sync messaging for the current upstream v5 line
+
 ## [5.0.0] — 2026-04-01
 
 ### Added
@@ -434,7 +451,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - KWallet integration for secure API key storage
 - KDE notifications for rate limit warnings
 
-[Unreleased]: https://github.com/multidraxter-bit/plasma-ai-usage-monitor/compare/v3.8.1...HEAD
+[Unreleased]: https://github.com/multidraxter-bit/plasma-ai-usage-monitor/compare/v5.1.0...HEAD
+[5.1.0]: https://github.com/multidraxter-bit/plasma-ai-usage-monitor/compare/v5.0.0...v5.1.0
+[5.0.0]: https://github.com/multidraxter-bit/plasma-ai-usage-monitor/compare/v3.9.0...v5.0.0
+[3.9.0]: https://github.com/multidraxter-bit/plasma-ai-usage-monitor/compare/v3.8.1...v3.9.0
 [3.8.1]: https://github.com/multidraxter-bit/plasma-ai-usage-monitor/compare/v3.8.0...v3.8.1
 [3.8.0]: https://github.com/multidraxter-bit/plasma-ai-usage-monitor/compare/v3.7.0...v3.8.0
 [3.7.0]: https://github.com/multidraxter-bit/plasma-ai-usage-monitor/compare/v3.6.0...v3.7.0

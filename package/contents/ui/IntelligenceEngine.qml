@@ -3,8 +3,8 @@ import QtQuick.Layouts
 import org.kde.kirigami as Kirigami
 
 /**
- * A mockup of the Intelligence Engine for v5.0.0
- * In a real implementation, this would communicate with Ollama.
+ * Lightweight deterministic analyst insight generator.
+ * Keeps v5 useful without requiring a local LLM service.
  */
 Item {
     id: engine
@@ -12,26 +12,82 @@ Item {
     property bool enabled: true
     property string lastAnalystInsight: i18n("Welcome to The Analyst. Click 'Generate' to analyze your usage patterns.")
     property bool busy: false
+    property var pendingOverview: ({})
+    property var pendingEfficiency: []
 
-    function generateInsight(heatmapData, efficiencyData) {
+    function generateInsight(heatmapData, efficiencyData, overview) {
+        pendingOverview = overview || {};
+        pendingEfficiency = efficiencyData || [];
         busy = true;
-        // Mock a network delay for Ollama processing
         insightTimer.start();
     }
 
     Timer {
         id: insightTimer
-        interval: 2000
+        interval: 450
         repeat: false
         onTriggered: {
             engine.busy = false;
-            var insights = [
-                i18n("You've been 15% more efficient this week! Your prompts are getting shorter while maintaining high output volume."),
-                i18n("Warning: Tuesday saw a significant cost spike ($0.85). This was 2x higher than your daily average."),
-                i18n("Prompt efficiency is stable at 1.4x. Your usage patterns suggest optimal model selection for most tasks."),
-                i18n("High activity detected on weekend. You generated 15k tokens across 3 providers on Saturday.")
-            ];
-            engine.lastAnalystInsight = insights[Math.floor(Math.random() * insights.length)];
+            var overview = engine.pendingOverview || {};
+            var drivers = overview.topDrivers || [];
+            var anomalies = overview.anomalies || [];
+            var efficiency = engine.pendingEfficiency || [];
+
+            var averageCost = overview.averageDailyCost || 0;
+            var wow = overview.weekOverWeekPercent || 0;
+            var volatility = overview.volatilityPercent || 0;
+            var efficiencyAvg = 0;
+            if (efficiency.length > 0) {
+                var sum = 0;
+                for (var i = 0; i < efficiency.length; ++i) {
+                    sum += efficiency[i].value || 0;
+                }
+                efficiencyAvg = sum / efficiency.length;
+            }
+
+            var lines = [];
+            if (drivers.length > 0) {
+                var lead = drivers[0];
+                lines.push(i18n("%1 is currently the top spend driver at about $%2 for the month.",
+                                lead.provider, Number(lead.value || 0).toFixed(2)));
+            } else {
+                lines.push(i18n("Not enough cost history is available yet to identify a spend driver."));
+            }
+
+            if (anomalies.length > 0) {
+                var anomaly = anomalies[0];
+                lines.push(i18n("A spending spike was detected on %1 at $%2, around %3% above baseline.",
+                                anomaly.date, Number(anomaly.value || 0).toFixed(2),
+                                Math.round(anomaly.deltaPercent || 0)));
+            } else if (averageCost > 0) {
+                lines.push(i18n("Daily spending is stable around $%1 with no major anomalies in the current window.",
+                                averageCost.toFixed(2)));
+            }
+
+            if (wow > 5) {
+                lines.push(i18n("Week-over-week spend is trending up by %1%. Consider checking model choice or refresh cadence.",
+                                wow.toFixed(1)));
+            } else if (wow < -5) {
+                lines.push(i18n("Week-over-week spend is down by %1%, which suggests tighter usage or cheaper model mix.",
+                                Math.abs(wow).toFixed(1)));
+            } else {
+                lines.push(i18n("Week-over-week spend is broadly flat, which usually means usage is staying within its recent band."));
+            }
+
+            if (efficiencyAvg > 1.5) {
+                lines.push(i18n("Prompt efficiency is strong at %1x output/input, indicating concise prompts with healthy completion volume.",
+                                efficiencyAvg.toFixed(2)));
+            } else if (efficiencyAvg > 0) {
+                lines.push(i18n("Prompt efficiency is %1x output/input. There is room to tighten prompts if costs rise faster than value.",
+                                efficiencyAvg.toFixed(2)));
+            }
+
+            if (volatility > 40) {
+                lines.push(i18n("Cost volatility is elevated at %1%, so short-term spikes are worth monitoring closely.",
+                                volatility.toFixed(1)));
+            }
+
+            engine.lastAnalystInsight = lines.join(" ");
         }
     }
 }
