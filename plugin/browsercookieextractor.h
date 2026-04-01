@@ -15,9 +15,9 @@
  * Supported browsers:
  * - Firefox: reads cookies from ~/.mozilla/firefox/<profile>/cookies.sqlite
  *   (plain SQLite, no encryption)
- * - Chrome/Chromium: cookies.sqlite in profile dir, but values are AES-encrypted.
- *   Chrome cookie decryption requires the Safe Storage key from the system keyring
- *   which is complex and platform-specific. For now, only Firefox is fully supported.
+ *
+ * Legacy browser enum values are retained only for config compatibility.
+ * Non-Firefox runtimes are intentionally unsupported in this release.
  *
  * WARNING: This feature uses internal/undocumented APIs of third-party services.
  * It may violate Terms of Service and can break without notice. Users must

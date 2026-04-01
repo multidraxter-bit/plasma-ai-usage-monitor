@@ -22,7 +22,7 @@
 
 A native KDE Plasma 6 plasmoid that monitors AI API token usage, rate limits, and costs across multiple providers. Sits in your panel as a compact icon with a colored status badge and expands into a detailed popup with per-provider stats, usage history charts, and budget tracking. Also tracks subscription-based AI coding tool usage limits for Claude Code, Codex CLI, and GitHub Copilot.
 
-> **Current stabilization focus:** `v3.9.0 "Showcase"` is dedicated to reliability hardening, a reproducible Fedora KDE demo environment, and refreshed GitHub/KDE Store media assets.
+> **Current release:** `v5.1.0 "Lighthouse — The Analyst"` adds a dedicated analyst view with yearly activity heatmaps, efficiency KPIs, provider diagnostics, anomaly surfacing, model-aware analytics, and copyable weekly/monthly reports.
 
 ## Quick Links
 
@@ -48,6 +48,9 @@ A native KDE Plasma 6 plasmoid that monitors AI API token usage, rate limits, an
 - **Usage history** — SQLite-backed persistence with configurable retention (7-365 days, default 90)
 - **Interactive charts** — Canvas-based line/area charts showing cost, tokens, requests, and rate limit trends over 24h/7d/30d
 - **Compare analytics mode** — Multi-series history comparison across providers or subscription tools with ranking, delta trends, compact legend chips, and hover crosshair/tooltip
+- **Analyst view** — Yearly heatmap, week-over-week spend, volatility, anomaly detection, and top driver/model ranking in one operator-focused tab
+- **Provider diagnostics** — Auth/config health, endpoint visibility, refresh freshness, and cost-source quality for each enabled provider
+- **Copyable reports** — Generate weekly or monthly Analyst summaries directly to the clipboard
 - **Trend summaries** — Total cost, average daily cost, peak usage, and snapshot counts per time range
 - **Rate limit visualization** — Progress bars with color-coded thresholds (green/yellow/red)
 - **Collapsible provider cards** — Click to collapse/expand; collapsed cards show a compact cost summary

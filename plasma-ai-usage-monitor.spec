@@ -1,5 +1,5 @@
 Name:           plasma-ai-usage-monitor
-Version:        3.9.0
+Version:        5.1.0
 Release:        1%{?dist}
 Summary:        KDE Plasma 6 widget to monitor AI API token usage, rate limits, and costs
 License:        GPL-3.0-or-later
@@ -68,6 +68,11 @@ appstream-util validate-relax --nonet %{buildroot}%{_datadir}/metainfo/com.githu
 %{_datadir}/metainfo/com.github.loofi.aiusagemonitor.metainfo.xml
 
 %changelog
+* Wed Apr 01 2026 Loofi <loofi@github.com> - 5.0.0-1
+- Add The Analyst tab with yearly heatmap and efficiency KPIs
+- Expand demo assets and analyst-focused usage history coverage
+- Refresh release packaging metadata for the Lighthouse release
+
 * Thu Mar 19 2026 Loofi <loofi@github.com> - 3.9.0-1
 - Add demo-mode mock server and deterministic showcase assets
 - Harden update checks, provider tests, and popup startup orchestration
