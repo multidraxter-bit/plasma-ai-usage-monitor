@@ -12,7 +12,7 @@ Use this checklist after the stabilization work and screenshot refresh are compl
 
 ## GitHub release pack
 
-Prepare the same assets the release workflow already expects:
+Prepare the same assets for the manual GitHub release pack:
 
 - source tarball
 - `com.github.loofi.aiusagemonitor.plasmoid`
@@ -52,7 +52,7 @@ If the store allows additional images, also prepare:
 
 1. verify the target version in `ROADMAP.md`, `package/metadata.json`, `com.github.loofi.aiusagemonitor.metainfo.xml`, `CMakeLists.txt`, and `plasma-ai-usage-monitor.spec`
 2. push the release commit and tag
-3. confirm the GitHub release workflow publishes the tarball and `.plasmoid` artifacts
+3. create the GitHub release manually and attach the tarball and `.plasmoid` artifacts
 4. update the README-linked screenshots if filenames stayed stable but content changed
 5. upload the refreshed screenshot set and listing copy to KDE Store
 6. confirm the listing language mentions the compiled plugin requirement clearly

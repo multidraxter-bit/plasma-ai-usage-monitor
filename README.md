@@ -222,8 +222,14 @@ just reload
 ```bash
 just bump VERSION=x.y.z
 # Update CHANGELOG.md, then:
-git commit -am "chore: bump version to vx.y.z"
-git tag vx.y.z && git push --tags
+bash scripts/check_version_consistency.sh
+bash scripts/check_flatpak_scaffold.sh
+bash scripts/package_source_tarball.sh --version x.y.z --output-dir .
+bash scripts/package_plasmoid.sh --output-dir .
+git commit -am "chore: release vx.y.z"
+git tag vx.y.z
+git push origin main --tags
+gh release create vx.y.z ./plasma-ai-usage-monitor-x.y.z.tar.gz ./com.github.loofi.aiusagemonitor.plasmoid --title "vx.y.z"
 ```
 
 ---
@@ -553,7 +559,7 @@ rpmbuild -ba plasma-ai-usage-monitor.spec
   - `scripts/package_source_tarball.sh`
   - `scripts/package_plasmoid.sh`
   - `scripts/check_flatpak_scaffold.sh`
-- Packaging validation now checks manifest identity/runtime fields and version consistency with project metadata in CI/release workflows.
+- Packaging validation checks manifest identity/runtime fields and version consistency with project metadata through the local release scripts and checks above.
 - The `.plasmoid` archive is built from the **contents of `package/`**, so `metadata.json` and `contents/` sit at the archive root as required by Plasma/KDE Store package installs.
 - **Important:** the KDE Store / `.plasmoid` artifact contains only the plasmoid package payload. This project still needs the compiled QML plugin from the distro package or a source install to work fully.
 
