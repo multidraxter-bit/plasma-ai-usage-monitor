@@ -68,6 +68,11 @@ appstream-util validate-relax --nonet %{buildroot}%{_datadir}/metainfo/com.githu
 %{_datadir}/metainfo/com.github.loofi.aiusagemonitor.metainfo.xml
 
 %changelog
+* Thu Apr 02 2026 Loofi <loofi@github.com> - 5.1.0-1
+- Add model-aware analyst overview metrics, anomaly surfacing, and provider diagnostics
+- Add deterministic analyst reports and improved usage aggregation without daily overcounting
+- Refresh release metadata and package surfaces for the 5.1.0 COPR/GitHub release
+
 * Wed Apr 01 2026 Loofi <loofi@github.com> - 5.0.0-1
 - Add The Analyst tab with yearly heatmap and efficiency KPIs
 - Expand demo assets and analyst-focused usage history coverage
@@ -78,7 +83,7 @@ appstream-util validate-relax --nonet %{buildroot}%{_datadir}/metainfo/com.githu
 - Harden update checks, provider tests, and popup startup orchestration
 - Refresh AppStream metadata, screenshots, and release-facing documentation
 
-* Sat Mar 15 2026 Loofi <loofi@github.com> - 3.8.1-1
+* Sun Mar 15 2026 Loofi <loofi@github.com> - 3.8.1-1
 - Add guided uninstall flow and stale local install shadow detection
 - Polish release/install UX and provider troubleshooting hints
 - Fix KDE Store plasmoid archive layout to ship metadata.json and contents/ at archive root
@@ -104,120 +109,6 @@ appstream-util validate-relax --nonet %{buildroot}%{_datadir}/metainfo/com.githu
 - Add AppStream validation to release CI and RPM spec
 - Update README with COPR install instructions
 - Extend version consistency check to cover metainfo XML
-
-* Thu Feb 20 2026 Loofi <loofi@github.com> - 3.1.0-1
-- Add OpenRouter provider with 22-model pricing and credits balance endpoint
-- Add Together AI provider with 12-model pricing (Llama, Qwen, DeepSeek, Mixtral, Gemma)
-- Add Cohere provider with 7-model pricing via OpenAI-compatible endpoint
-- Add provider config UI sections with model selectors and API key management
-- Add per-provider refresh timers, notification, and budget controls
-- Add 3 new mocked-HTTP unit tests for new providers
-
-* Wed Feb 19 2026 Loofi <loofi@github.com> - 3.0.0-1
-- Update model pricing tables for all 7 providers (2026 pricing)
-- Add missing pricing: gemini-2.0-flash-lite, grok-2-mini, deepseek-coder
-- Add Mistral -latest alias pricing (mistral-large-latest, etc.)
-- Add Anthropic date-suffixed model pricing (claude-3-5-sonnet-20241022, etc.)
-- Sync QML model dropdowns with C++ pricing tables
-- Add Claude 3.7 Sonnet, Gemini 2.5 Pro/Flash, Llama 3.1 70B to selectors
-
-* Tue Feb 18 2026 Loofi <loofi@github.com> - 2.9.0-1
-- Add 43 new C++ unit tests across ProviderBackend, SubscriptionToolBackend,
-  UpdateChecker, and UsageDatabase
-- Test budget signals, cost estimation, generation counter, state transitions
-- Test subscription limit warnings, period calculations, auto-reset
-- Test version properties, interval clamping, database pruning, export
-
-* Mon Feb 16 2026 Loofi <loofi@github.com> - 2.8.2-1
-- Improve Browser Sync connection diagnostics with actionable status messages
-- Add provider mocked-HTTP unit tests (OpenAI, Anthropic, DeepSeek)
-- Add subscription monitor unit tests including sync failure diagnostics
-- Add blocking clang-tidy CI gate with compile_commands-based runner
-
-* Mon Feb 16 2026 Loofi <loofi@github.com> - 2.8.1-1
-- Fix stale UI version display by preferring plasmoid metadata version in QML
-- Normalize update checker version parsing for v-prefixed and suffixed tags
-- Add local upgrade/reload helper scripts for reliable Plasma package updates
-- Add diagnostics for repo/local/system installed version mismatch
-- Add test guard against hardcoded semantic version strings in QML
-
-* Mon Feb 16 2026 Loofi <loofi@github.com> - 2.8.0-1
-- Add `AppInfo.version` singleton and remove hardcoded QML version drift
-- Add compare analytics mode for providers/tools with metric-aware series APIs
-- Add `MultiSeriesChart.qml` with compact legend chips and ranked hover tooltip
-- Fix History mapping to use db names for query/export (Google/Mistral/xAI labels)
-- Apply per-provider notification gating consistently across all provider alerts
-- Add explicit History loading/empty states and safer export enablement
-- Add tests for series metrics/bucketing and display-name/db-name regression
-- Add version consistency check and run ctest in CI build workflow
-
-* Mon Feb 17 2026 Loofi <loofi@github.com> - 2.7.0-1
-- Fix reply-after-deleteLater in OpenAI onCostsReply and onMonthlyCostsReply
-- Fix reads-after-deleteLater in OpenAICompatible 429 and success paths
-- Fix shared DB connection name crash when multiple UsageDatabase instances exist
-- Fix compactDisplayMode config alias writing integer index instead of string
-- Fix timer binding breakage — remove imperative handler that broke declarative bindings
-- Add retry with exponential backoff to OpenAI costs and monthly costs endpoints
-- Add write throttling to tool snapshot recording (matching provider snapshot throttle)
-- Add restrictive permissions (owner-only) on cookie temp file copies
-- Add retentionDays range clamping (1–365 days)
-- Fix textToCents returning NaN for invalid budget input (now defaults to 0)
-
-* Mon Feb 16 2026 Loofi <loofi@github.com> - 2.6.0-1
-- Fix m_activeReplies never populated — beginRefresh() now actually aborts in-flight requests
-- Fix retry logic sending GET instead of POST for chat completion retries
-- Fix pruneOldData() totalDeleted only counting last table (now sums all 3 DELETEs)
-- Fix double deleteLater() in OpenAICompatible and OpenAI retry paths
-- Add beginRefresh(), createRequest(), and generation counter to GoogleProvider
-- Add generation counter and createRequest() to DeepSeek fetchBalance()
-- Add stale-reply guard to CopilotMonitor fetchOrgMetrics()
-- Add trackReply() for registering in-flight replies across all providers
-- Add short-lived cookie DB cache in BrowserCookieExtractor (avoids triple reads)
-- Add i18n() wrapping to all user-visible error messages in providers
-- Split updatechecker.h into .h/.cpp (was header-only with full implementation)
-- Add 30s timeout to UpdateChecker GitHub API request
-- Add updateLastRefreshed() to Google error path (was showing stale time on failure)
-
-* Mon Feb 16 2026 Loofi <loofi@github.com> - 2.5.0-1
-- Add centralized request builder with 30s timeout on all API requests
-- Add generation counter for request cancellation on re-refresh
-- Add retry with exponential backoff for transient HTTP errors (429/500/502/503)
-- Add Retry-After header parsing for 429 rate limit responses
-- Separate budgetWarning and budgetExceeded signals with notification dedup
-- Add HTTPS validation warning for custom base URLs
-- Centralize rate limit header parsing in ProviderBackend base class
-- Remove duplicate QNetworkAccessManager in CopilotMonitor
-- Add DB write throttling (60s per provider, skip if data unchanged)
-- Wrap pruneOldData() in SQLite transaction for atomic multi-table cleanup
-- Add eager database init via UsageDatabase::init() to avoid first-write stall
-- Optimize UsageChart hover - only repaint when hoveredIndex changes
-
-* Mon Feb 17 2026 Loofi <loofi@github.com> - 2.4.0-1
-- Add model name badge in ProviderCard header
-- Add subscription tool warning/critical indicators in panel badge
-- Fix rate limit bars to show "used" instead of "remaining" for visual consistency
-- Add All/Day/Month toggle to CostSummaryCard with per-provider breakdown
-- Add hover tooltips with crosshair to UsageChart canvas
-- Fix UsageChart Y-axis to start at zero for accurate visual scale
-- Add Bézier smooth curve interpolation to UsageChart
-- Refactor configBudget.qml from copy-paste to data-driven Repeater (−160 lines)
-- Add getToolSnapshots() and getToolNames() to UsageDatabase for tool history queries
-
-* Sun Feb 16 2026 Loofi <loofi@github.com> - 2.3.0-1
-- Add browser cookie sync for real-time usage data from Claude.ai and ChatGPT
-- Add BrowserCookieExtractor for reading Firefox session cookies (read-only)
-- Add full dashboard view: session info, extra usage, tertiary limits, credits
-- Add subscription cost display per tool ($X/mo badge)
-- Extend ClaudeCodeMonitor with API sync (session %, weekly, extra usage/billing)
-- Extend CodexCliMonitor with API sync (5h, weekly, code review, credits)
-- Add CopilotMonitor subscription cost support
-- Redesign SubscriptionToolCard.qml as full dashboard replica
-- Add browser sync config section with connection test buttons
-- Add sync refresh button and auto-sync timer in main widget
-- Mark browser sync as experimental with ToS disclaimer
-
-* Sun Feb 15 2026 Loofi <loofi@github.com> - 2.2.0-1
-- Add subscription tool tracking for Claude Code, Codex CLI, and GitHub Copilot
 - Add SubscriptionToolBackend abstract base class with rolling time windows
 - Add ClaudeCodeMonitor with 5h session + weekly dual limits (Pro/Max5x/Max20x)
 - Add CodexCliMonitor with 5h window (Plus/Pro/Business plans)
@@ -231,7 +122,7 @@ appstream-util validate-relax --nonet %{buildroot}%{_datadir}/metainfo/com.githu
 - Add DeepSeek account balance display in ProviderCard
 - Add Google Gemini free/paid tier selector with tier-aware rate limits
 
-* Sat Feb 15 2026 Loofi <loofi@github.com> - 2.1.0-1
+* Sun Feb 15 2026 Loofi <loofi@github.com> - 2.1.0-1
 - Add OpenAICompatibleProvider base class, dedup Mistral/Groq/xAI/DeepSeek
 - Add token-based cost estimation with per-model pricing (~30 models)
 - Add per-provider refresh timers (individual timers per provider)
