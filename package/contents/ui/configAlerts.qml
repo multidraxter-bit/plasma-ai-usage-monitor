@@ -29,6 +29,9 @@ KCM.SimpleKCM {
     property alias cfg_deepseekNotificationsEnabled: deepseekNotifySwitch.checked
     property alias cfg_groqNotificationsEnabled: groqNotifySwitch.checked
     property alias cfg_xaiNotificationsEnabled: xaiNotifySwitch.checked
+    property alias cfg_openrouterNotificationsEnabled: openrouterNotifySwitch.checked
+    property alias cfg_togetherNotificationsEnabled: togetherNotifySwitch.checked
+    property alias cfg_cohereNotificationsEnabled: cohereNotifySwitch.checked
     property alias cfg_googleveoNotificationsEnabled: googleveoNotifySwitch.checked
     property alias cfg_azureNotificationsEnabled: azureNotifySwitch.checked
     property alias cfg_loofiNotificationsEnabled: loofiNotifySwitch.checked
@@ -204,6 +207,27 @@ KCM.SimpleKCM {
             Kirigami.FormData.label: i18n("xAI / Grok:")
             enabled: alertsSwitch.checked
             checked: plasmoid.configuration.xaiNotificationsEnabled
+        }
+
+        QQC2.Switch {
+            id: openrouterNotifySwitch
+            Kirigami.FormData.label: i18n("OpenRouter:")
+            enabled: alertsSwitch.checked
+            checked: plasmoid.configuration.openrouterNotificationsEnabled
+        }
+
+        QQC2.Switch {
+            id: togetherNotifySwitch
+            Kirigami.FormData.label: i18n("Together AI:")
+            enabled: alertsSwitch.checked
+            checked: plasmoid.configuration.togetherNotificationsEnabled
+        }
+
+        QQC2.Switch {
+            id: cohereNotifySwitch
+            Kirigami.FormData.label: i18n("Cohere:")
+            enabled: alertsSwitch.checked
+            checked: plasmoid.configuration.cohereNotificationsEnabled
         }
 
         QQC2.Switch {

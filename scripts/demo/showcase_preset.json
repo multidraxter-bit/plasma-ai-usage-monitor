@@ -109,6 +109,74 @@
       "tokens_remaining": 289800
     }
   },
+  "claude_code": {
+    "bootstrap": {
+      "account": {
+        "memberships": [
+          {
+            "organization": {
+              "uuid": "org-demo-claude",
+              "subscription": {
+                "type": "max_5x"
+              }
+            }
+          }
+        ]
+      }
+    },
+    "usage": {
+      "five_hour": {
+        "utilization": 42,
+        "resets_at": "2026-03-29T17:00:00Z"
+      },
+      "seven_day": {
+        "utilization": 18
+      },
+      "extra_usage": {
+        "spent_cents": 750,
+        "monthly_limit_cents": 5000,
+        "resets_at": "2026-04-01T00:00:00Z"
+      }
+    }
+  },
+  "codex_cli": {
+    "account_check": {
+      "accounts": {
+        "demo-account": {
+          "entitlement": "pro",
+          "remaining_credits": 37.5,
+          "rate_limits": {
+            "message_cap": {
+              "type": "five_hour",
+              "remaining": 210,
+              "limit": 300,
+              "resets_at": "2026-03-29T17:00:00Z"
+            },
+            "weekly_cap": {
+              "type": "week",
+              "remaining": 420,
+              "limit": 500,
+              "resets_at": "2026-04-02T00:00:00Z"
+            },
+            "code_review": {
+              "type": "code_review",
+              "remaining": 18,
+              "limit": 20,
+              "resets_at": "2026-03-31T00:00:00Z"
+            }
+          }
+        }
+      }
+    }
+  },
+  "copilot": {
+    "billing": {
+      "total_seats": 12,
+      "seat_breakdown": {
+        "active_this_cycle": 7
+      }
+    }
+  },
   "loofi": {
     "model": "Qwen3.5-9B",
     "training_stage": "canary_eval",

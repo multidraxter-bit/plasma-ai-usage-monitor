@@ -868,3 +868,101 @@ qint64 UsageDatabase::databaseSize() const
     QFileInfo fi(m_db.databaseName());
     return fi.size();
 }
+
+QVariantMap UsageDatabase::getYearlyActivity(int mode) const
+{
+    QVariantMap result;
+    QVariantList days;
+    double maxIntensity = 0.0;
+
+    if (!m_initialized) {
+        result["maxIntensity"] = 0.0;
+        result["days"] = days;
+        return result;
+    }
+
+    QSqlQuery query(m_db);
+    // Aggregate by date. We take the last 365 days.
+    // Mode 0: daily_cost (financial intensity)
+    // Mode 1: input_tokens + output_tokens (volume intensity)
+    QString valueExpr = (mode == 0) ? QStringLiteral("SUM(daily_cost)") : QStringLiteral("SUM(input_tokens + output_tokens)");
+
+    query.prepare(QStringLiteral(
+        "SELECT date(timestamp) as day, %1 as value "
+        "FROM usage_snapshots "
+        "WHERE timestamp >= date('now', '-365 days') "
+        "GROUP BY day "
+        "ORDER BY day ASC"
+    ).arg(valueExpr));
+
+    if (!query.exec()) {
+        qWarning() << "UsageDatabase: getYearlyActivity query failed:" << query.lastError().text();
+        result["maxIntensity"] = 0.0;
+        result["days"] = days;
+        return result;
+    }
+
+    while (query.next()) {
+        QVariantMap day;
+        day[QStringLiteral("date")] = query.value(0).toString();
+        double val = query.value(1).toDouble();
+        day[QStringLiteral("value")] = val;
+        days.append(day);
+
+        if (val > maxIntensity) {
+            maxIntensity = val;
+        }
+    }
+
+    result[QStringLiteral("maxIntensity")] = maxIntensity;
+    result[QStringLiteral("days")] = days;
+    return result;
+}
+
+QVariantList UsageDatabase::getEfficiencySeries(int daysCount) const
+{
+    QVariantList series;
+
+    if (!m_initialized)
+        return series;
+
+    QSqlQuery query(m_db);
+    // Efficiency = Output Tokens / Input Tokens.
+    // We aggregate by day and use CASE to avoid division by zero.
+    query.prepare(QStringLiteral(
+        "SELECT date(timestamp) as day, "
+        "SUM(input_tokens) as total_in, "
+        "SUM(output_tokens) as total_out "
+        "FROM usage_snapshots "
+        "WHERE timestamp >= date('now', '-%1 days') "
+        "GROUP BY day "
+        "ORDER BY day ASC"
+    ).arg(daysCount));
+
+    if (!query.exec()) {
+        qWarning() << "UsageDatabase: getEfficiencySeries query failed:" << query.lastError().text();
+        return series;
+    }
+
+    while (query.next()) {
+        QVariantMap entry;
+        entry[QStringLiteral("date")] = query.value(0).toString();
+        
+        double input = query.value(1).toDouble();
+        double output = query.value(2).toDouble();
+        
+        double ratio = 0.0;
+        if (input > 0) {
+            ratio = output / input;
+        } else if (output > 0) {
+            // If we have output but no input (unlikely but possible in some APIs),
+            // we could cap it or return a high value. Let's cap at 10x for safety.
+            ratio = 10.0;
+        }
+
+        entry[QStringLiteral("value")] = ratio;
+        series.append(entry);
+    }
+
+    return series;
+}

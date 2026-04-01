@@ -110,7 +110,7 @@ ctest --test-dir build --output-on-failure
 
 | Component | Purpose |
 |-----------|---------|
-| `main.qml` | Root PlasmoidItem — instantiates 7 backends + 3 subscription tool monitors, per-provider timers, notifications, database, `allProviders` and `allSubscriptionTools` arrays |
+| `main.qml` | Root PlasmoidItem — instantiates 13 provider backends + 3 subscription tool monitors, per-provider timers, notifications, database, `allProviders` and `allSubscriptionTools` arrays |
 | `CompactRepresentation.qml` | Panel icon with 3 display modes (icon/cost/count) and accessibility |
 | `FullRepresentation.qml` | Popup with status bar, Live/History tabs, detail and compare history modes, responsive history controls, loading/empty states, export buttons |
 | `ProviderCard.qml` | Collapsible provider stats card with budget bars, cost estimation labels, error details, and accessibility |

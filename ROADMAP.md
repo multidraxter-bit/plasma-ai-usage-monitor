@@ -1,7 +1,7 @@
 # Roadmap — Plasma AI Usage Monitor
 
-> **Current version:** v3.8.1 (release packaging + build fix hotpatch)
-> **Last updated:** 2026-03-16
+> **Current version:** v5.0.0 (Lighthouse — The Analyst)
+> **Last updated:** 2026-04-01
 
 ---
 
@@ -9,6 +9,8 @@
 
 | Version | Codename       | Theme                                                             | Status   |
 | ------- | -------------- | ----------------------------------------------------------------- | -------- |
+| v5.0.0  | **Lighthouse** | Intelligence + Forecasting                                        | Active   |
+| v3.9.0  | **Showcase**   | Stabilization + Demo Environment + Store-Ready Assets             | Released |
 | v3.8.1  | **Pulse**      | Release packaging + build fix hotpatch                            | Released |
 | v3.8.0  | **Pulse**      | Install UX polish + stale local install shadow detection          | Released |
 | v3.7.0  | **Pulse**      | Azure OpenAI Dedicated Provider (no OpenAI aliasing)              | Released |
@@ -18,7 +20,6 @@
 | v3.5.1  | **Pulse**      | Release Workflow Hotfix (AppStream icon validation)               | Released |
 | v3.5.0  | **Pulse**      | Packaging Consistency Hardening                                   | Released |
 | v3.4.0  | **Pulse**      | Subscription Cost Aggregation + Copilot Activity Detection        | Released |
-| v3.9.0  | **Showcase**   | Stabilization + Demo Environment + Store-Ready Assets             | Active   |
 | v4.0.0  | **Horizon**    | UX Polish + Provider Expansion                                    | Planned  |
 | v5.0.0  | **Lighthouse** | Intelligence + Forecasting                                        | Planned  |
 | v6.0.0  | **Nexus**      | Team + Multi-User                                                 | Planned  |
@@ -390,7 +391,7 @@ Key trends informing this roadmap:
 
 | Tool             | Platform     | Providers           | Local AI | Forecasting | Team      |
 | ---------------- | ------------ | ------------------- | -------- | ----------- | --------- |
-| **This widget**  | KDE Plasma 6 | 10 + 3 subs         | No       | No          | No        |
+| **This widget**  | KDE Plasma 6 | 13 + 3 subs         | No       | No          | No        |
 | OpenAI Dashboard | Web          | OpenAI only         | No       | No          | Org-level |
 | Helicone         | Web (SaaS)   | Proxy-based         | No       | Yes         | Yes       |
 | LangSmith        | Web (SaaS)   | LangChain ecosystem | No       | Limited     | Yes       |

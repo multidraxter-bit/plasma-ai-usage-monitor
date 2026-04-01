@@ -62,9 +62,21 @@ public:
     /**
      * Record a rate limit event (hitting or approaching limits).
      */
-    Q_INVOKABLE void recordRateLimitEvent(const QString &provider,
-                                           const QString &eventType,
-                                           int percentUsed);
+    /**
+     * Query aggregated cost or token usage per day for the last 365 days.
+     * Mode 0 = Daily Cost, Mode 1 = Tokens (Input + Output).
+     * Returns a map with:
+     * - maxIntensity: highest value across all days
+     * - days: list of { "date": "YYYY-MM-DD", "value": ... }
+     */
+    Q_INVOKABLE QVariantMap getYearlyActivity(int mode) const;
+
+    /**
+     * Query average token efficiency (output_tokens / input_tokens) per day
+     * for the last N days across all providers.
+     * Returns a list of maps with: { "date": "YYYY-MM-DD", "value": ... }
+     */
+    Q_INVOKABLE QVariantList getEfficiencySeries(int days) const;
 
     /**
      * Query usage snapshots for a provider within a time range.

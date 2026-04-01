@@ -31,7 +31,8 @@ A native KDE Plasma 6 plasmoid that monitors AI API token usage, rate limits, an
 - **Manual store handoff:** [docs/store/submission-checklist.md](docs/store/submission-checklist.md)
 - **Screenshot playbook:** [assets/screenshots/README.md](assets/screenshots/README.md)
 
-> **Demo Mode:** Contributors can run the widget in a deterministic offline mode for testing and screenshots. Start `python scripts/demo/mock_server.py`, then run Plasma with `PLASMA_AI_MONITOR_DEMO=1 plasmashell --replace &`.
+> **VS Code note:** use **Remote - SSH** for the real Fedora 43 KDE VM workflow, or **Dev Containers** for a headless Fedora 43 build/test environment. The container is great for build/test/mock-server work, but real Plasma UI validation still requires a Linux desktop session.
+> **Demo Mode:** Contributors can run the widget in a deterministic offline mode for testing and screenshots. In the Fedora KDE guest, run `bash scripts/demo/setup_fedora43_kde_test_env.sh --install-missing`, then start `python scripts/demo/mock_ai_usage_server.py` and reload Plasma with `PLASMA_AI_MONITOR_DEMO=1 plasmashell --replace &`.
 
 **Supported providers:** Loofi Server, OpenAI, Azure OpenAI, Anthropic (Claude), Google Gemini, Mistral AI, DeepSeek, Groq, xAI (Grok), OpenRouter, Together AI, Cohere, Google Veo
 
@@ -196,7 +197,7 @@ sudo dnf install just   # Fedora
 | `just copr-update`        | `dnf upgrade` from COPR                                        |
 | `just copr-remove`        | Remove package + COPR repo                                     |
 | **Version**               |                                                                |
-| `just bump VERSION=3.8.1` | Bump version in all 4 files atomically                         |
+| `just bump VERSION=x.y.z` | Bump version in all 4 files atomically                         |
 
 **Typical dev loop (QML changes):**
 
@@ -216,10 +217,10 @@ just reload
 **Release a new version:**
 
 ```bash
-just bump VERSION=3.8.1
+just bump VERSION=x.y.z
 # Update CHANGELOG.md, then:
-git commit -am "chore: bump version to v3.8.1"
-git tag v3.8.1 && git push --tags
+git commit -am "chore: bump version to vx.y.z"
+git tag vx.y.z && git push --tags
 ```
 
 ---
@@ -291,12 +292,11 @@ sudo dnf install cmake extra-cmake-modules gcc-c++ \
     kf6-kcoreaddons-devel
 
 # Build
-mkdir build && cd build
-cmake .. -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Release
-make -j$(nproc)
+cmake -S . -B build -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Release
+cmake --build build --parallel
 
 # Install (requires sudo for system QML plugin path)
-sudo cmake --install .
+sudo cmake --install build
 ```
 
 ### After Installation
@@ -403,7 +403,7 @@ Each provider has:
 
 ```text
 plasma-ai-usage-monitor/
-├── CMakeLists.txt                  # Root build system (v3.8.1)
+├── CMakeLists.txt                  # Root build system
 ├── install.sh                      # Build & install script
 ├── plasma-ai-usage-monitor.spec    # RPM packaging spec
 ├── plasma_applet_...notifyrc       # KDE notification events
@@ -486,7 +486,7 @@ The QML plugin (`com.github.loofi.aiusagemonitor`) provides 20 types:
 
 ### QML Frontend
 
-- **`main.qml`** — Instantiates 10 C++ API backends + 3 subscription tool monitors, manages per-provider refresh timers, handles KWallet lifecycle, fires KDE notifications with cooldown and DND support, records snapshots to UsageDatabase. Uses `allProviders` and `allSubscriptionTools` arrays to drive tooltips, refresh, and notification routing.
+- **`main.qml`** — Instantiates 13 provider backends + 3 subscription tool monitors, manages per-provider refresh timers, handles KWallet lifecycle, fires KDE notifications with cooldown and DND support, records snapshots to UsageDatabase. Uses `allProviders` and `allSubscriptionTools` arrays to drive tooltips, refresh, and notification routing.
 - **`CompactRepresentation.qml`** — Panel icon with 3 display modes (icon with status badge, cost display, provider count), smooth animations, and screen reader accessibility
 - **`FullRepresentation.qml`** — Popup with status summary bar, tabbed Live/History view, data-driven provider cards via Repeater, subscription tool cards section, detail history, compare mode (providers/tools + metrics), responsive history controls, loading/empty states, and export buttons
 - **`MultiSeriesChart.qml`** — Multi-line comparison chart with compact legend chips, hover crosshair, and ranked per-series tooltip values

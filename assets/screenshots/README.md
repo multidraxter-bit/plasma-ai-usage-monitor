@@ -59,7 +59,7 @@ Prepare these for KDE Store even if they are not yet wired into README:
 ## Replacement checklist
 
 1. launch the widget in the Fedora KDE demo VM
-2. start `python scripts/demo/mock_server.py`
+2. start `python scripts/demo/mock_ai_usage_server.py`
 3. run Plasma with the demo flag: `PLASMA_AI_MONITOR_DEMO=1 plasmashell --replace &`
 4. capture the three canonical shots plus any optional store extras
 5. review images at 100% scale before replacing files in this directory

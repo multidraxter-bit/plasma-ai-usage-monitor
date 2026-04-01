@@ -29,13 +29,35 @@ jobs:
             libplasma-devel \
             kf6-kwallet-devel kf6-ki18n-devel kf6-knotifications-devel \
             kf6-kcoreaddons-devel \
-            libappstream-glib zip
+            clang-tools-extra \
+            libappstream-glib zip \
+            git findutils grep
+
+      - name: Configure
+        run: |
+          cmake -S . -B build \
+            -DCMAKE_INSTALL_PREFIX=/usr \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+
+      - name: Clang-Tidy
+        run: ./scripts/run_clang_tidy_ci.sh
 
       - name: Build
         run: |
-          mkdir build && cd build
-          cmake .. -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Release
-          make -j$(nproc)
+          cmake --build build --parallel $(nproc) 2>&1 | tee build/build.log
+
+          # Fail if there are any warnings
+          if grep -q "warning:" build/build.log; then
+            echo "::error::Build produced warnings"
+            grep "warning:" build/build.log
+            exit 1
+          fi
+
+      - name: Test
+        run: |
+          cd build
+          ctest --output-on-failure
 
       - name: Validate AppStream metainfo
         run: |

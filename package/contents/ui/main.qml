@@ -387,6 +387,22 @@ PlasmoidItem {
         }
     }
 
+    // ── Intelligence Engine (v5.0.0) ──
+    property alias intelligenceEngine: analystIntelligence
+    IntelligenceEngine {
+        id: analystIntelligence
+    }
+
+    function generateAnalystInsight() {
+        if (!analystIntelligence) return;
+        
+        // Fetch data from DB for context
+        var activity = usageDatabase.getYearlyActivity(plasmoid.configuration.analystIntensityMode);
+        var efficiency = usageDatabase.getEfficiencySeries(14);
+        
+        analystIntelligence.generateInsight(activity.days, efficiency);
+    }
+
     // ── UI Representations ──
 
     compactRepresentation: CompactRepresentation {}

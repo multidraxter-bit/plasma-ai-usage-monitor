@@ -268,6 +268,12 @@ PlasmaExtras.Representation {
                 text: i18n("History")
                 width: implicitWidth
             }
+            QQC2.TabButton {
+                activeFocusOnTab: true
+                activeFocusOnTab: true
+                text: i18n("Analyst")
+                width: implicitWidth
+            }
         }
 
         StackLayout {
@@ -962,6 +968,11 @@ PlasmaExtras.Representation {
                         PlasmaComponents.ToolTip { text: i18n("Export current view as JSON") }
                     }
                 }
+            }
+
+            AnalystTab {
+                Layout.fillWidth: true
+                Layout.fillHeight: true
             }
         }
 

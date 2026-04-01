@@ -8,6 +8,76 @@ Use this workflow when you need a real Plasma session for live testing, polished
 - a Windows-created Python virtual environment is not portable to Fedora Linux
 - the demo workflow needs both the compiled QML plugin and the plasmoid package installed in a Linux environment
 
+## Can VS Code run the VM?
+
+Not directly in a portable repo-owned way. VS Code can **attach to** the Fedora 43 KDE guest and orchestrate the workflow, but the guest itself still needs to be started by Hyper-V, VMware, or VirtualBox.
+
+Use the two modes below:
+
+- **Remote SSH into the Fedora VM** — best for real Plasma testing, `plasmawindowed`, screenshots, and widget install/reload flows
+- **Dev Container in VS Code** — best for headless build/test/clang-tidy/mock-server work when you do not need a live KDE desktop session
+
+Repo support for both is now included:
+
+- `.vscode/tasks.json` — Remote-friendly tasks for bootstrap, build, test, demo server, and demo plasmoid launch
+- `.vscode/extensions.json` — recommended VS Code extensions (`Remote - SSH`, `Dev Containers`, `CMake Tools`, `C/C++`, `Python`)
+- `.devcontainer/` — Fedora 43 headless build/test container definition
+- `scripts/demo/install_fedora_ssh_key.ps1` — Windows helper to install your existing `~/.ssh/id_ed25519.pub` on the Fedora laptop for passwordless reuse
+- `scripts/demo/copy_windows_ssh_public_key.ps1` + `scripts/demo/install_fedora_ssh_key_locally.sh` — clipboard/local fallback when password-authenticated remote key install is awkward
+
+## Recommended VS Code workflow
+
+### Option A — real VM via Remote SSH
+
+1. start the Fedora 43 KDE VM with your hypervisor
+1. from Windows, install your SSH key once:
+
+  ```powershell
+  powershell -ExecutionPolicy Bypass -File scripts/demo/install_fedora_ssh_key.ps1
+  ```
+
+1. test the alias from the Windows host:
+
+  ```powershell
+  ssh fedora-kde-demo hostnamectl --static
+  ```
+
+If the one-shot remote installer cannot complete because of password-prompt limitations, use this manual fallback:
+
+1. on Windows, copy your public key:
+
+  ```powershell
+  powershell -ExecutionPolicy Bypass -File scripts/demo/copy_windows_ssh_public_key.ps1
+  ```
+
+1. on the Fedora laptop, run:
+
+  ```bash
+  bash scripts/demo/install_fedora_ssh_key_locally.sh
+  ```
+
+1. paste the key, press Enter, then press Ctrl-D
+1. re-run `ssh fedora-kde-demo hostnamectl --static` from Windows
+
+1. connect from VS Code using **Remote - SSH** and choose `fedora-kde-demo`
+1. open this repository inside the Fedora guest
+1. run one of the repo tasks:
+
+- `Fedora Remote: Bootstrap Test Env`
+- `Fedora Remote: Prepare Widget`
+- `Fedora Remote: Demo Server`
+- `Fedora Remote: Launch Demo Plasmoid`
+
+This is the preferred path for real widget testing.
+
+### Option B — headless Fedora container via Dev Containers
+
+1. in VS Code, run **Dev Containers: Reopen in Container**
+2. let the Fedora 43 container build from `.devcontainer/Dockerfile`
+3. run build/test/demo server tasks inside the container
+
+This is useful for compile/test/mock-server work, but it does **not** replace a real KDE Plasma session.
+
 ## Recommended host setup
 
 - Windows 11 host with Hyper-V, VMware, or VirtualBox
@@ -26,9 +96,21 @@ sudo dnf install \
   kf6-kwallet-devel kf6-ki18n-devel kf6-knotifications-devel kf6-kcoreaddons-devel
 ```
 
+## Fast path
+
+From inside the Fedora 43 KDE guest, the quickest reproducible setup is:
+
+```bash
+cd /path/to/shared/plasma-ai-usage-monitor
+bash scripts/demo/setup_fedora43_kde_test_env.sh --install-missing
+source .venv/bin/activate
+```
+
+Add `--prepare-widget` if you want the helper to build the debug tree, install the compiled plugin, install the user-local plasmoid, and reload Plasma for you.
+
 ## Shared-workspace virtual environment
 
-Create the repo-local `.venv` from inside the Fedora VM so the interpreter, scripts, and native paths all match the Linux runtime:
+If you want the manual version of the same setup, create the repo-local `.venv` from inside the Fedora VM so the interpreter, scripts, and native paths all match the Linux runtime:
 
 ```bash
 cd /path/to/shared/plasma-ai-usage-monitor
@@ -56,7 +138,7 @@ With the Linux `.venv` active:
 python scripts/demo/mock_ai_usage_server.py
 ```
 
-By default the mock server listens on `http://127.0.0.1:8787` and serves the `scripts/demo/showcase_preset.json` values.
+By default the mock server listens on `http://127.0.0.1:8080` so it matches the hardcoded `PLASMA_AI_MONITOR_DEMO=1` routes inside the widget. It also serves the `scripts/demo/showcase_preset.json` values.
 
 ## Install the widget inside the VM
 
@@ -77,23 +159,23 @@ just dev
 
 ## Suggested mock base URLs
 
-Point providers at the following custom base URLs so the widget renders deterministic screenshot-safe values:
+If you want deterministic provider cards without relying solely on the demo flag fallback, point providers at the following custom base URLs:
 
 | Surface       | Custom base URL                               |
 | ------------- | --------------------------------------------- |
-| OpenAI        | `http://127.0.0.1:8787/mock/openai/v1`        |
-| Anthropic     | `http://127.0.0.1:8787/mock/anthropic/v1`     |
-| Google Gemini | `http://127.0.0.1:8787/mock/google/v1beta`    |
-| Mistral       | `http://127.0.0.1:8787/mock/mistral`          |
-| DeepSeek      | `http://127.0.0.1:8787/mock/deepseek`         |
-| Groq          | `http://127.0.0.1:8787/mock/groq`             |
-| xAI           | `http://127.0.0.1:8787/mock/xai`              |
-| OpenRouter    | `http://127.0.0.1:8787/mock/openrouter`       |
-| Together AI   | `http://127.0.0.1:8787/mock/together`         |
-| Cohere        | `http://127.0.0.1:8787/mock/cohere`           |
-| Google Veo    | `http://127.0.0.1:8787/mock/googleveo/v1beta` |
-| Azure OpenAI  | `http://127.0.0.1:8787/mock/azure`            |
-| Loofi Server  | `http://127.0.0.1:8787/mock/loofi`            |
+| OpenAI        | `http://127.0.0.1:8080/mock/openai/v1`        |
+| Anthropic     | `http://127.0.0.1:8080/mock/anthropic/v1`     |
+| Google Gemini | `http://127.0.0.1:8080/mock/google/v1beta`    |
+| Mistral       | `http://127.0.0.1:8080/mock/mistral`          |
+| DeepSeek      | `http://127.0.0.1:8080/mock/deepseek`         |
+| Groq          | `http://127.0.0.1:8080/mock/groq`             |
+| xAI           | `http://127.0.0.1:8080/mock/xai`              |
+| OpenRouter    | `http://127.0.0.1:8080/mock/openrouter`       |
+| Together AI   | `http://127.0.0.1:8080/mock/together`         |
+| Cohere        | `http://127.0.0.1:8080/mock/cohere`           |
+| Google Veo    | `http://127.0.0.1:8080/mock/googleveo/v1beta` |
+| Azure OpenAI  | `http://127.0.0.1:8080/mock/azure`            |
+| Loofi Server  | `http://127.0.0.1:8080/mock/loofi`            |
 
 ## Canonical demo preset
 
@@ -102,7 +184,7 @@ The mocked preset is designed for media capture rather than exhaustive functiona
 - multiple connected providers with visible cost, request, and quota bars
 - one richer card with balance or credits data
 - a Loofi card with active model, training stage, and GPU memory percentage
-- subscription cards driven by local/manual controls instead of live secrets
+- subscription cards can use the built-in demo-mode mock endpoints instead of live browser sessions
 - a clean history/compare scene populated by manual refreshes during the session
 
 Adjust `scripts/demo/showcase_preset.json` if you need different numbers for a capture session.

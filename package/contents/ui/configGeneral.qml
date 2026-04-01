@@ -18,7 +18,11 @@ KCM.SimpleKCM {
     property alias cfg_deepseekRefreshInterval: deepseekRefreshSlider.value
     property alias cfg_groqRefreshInterval: groqRefreshSlider.value
     property alias cfg_xaiRefreshInterval: xaiRefreshSlider.value
+    property alias cfg_openrouterRefreshInterval: openrouterRefreshSlider.value
+    property alias cfg_togetherRefreshInterval: togetherRefreshSlider.value
+    property alias cfg_cohereRefreshInterval: cohereRefreshSlider.value
     property alias cfg_googleveoRefreshInterval: googleveoRefreshSlider.value
+    property alias cfg_azureRefreshInterval: azureRefreshSlider.value
     property alias cfg_loofiRefreshInterval: loofiRefreshSlider.value
 
     Kirigami.FormLayout {
@@ -224,6 +228,57 @@ KCM.SimpleKCM {
         }
 
         ColumnLayout {
+            Kirigami.FormData.label: i18n("OpenRouter:")
+            spacing: 2
+
+            QQC2.Slider {
+                id: openrouterRefreshSlider
+                Layout.fillWidth: true
+                from: 0; to: 1800; stepSize: 60
+                value: plasmoid.configuration.openrouterRefreshInterval
+            }
+            QQC2.Label {
+                text: openrouterRefreshSlider.value === 0 ? i18n("Use default") : formatInterval(openrouterRefreshSlider.value)
+                font.pointSize: Kirigami.Theme.smallFont.pointSize
+                opacity: 0.7; Layout.alignment: Qt.AlignHCenter
+            }
+        }
+
+        ColumnLayout {
+            Kirigami.FormData.label: i18n("Together AI:")
+            spacing: 2
+
+            QQC2.Slider {
+                id: togetherRefreshSlider
+                Layout.fillWidth: true
+                from: 0; to: 1800; stepSize: 60
+                value: plasmoid.configuration.togetherRefreshInterval
+            }
+            QQC2.Label {
+                text: togetherRefreshSlider.value === 0 ? i18n("Use default") : formatInterval(togetherRefreshSlider.value)
+                font.pointSize: Kirigami.Theme.smallFont.pointSize
+                opacity: 0.7; Layout.alignment: Qt.AlignHCenter
+            }
+        }
+
+        ColumnLayout {
+            Kirigami.FormData.label: i18n("Cohere:")
+            spacing: 2
+
+            QQC2.Slider {
+                id: cohereRefreshSlider
+                Layout.fillWidth: true
+                from: 0; to: 1800; stepSize: 60
+                value: plasmoid.configuration.cohereRefreshInterval
+            }
+            QQC2.Label {
+                text: cohereRefreshSlider.value === 0 ? i18n("Use default") : formatInterval(cohereRefreshSlider.value)
+                font.pointSize: Kirigami.Theme.smallFont.pointSize
+                opacity: 0.7; Layout.alignment: Qt.AlignHCenter
+            }
+        }
+
+        ColumnLayout {
             Kirigami.FormData.label: i18n("Google Veo:")
             spacing: 2
 
@@ -235,6 +290,23 @@ KCM.SimpleKCM {
             }
             QQC2.Label {
                 text: googleveoRefreshSlider.value === 0 ? i18n("Use default") : formatInterval(googleveoRefreshSlider.value)
+                font.pointSize: Kirigami.Theme.smallFont.pointSize
+                opacity: 0.7; Layout.alignment: Qt.AlignHCenter
+            }
+        }
+
+        ColumnLayout {
+            Kirigami.FormData.label: i18n("Azure OpenAI:")
+            spacing: 2
+
+            QQC2.Slider {
+                id: azureRefreshSlider
+                Layout.fillWidth: true
+                from: 0; to: 1800; stepSize: 60
+                value: plasmoid.configuration.azureRefreshInterval
+            }
+            QQC2.Label {
+                text: azureRefreshSlider.value === 0 ? i18n("Use default") : formatInterval(azureRefreshSlider.value)
                 font.pointSize: Kirigami.Theme.smallFont.pointSize
                 opacity: 0.7; Layout.alignment: Qt.AlignHCenter
             }

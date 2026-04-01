@@ -95,6 +95,18 @@ bootstrap:
 bootstrap-source:
     bash scripts/install_bootstrap.sh --method source --install-missing
 
+# Bootstrap a Fedora 43 KDE guest for live testing and screenshots
+demo-bootstrap:
+    bash scripts/demo/setup_fedora43_kde_test_env.sh
+
+# Bootstrap the Fedora 43 KDE guest, install missing packages, and prepare the widget for testing
+demo-bootstrap-install:
+    bash scripts/demo/setup_fedora43_kde_test_env.sh --install-missing --prepare-widget
+
+# Start the deterministic demo mock server from the Linux .venv
+demo-server:
+    .venv/bin/python scripts/demo/mock_ai_usage_server.py
+
 # Guided COPR installation on Fedora
 bootstrap-copr:
     bash scripts/install_bootstrap.sh --method copr

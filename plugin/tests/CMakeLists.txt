@@ -167,6 +167,22 @@ target_link_libraries(test_usagedatabase_extended
 
 add_test(NAME usagedatabase_extended COMMAND test_usagedatabase_extended)
 
+# --- UsageDatabase analyst test ---
+add_executable(test_usagedatabase_analyst
+    test_usagedatabase_analyst.cpp
+    ${TEST_USAGE_DB_SRC}
+)
+
+target_include_directories(test_usagedatabase_analyst
+    PRIVATE ${CMAKE_SOURCE_DIR}/plugin
+)
+
+target_link_libraries(test_usagedatabase_analyst
+    PRIVATE Qt6::Core Qt6::Test Qt6::Sql
+)
+
+add_test(NAME usagedatabase_analyst COMMAND test_usagedatabase_analyst)
+
 # --- Script-based tests ---
 add_test(NAME version_consistency COMMAND ${CMAKE_SOURCE_DIR}/scripts/check_version_consistency.sh)
 add_test(NAME no_hardcoded_versions COMMAND ${CMAKE_SOURCE_DIR}/scripts/check_no_hardcoded_versions.sh)

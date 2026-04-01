@@ -397,6 +397,14 @@
             <default>90</default>
             <label>Number of days to keep usage history</label>
         </entry>
+        <entry name="analystIntensityMode" type="Int">
+            <default>0</default>
+            <label>Heatmap intensity mode: 0=Cost, 1=Volume</label>
+        </entry>
+        <entry name="analystNormalization" type="Bool">
+            <default>true</default>
+            <label>Enable outlier normalization for heatmap</label>
+        </entry>
     </group>
 
     <group name="Subscriptions">

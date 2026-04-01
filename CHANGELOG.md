@@ -7,11 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.0.0] — 2026-04-01
+
+### Added
+
+- Add **The Analyst** tab for deep usage visualization and efficiency metrics
+- Add GitHub-style **Activity Heatmap** showing a full year of usage intensity (Cost or Volume)
+- Add **Prompt Efficiency** metric tracking the Output/Input token ratio over time
+- Add high-performance C++ database aggregation for yearly activity and efficiency series
+- Add **Analyst Insight Engine** (Ollama integration mockup) for natural language usage summaries
+- Add new configuration options for analyst intensity mode and outlier normalization
+
 ## [3.9.0] — 2026-03-19
 
 ### Added
 
-- Add local mock API server (`scripts/demo/mock_server.py`) for deterministic, offline demo environment and testing
+- Add local mock API server (`scripts/demo/mock_ai_usage_server.py`) for deterministic, offline demo environment and testing
 - Add demo mode overrides (`PLASMA_AI_MONITOR_DEMO=1`) to reroute C++ provider and subscription backends to `localhost:8080`
 - Add canonical store-ready screenshots captured via the Fedora KDE VM using the new mock data environment
 - Add comprehensive mock HTTP test suites for Azure OpenAI, GitHub Copilot, Claude Code, and Codex CLI
@@ -24,6 +35,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Enhance keyboard navigation with explicit `KeyNavigation` and `activeFocusOnTab` across primary interactive elements
 - Update AppStream metadata (`metainfo.xml`) with updated screenshot URLs and feature lists for KDE Store publication
 - Refine `README.md` and walkthrough documentation with polished assets and demo mode instructions
+- Add VS Code Remote/Dev Container workflow support for Fedora 43 build/test/demo-server setup without changing the requirement for a real KDE session during UI validation
 
 ## [3.8.1] — 2026-03-15
 

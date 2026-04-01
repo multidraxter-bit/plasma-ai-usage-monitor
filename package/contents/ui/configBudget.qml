@@ -22,8 +22,16 @@ KCM.SimpleKCM {
     property int cfg_groqMonthlyBudget
     property int cfg_xaiDailyBudget
     property int cfg_xaiMonthlyBudget
+    property int cfg_openrouterDailyBudget
+    property int cfg_openrouterMonthlyBudget
+    property int cfg_togetherDailyBudget
+    property int cfg_togetherMonthlyBudget
+    property int cfg_cohereDailyBudget
+    property int cfg_cohereMonthlyBudget
     property int cfg_azureDailyBudget
     property int cfg_azureMonthlyBudget
+    property int cfg_googleveoDailyBudget
+    property int cfg_googleveoMonthlyBudget
     property alias cfg_budgetWarningPercent: warningPercentSlider.value
 
     // Model for all providers
@@ -35,6 +43,9 @@ KCM.SimpleKCM {
         { name: "DeepSeek",      dailyKey: "deepseekDailyBudget",  monthlyKey: "deepseekMonthlyBudget"  },
         { name: "Groq",          dailyKey: "groqDailyBudget",      monthlyKey: "groqMonthlyBudget"      },
         { name: "xAI / Grok",    dailyKey: "xaiDailyBudget",       monthlyKey: "xaiMonthlyBudget"       },
+        { name: "OpenRouter",    dailyKey: "openrouterDailyBudget", monthlyKey: "openrouterMonthlyBudget" },
+        { name: "Together AI",   dailyKey: "togetherDailyBudget",   monthlyKey: "togetherMonthlyBudget"   },
+        { name: "Cohere",        dailyKey: "cohereDailyBudget",    monthlyKey: "cohereMonthlyBudget"    },
         { name: "Azure OpenAI",  dailyKey: "azureDailyBudget",     monthlyKey: "azureMonthlyBudget"     },
         { name: "Google Veo",    dailyKey: "googleveoDailyBudget", monthlyKey: "googleveoMonthlyBudget" }
     ]
