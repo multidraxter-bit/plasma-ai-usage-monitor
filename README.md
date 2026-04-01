@@ -232,6 +232,15 @@ git push origin main --tags
 gh release create vx.y.z ./plasma-ai-usage-monitor-x.y.z.tar.gz ./com.github.loofi.aiusagemonitor.plasmoid --title "vx.y.z"
 ```
 
+If you maintain the Fedora COPR package, submit the same release to COPR after the
+GitHub tag and release exist:
+
+```bash
+just copr-submit PROJECT=loofitheboss/plasma-ai-usage-monitor
+```
+
+The helper expects `copr-cli` plus a valid `~/.config/copr` API token file.
+
 ---
 
 ## Installation

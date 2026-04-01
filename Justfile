@@ -117,6 +117,16 @@ bootstrap-user:
 
 # ── COPR / DNF ────────────────────────────────────────────────────────────────
 
+# Build an SRPM suitable for COPR submission into ./dist
+copr-srpm:
+    mkdir -p dist
+    bash scripts/build_srpm.sh --output-dir dist
+
+# Build and submit an SRPM to an existing COPR project
+copr-submit PROJECT="loofitheboss/plasma-ai-usage-monitor":
+    mkdir -p dist
+    bash scripts/copr_submit_build.sh --project "{{PROJECT}}" --output-dir dist
+
 # Enable the COPR repository
 copr-enable:
     sudo dnf copr enable loofitheboss/plasma-ai-usage-monitor
