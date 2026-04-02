@@ -20,7 +20,7 @@ ColumnLayout {
     required property string toolColor
     required property var monitor
     property bool collapsed: false
-    readonly property bool narrowCard: toolCard.width < Kirigami.Units.gridUnit * 18
+    readonly property bool narrowCard: toolCard.width < Kirigami.Units.gridUnit * 14
 
     spacing: 0
 

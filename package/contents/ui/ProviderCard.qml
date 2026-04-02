@@ -17,8 +17,8 @@ ColumnLayout {
     property bool showCost: false
     property bool showUsage: false
     property bool collapsed: false
-    readonly property bool narrowCard: card.width < Kirigami.Units.gridUnit * 18
-    readonly property bool compactDetails: card.width < Kirigami.Units.gridUnit * 16
+    readonly property bool narrowCard: card.width < Kirigami.Units.gridUnit * 14
+    readonly property bool compactDetails: card.width < Kirigami.Units.gridUnit * 13
     readonly property bool isLoofiServer: card.providerName === "Loofi Server"
 
     spacing: 0

@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.1.3] — 2026-04-02
+
+### Changed
+
+- Lower the narrow-layout breakpoints for live cards so provider, subscription, and cost cards keep the wider screenshot-style presentation in tighter popups
+- Increase the full widget implicit width so Plasma opens a roomier representation by default
+- Refresh release metadata for the 5.1.3 layout hotfix package
+
 ## [5.1.2] — 2026-04-02
 
 ### Changed
