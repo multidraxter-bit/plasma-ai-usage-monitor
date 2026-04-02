@@ -10,7 +10,7 @@ import com.github.loofi.aiusagemonitor 1.0
 PlasmaExtras.Representation {
     id: fullRoot
 
-    implicitWidth: Kirigami.Units.gridUnit * 24
+    implicitWidth: Kirigami.Units.gridUnit * 28
     implicitHeight: Kirigami.Units.gridUnit * 28
 
     property var detailSnapshots: []
@@ -23,10 +23,10 @@ PlasmaExtras.Representation {
     property date lastQueryTo: new Date(0)
     property bool historyLoading: false
     property int onboardingStep: 0
-    readonly property bool narrowPopup: width < Kirigami.Units.gridUnit * 22
-    readonly property bool compactHistoryControls: width < Kirigami.Units.gridUnit * 18
-    readonly property bool compactSectionHeaders: width < Kirigami.Units.gridUnit * 19
-    readonly property bool compactCompareRanking: width < Kirigami.Units.gridUnit * 20
+    readonly property bool narrowPopup: width < Kirigami.Units.gridUnit * 18
+    readonly property bool compactHistoryControls: width < Kirigami.Units.gridUnit * 15
+    readonly property bool compactSectionHeaders: width < Kirigami.Units.gridUnit * 16
+    readonly property bool compactCompareRanking: width < Kirigami.Units.gridUnit * 17
     readonly property int enabledProviderCount: {
         var providers = root.allProviders ?? [];
         var count = 0;

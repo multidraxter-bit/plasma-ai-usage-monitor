@@ -12,7 +12,7 @@ ColumnLayout {
 
     property var providers: []
     property var subscriptionTools: []
-    readonly property bool narrowCard: costCard.width < Kirigami.Units.gridUnit * 18
+    readonly property bool narrowCard: costCard.width < Kirigami.Units.gridUnit * 14
 
     readonly property double subscriptionTotalCost: {
         var total = 0;

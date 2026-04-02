@@ -1,5 +1,5 @@
 Name:           plasma-ai-usage-monitor
-Version:        5.1.2
+Version:        5.1.3
 Release:        1%{?dist}
 Summary:        KDE Plasma 6 widget to monitor AI API token usage, rate limits, and costs
 License:        GPL-3.0-or-later
@@ -68,6 +68,10 @@ appstream-util validate-relax --nonet %{buildroot}%{_datadir}/metainfo/com.githu
 %{_datadir}/metainfo/com.github.loofi.aiusagemonitor.metainfo.xml
 
 %changelog
+* Thu Apr 02 2026 Loofi <loofi@github.com> - 5.1.3-1
+- Keep live dashboard cards in the wider layout at tighter popup widths
+- Increase the default full widget width for a roomier Plasma presentation
+
 * Thu Apr 02 2026 Loofi <loofi@github.com> - 5.1.2-1
 - Fix analyst QML component loading by using PlasmaComponents.Label in EfficiencyMetricCard
 - Fix AnalystTab database access and null diagnostics handling so the full widget starts cleanly
