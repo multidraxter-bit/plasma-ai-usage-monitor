@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
+import org.kde.plasma.components as PlasmaComponents
 import org.kde.kirigami as Kirigami
 
 /**
@@ -23,7 +24,7 @@ Kirigami.Card {
         RowLayout {
             spacing: Kirigami.Units.mediumSpacing
             
-            Label {
+            PlasmaComponents.Label {
                 text: efficiencyRatio.toFixed(2) + "x"
                 font.pointSize: 24
                 font.weight: Font.Bold
@@ -51,7 +52,7 @@ Kirigami.Card {
             }
         }
         
-        Label {
+        PlasmaComponents.Label {
             text: i18n("Output / Input Token Ratio")
             font.pointSize: Kirigami.Theme.smallFont.pointSize
             color: Kirigami.Theme.disabledTextColor
@@ -60,7 +61,7 @@ Kirigami.Card {
         }
         
         // Contextual description
-        Label {
+        PlasmaComponents.Label {
             text: {
                 if (efficiencyRatio > 1.5) return i18n("Highly Efficient: Your prompts yield substantial generation.");
                 if (efficiencyRatio < 0.8) return i18n("Low Efficiency: Consider more concise prompting.");
