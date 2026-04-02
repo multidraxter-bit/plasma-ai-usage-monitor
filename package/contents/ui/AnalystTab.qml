@@ -16,7 +16,7 @@ Kirigami.ScrollablePage {
     property string efficiencyTrend: "neutral"
     property var overview: ({})
 
-    readonly property var db: plasmoid.configuration.historyEnabled ? usageDatabase : null
+    readonly property var db: plasmoid.configuration.historyEnabled ? root.usageDb : null
 
     function enabledProviderEntries() {
         var entries = [];
@@ -45,7 +45,9 @@ Kirigami.ScrollablePage {
     }
 
     function refreshData() {
-        if (!db) {
+        if (!db || typeof db.getYearlyActivity !== "function"
+                || typeof db.getEfficiencySeries !== "function"
+                || typeof db.getAnalystOverview !== "function") {
             activityData = [];
             overview = ({});
             avgEfficiency = 0.0;
@@ -554,7 +556,9 @@ Kirigami.ScrollablePage {
 
                 Controls.Label {
                     visible: selectedProviderEntry() && selectedProviderEntry().backend && selectedProviderEntry().backend.error
-                    text: i18n("Last error: %1", selectedProviderEntry().backend.error)
+                    text: selectedProviderEntry() && selectedProviderEntry().backend
+                        ? i18n("Last error: %1", selectedProviderEntry().backend.error)
+                        : ""
                     color: Kirigami.Theme.negativeTextColor
                     wrapMode: Text.WordWrap
                     Layout.fillWidth: true

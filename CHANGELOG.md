@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.1.2] — 2026-04-02
+
+### Changed
+
+- Fix `EfficiencyMetricCard.qml` to use `PlasmaComponents.Label`, restoring analyst card loading in Plasma
+- Fix `AnalystTab.qml` to use `root.usageDb` consistently and guard missing diagnostics selections so the full widget can start cleanly
+- Refresh release metadata for the 5.1.2 analyst hotfix package
+
 ## [5.1.1] — 2026-04-02
 
 ### Changed
