@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.1.1] — 2026-04-02
+
+### Changed
+
+- Fix duplicate `activeFocusOnTab` declarations in `FullRepresentation.qml` so the main widget view loads cleanly in Plasma
+- Fix duplicate `activeFocusOnTab` declarations in `ProviderCard.qml` so provider cards no longer break applet startup
+- Refresh release metadata for the 5.1.1 Plasma widget hotfix package
+
 ## [5.1.0] — 2026-04-02
 
 ### Added
