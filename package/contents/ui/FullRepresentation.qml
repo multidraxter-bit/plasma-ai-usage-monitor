@@ -64,16 +64,14 @@ PlasmaExtras.Representation {
             }
 
             PlasmaComponents.ToolButton {
-                        activeFocusOnTab: true
-                        activeFocusOnTab: true
+                activeFocusOnTab: true
                 icon.name: "view-refresh"
                 onClicked: root.refreshAll()
                 PlasmaComponents.ToolTip { text: i18n("Refresh all providers") }
             }
 
             PlasmaComponents.ToolButton {
-                        activeFocusOnTab: true
-                        activeFocusOnTab: true
+                activeFocusOnTab: true
                 icon.name: "configure"
                 onClicked: plasmoid.internalAction("configure").trigger()
                 PlasmaComponents.ToolTip { text: i18n("Configure...") }
@@ -151,8 +149,7 @@ PlasmaExtras.Representation {
                         spacing: Kirigami.Units.smallSpacing
 
                         PlasmaComponents.Button {
-                        activeFocusOnTab: true
-                        activeFocusOnTab: true
+                            activeFocusOnTab: true
                             text: i18n("Open Provider Settings")
                             icon.name: "configure"
                             onClicked: plasmoid.internalAction("configure").trigger()
@@ -161,8 +158,7 @@ PlasmaExtras.Representation {
                         Item { Layout.fillWidth: true }
 
                         PlasmaComponents.Button {
-                        activeFocusOnTab: true
-                        activeFocusOnTab: true
+                            activeFocusOnTab: true
                             text: i18n("Not now")
                             onClicked: {
                                 plasmoid.configuration.setupWizardDismissed = true;
@@ -175,8 +171,7 @@ PlasmaExtras.Representation {
                         spacing: Kirigami.Units.smallSpacing
 
                         PlasmaComponents.Button {
-                        activeFocusOnTab: true
-                        activeFocusOnTab: true
+                            activeFocusOnTab: true
                             text: i18n("Back")
                             enabled: fullRoot.onboardingStep > 0
                             onClicked: {
@@ -187,8 +182,7 @@ PlasmaExtras.Representation {
                         Item { Layout.fillWidth: true }
 
                         PlasmaComponents.Button {
-                        activeFocusOnTab: true
-                        activeFocusOnTab: true
+                            activeFocusOnTab: true
                             visible: fullRoot.onboardingStep < 3
                             text: i18n("Next")
                             onClicked: {
@@ -197,8 +191,7 @@ PlasmaExtras.Representation {
                         }
 
                         PlasmaComponents.Button {
-                        activeFocusOnTab: true
-                        activeFocusOnTab: true
+                            activeFocusOnTab: true
                             visible: fullRoot.onboardingStep === 3
                             text: i18n("Done")
                             onClicked: {
@@ -258,18 +251,15 @@ PlasmaExtras.Representation {
 
             QQC2.TabButton {
                 activeFocusOnTab: true
-                activeFocusOnTab: true
                 text: i18n("Live")
                 width: implicitWidth
             }
             QQC2.TabButton {
                 activeFocusOnTab: true
-                activeFocusOnTab: true
                 text: i18n("History")
                 width: implicitWidth
             }
             QQC2.TabButton {
-                activeFocusOnTab: true
                 activeFocusOnTab: true
                 text: i18n("Analyst")
                 width: implicitWidth
@@ -530,8 +520,7 @@ PlasmaExtras.Representation {
                                 }
 
                                 PlasmaComponents.ToolButton {
-                        activeFocusOnTab: true
-                        activeFocusOnTab: true
+                                    activeFocusOnTab: true
                                     icon.name: "view-refresh"
                                     display: PlasmaComponents.AbstractButton.IconOnly
                                     Layout.preferredWidth: Kirigami.Units.iconSizes.small
@@ -599,7 +588,6 @@ PlasmaExtras.Representation {
 
                         QQC2.ComboBox {
                             activeFocusOnTab: true
-                            activeFocusOnTab: true
                             id: historyModeCombo
                             model: [
                                 { text: i18n("Detail"), value: "detail" },
@@ -625,7 +613,6 @@ PlasmaExtras.Representation {
 
                         QQC2.ComboBox {
                             activeFocusOnTab: true
-                            activeFocusOnTab: true
                             id: compareSourceCombo
                             visible: fullRoot.compareMode
                             model: [
@@ -645,7 +632,6 @@ PlasmaExtras.Representation {
                         }
 
                         QQC2.ComboBox {
-                            activeFocusOnTab: true
                             activeFocusOnTab: true
                             id: historyProviderCombo
                             visible: !fullRoot.compareMode
@@ -669,7 +655,6 @@ PlasmaExtras.Representation {
 
                         QQC2.ComboBox {
                             activeFocusOnTab: true
-                            activeFocusOnTab: true
                             id: compareMetricCombo
                             visible: fullRoot.compareMode
                             model: getCompareMetricOptions(compareSourceCombo.currentValue)
@@ -692,7 +677,6 @@ PlasmaExtras.Representation {
 
                         QQC2.ComboBox {
                             activeFocusOnTab: true
-                            activeFocusOnTab: true
                             id: timeRangeCombo
                             model: [i18n("24 hours"), i18n("7 days"), i18n("30 days")]
                             currentIndex: 1
@@ -703,8 +687,7 @@ PlasmaExtras.Representation {
                         }
 
                         PlasmaComponents.ToolButton {
-                        activeFocusOnTab: true
-                        activeFocusOnTab: true
+                            activeFocusOnTab: true
                             icon.name: "view-refresh"
                             enabled: canRefreshHistory() && !fullRoot.historyLoading
                             onClicked: refreshHistory()
@@ -944,7 +927,6 @@ PlasmaExtras.Representation {
 
                     PlasmaComponents.ToolButton {
                         activeFocusOnTab: true
-                        activeFocusOnTab: true
                         icon.name: "document-export"
                         display: fullRoot.compactHistoryControls
                             ? PlasmaComponents.AbstractButton.IconOnly
@@ -956,7 +938,6 @@ PlasmaExtras.Representation {
                     }
 
                     PlasmaComponents.ToolButton {
-                        activeFocusOnTab: true
                         activeFocusOnTab: true
                         icon.name: "document-export"
                         display: fullRoot.compactHistoryControls
