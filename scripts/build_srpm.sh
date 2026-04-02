@@ -64,8 +64,21 @@ if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
     -o "$SOURCE_TARBALL" \
     HEAD
 else
-  echo "build_srpm.sh requires a git worktree" >&2
-  exit 1
+  # COPR make_srpm builds run from an unpacked source tree without git metadata.
+  find . \
+    \( -path './.git' -o -path './build' -o -path './dist' -o -path './build-*' \) -prune -o \
+    \( -type f -o -type l \) -print0 | sort -z | tar \
+      --null \
+      --no-recursion \
+      --sort=name \
+      --mtime="@${SOURCE_DATE_EPOCH:-0}" \
+      --owner=0 \
+      --group=0 \
+      --numeric-owner \
+      --pax-option=delete=atime,delete=ctime \
+      --transform="s,^,${PREFIX_DIR}," \
+      -czf "$SOURCE_TARBALL" \
+      --files-from=-
 fi
 
 rpmbuild -bs --define "_topdir $TOPDIR" "$TOPDIR/SPECS/$(basename "$SPEC_PATH")"
