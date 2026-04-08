@@ -45,6 +45,9 @@
         <entry name="xaiRefreshInterval" type="Int">
             <default>0</default>
         </entry>
+        <entry name="ollamaRefreshInterval" type="Int">
+            <default>0</default>
+        </entry>
         <entry name="openrouterRefreshInterval" type="Int">
             <default>0</default>
         </entry>
@@ -171,6 +174,17 @@
             <default></default>
         </entry>
 
+        <!-- Ollama Cloud -->
+        <entry name="ollamaEnabled" type="Bool">
+            <default>false</default>
+        </entry>
+        <entry name="ollamaModel" type="String">
+            <default>gpt-oss:120b</default>
+        </entry>
+        <entry name="ollamaCustomBaseUrl" type="String">
+            <default></default>
+        </entry>
+
         <!-- OpenRouter -->
         <entry name="openrouterEnabled" type="Bool">
             <default>false</default>
@@ -278,6 +292,9 @@
         <entry name="xaiNotificationsEnabled" type="Bool">
             <default>true</default>
         </entry>
+        <entry name="ollamaNotificationsEnabled" type="Bool">
+            <default>true</default>
+        </entry>
         <entry name="openrouterNotificationsEnabled" type="Bool">
             <default>true</default>
         </entry>
@@ -351,6 +368,12 @@
             <default>0</default>
         </entry>
         <entry name="xaiMonthlyBudget" type="Int">
+            <default>0</default>
+        </entry>
+        <entry name="ollamaDailyBudget" type="Int">
+            <default>0</default>
+        </entry>
+        <entry name="ollamaMonthlyBudget" type="Int">
             <default>0</default>
         </entry>
         <entry name="openrouterDailyBudget" type="Int">

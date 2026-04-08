@@ -15,6 +15,7 @@ set(TEST_PROVIDER_SRC
     ${CMAKE_SOURCE_DIR}/plugin/groqprovider.cpp
     ${CMAKE_SOURCE_DIR}/plugin/loofiserverprovider.cpp
     ${CMAKE_SOURCE_DIR}/plugin/mistralprovider.cpp
+    ${CMAKE_SOURCE_DIR}/plugin/ollamacloudprovider.cpp
     ${CMAKE_SOURCE_DIR}/plugin/openrouterprovider.cpp
     ${CMAKE_SOURCE_DIR}/plugin/togetherprovider.cpp
     ${CMAKE_SOURCE_DIR}/plugin/xaiprovider.cpp

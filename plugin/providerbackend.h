@@ -76,6 +76,7 @@ public:
         DeepSeek,
         Groq,
         XAI,
+        OllamaCloud,
         OpenRouter,
         Together,
         Cohere,

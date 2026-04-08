@@ -1,7 +1,7 @@
 # Roadmap — Plasma AI Usage Monitor
 
-> **Current version:** v5.0.0 (Lighthouse — The Analyst)
-> **Last updated:** 2026-04-01
+> **Current version:** v5.1.4 (Lighthouse — The Analyst)
+> **Last updated:** 2026-04-08
 
 ---
 
@@ -9,6 +9,7 @@
 
 | Version | Codename       | Theme                                                             | Status   |
 | ------- | -------------- | ----------------------------------------------------------------- | -------- |
+| v5.1.4  | **Lighthouse** | Analyst dashboard + provider expansion + release polish           | Active   |
 | v5.0.0  | **Lighthouse** | Intelligence + Forecasting                                        | Active   |
 | v3.9.0  | **Showcase**   | Stabilization + Demo Environment + Store-Ready Assets             | Released |
 | v3.8.1  | **Pulse**      | Release packaging + build fix hotpatch                            | Released |

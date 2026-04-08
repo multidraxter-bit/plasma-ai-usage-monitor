@@ -18,6 +18,7 @@ KCM.SimpleKCM {
     property alias cfg_deepseekRefreshInterval: deepseekRefreshSlider.value
     property alias cfg_groqRefreshInterval: groqRefreshSlider.value
     property alias cfg_xaiRefreshInterval: xaiRefreshSlider.value
+    property alias cfg_ollamaRefreshInterval: ollamaRefreshSlider.value
     property alias cfg_openrouterRefreshInterval: openrouterRefreshSlider.value
     property alias cfg_togetherRefreshInterval: togetherRefreshSlider.value
     property alias cfg_cohereRefreshInterval: cohereRefreshSlider.value
@@ -222,6 +223,23 @@ KCM.SimpleKCM {
             }
             QQC2.Label {
                 text: xaiRefreshSlider.value === 0 ? i18n("Use default") : formatInterval(xaiRefreshSlider.value)
+                font.pointSize: Kirigami.Theme.smallFont.pointSize
+                opacity: 0.7; Layout.alignment: Qt.AlignHCenter
+            }
+        }
+
+        ColumnLayout {
+            Kirigami.FormData.label: i18n("Ollama Cloud:")
+            spacing: 2
+
+            QQC2.Slider {
+                id: ollamaRefreshSlider
+                Layout.fillWidth: true
+                from: 0; to: 1800; stepSize: 60
+                value: plasmoid.configuration.ollamaRefreshInterval
+            }
+            QQC2.Label {
+                text: ollamaRefreshSlider.value === 0 ? i18n("Use default") : formatInterval(ollamaRefreshSlider.value)
                 font.pointSize: Kirigami.Theme.smallFont.pointSize
                 opacity: 0.7; Layout.alignment: Qt.AlignHCenter
             }

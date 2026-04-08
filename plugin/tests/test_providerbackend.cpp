@@ -46,6 +46,7 @@ class ProviderBackendTest : public QObject
 private Q_SLOTS:
     void testProviderKeyEnumConversionAzure();
     void testProviderKeyEnumConversionAzureAliases();
+    void testProviderKeyEnumConversionOllamaCloud();
     void testProviderConfigFallbackUnknownDeterministic();
     void testGoogleVeoNormalizationUsesOpenAiLikeUsage();
     void testExistingProviderMappingsUnchanged();
@@ -115,6 +116,31 @@ void ProviderBackendTest::testProviderKeyEnumConversionAzureAliases()
              ProviderBackend::ProviderId::AzureOpenAI);
     QCOMPARE(ProviderBackend::defaultAuthKeySlotForProvider(ProviderBackend::ProviderId::AzureOpenAI),
              QStringLiteral("azure_openai_api_key"));
+}
+
+void ProviderBackendTest::testProviderKeyEnumConversionOllamaCloud()
+{
+    QCOMPARE(ProviderBackend::providerIdFromKey(QStringLiteral("ollama")),
+             ProviderBackend::ProviderId::OllamaCloud);
+    QCOMPARE(ProviderBackend::providerIdFromKey(QStringLiteral("ollama-cloud")),
+             ProviderBackend::ProviderId::OllamaCloud);
+    QCOMPARE(ProviderBackend::providerIdFromKey(QStringLiteral(" OLLAMA_CLOUD ")),
+             ProviderBackend::ProviderId::OllamaCloud);
+    QCOMPARE(ProviderBackend::providerKeyFromId(ProviderBackend::ProviderId::OllamaCloud),
+             QStringLiteral("ollama"));
+    QCOMPARE(ProviderBackend::defaultAuthKeySlotForProvider(ProviderBackend::ProviderId::OllamaCloud),
+             QStringLiteral("ollama_api_key"));
+
+    const ProviderBackend::ProviderConfig ollamaConfig = ProviderBackend::makeProviderConfig(
+        QStringLiteral("ollama"),
+        QStringLiteral("https://ollama.com/v1"),
+        QStringLiteral("gpt-oss:120b"),
+        QString(),
+        QStringLiteral("secret"));
+
+    QCOMPARE(ollamaConfig.providerId, ProviderBackend::ProviderId::OllamaCloud);
+    QCOMPARE(ollamaConfig.providerKey, QStringLiteral("ollama"));
+    QCOMPARE(ollamaConfig.authKeySlot, QStringLiteral("ollama_api_key"));
 }
 
 void ProviderBackendTest::testProviderConfigFallbackUnknownDeterministic()

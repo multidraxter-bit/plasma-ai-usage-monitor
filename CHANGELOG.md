@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.1.4] — 2026-04-08
+
+### Added
+
+- Add Ollama Cloud as an OpenAI-compatible provider with API-key configuration, per-provider budgets/notifications/refresh intervals, and dashboard history wiring
+
+### Changed
+
+- Fix runtime config-change handling for OpenRouter, Together AI, and Cohere so enabling them or changing their models reloads immediately without restarting Plasma
+
 ## [5.1.3] — 2026-04-02
 
 ### Changed
@@ -475,7 +485,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - KWallet integration for secure API key storage
 - KDE notifications for rate limit warnings
 
-[Unreleased]: https://github.com/multidraxter-bit/plasma-ai-usage-monitor/compare/v5.1.0...HEAD
+[Unreleased]: https://github.com/multidraxter-bit/plasma-ai-usage-monitor/compare/v5.1.4...HEAD
+[5.1.4]: https://github.com/multidraxter-bit/plasma-ai-usage-monitor/compare/v5.1.3...v5.1.4
+[5.1.3]: https://github.com/multidraxter-bit/plasma-ai-usage-monitor/compare/v5.1.2...v5.1.3
+[5.1.2]: https://github.com/multidraxter-bit/plasma-ai-usage-monitor/compare/v5.1.1...v5.1.2
+[5.1.1]: https://github.com/multidraxter-bit/plasma-ai-usage-monitor/compare/v5.1.0...v5.1.1
 [5.1.0]: https://github.com/multidraxter-bit/plasma-ai-usage-monitor/compare/v5.0.0...v5.1.0
 [5.0.0]: https://github.com/multidraxter-bit/plasma-ai-usage-monitor/compare/v3.9.0...v5.0.0
 [3.9.0]: https://github.com/multidraxter-bit/plasma-ai-usage-monitor/compare/v3.8.1...v3.9.0

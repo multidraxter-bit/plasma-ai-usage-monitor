@@ -45,6 +45,7 @@ PlasmoidItem {
     property alias deepseek: deepseekBackend
     property alias groq: groqBackend
     property alias xai: xaiBackend
+    property alias ollama: ollamaBackend
     property alias openrouter: openrouterBackend
     property alias together: togetherBackend
     property alias cohere: cohereBackend
@@ -156,6 +157,15 @@ PlasmoidItem {
         customBaseUrl: plasmoid.configuration.xaiCustomBaseUrl
         dailyBudget: plasmoid.configuration.xaiDailyBudget / 100.0
         monthlyBudget: plasmoid.configuration.xaiMonthlyBudget / 100.0
+        budgetWarningPercent: plasmoid.configuration.budgetWarningPercent
+    }
+
+    OllamaCloudProvider {
+        id: ollamaBackend
+        model: plasmoid.configuration.ollamaModel
+        customBaseUrl: plasmoid.configuration.ollamaCustomBaseUrl
+        dailyBudget: plasmoid.configuration.ollamaDailyBudget / 100.0
+        monthlyBudget: plasmoid.configuration.ollamaMonthlyBudget / 100.0
         budgetWarningPercent: plasmoid.configuration.budgetWarningPercent
     }
 
@@ -485,6 +495,15 @@ PlasmoidItem {
         }
     }
     Timer {
+        id: ollamaRefreshTimer
+        interval: effectiveInterval(plasmoid.configuration.ollamaRefreshInterval)
+        running: plasmoid.configuration.ollamaEnabled
+        repeat: true
+        onTriggered: {
+            if (canRefreshBackend(ollamaBackend, true)) ollamaBackend.refresh();
+        }
+    }
+    Timer {
         id: openrouterRefreshTimer
         interval: effectiveInterval(plasmoid.configuration.openrouterRefreshInterval)
         running: plasmoid.configuration.openrouterEnabled
@@ -578,6 +597,7 @@ PlasmoidItem {
         { name: "DeepSeek", dbName: "DeepSeek", configKey: "deepseek", backend: deepseekBackend, enabled: plasmoid.configuration.deepseekEnabled, color: "#5B6EE1" },
         { name: "Groq", dbName: "Groq", configKey: "groq", backend: groqBackend, enabled: plasmoid.configuration.groqEnabled, color: "#F55036" },
         { name: "xAI / Grok", dbName: "xAI", configKey: "xai", backend: xaiBackend, enabled: plasmoid.configuration.xaiEnabled, color: "#1DA1F2" },
+        { name: "Ollama Cloud", dbName: "OllamaCloud", configKey: "ollama", backend: ollamaBackend, enabled: plasmoid.configuration.ollamaEnabled, color: "#111827" },
         { name: "OpenRouter", dbName: "OpenRouter", configKey: "openrouter", backend: openrouterBackend, enabled: plasmoid.configuration.openrouterEnabled, color: "#6366F1" },
         { name: "Together AI", dbName: "Together", configKey: "together", backend: togetherBackend, enabled: plasmoid.configuration.togetherEnabled, color: "#0EA5E9" },
         { name: "Cohere", dbName: "Cohere", configKey: "cohere", backend: cohereBackend, enabled: plasmoid.configuration.cohereEnabled, color: "#39D353" },
@@ -975,6 +995,10 @@ PlasmoidItem {
         function onDeepseekEnabledChanged() { loadApiKeys(); }
         function onGroqEnabledChanged() { loadApiKeys(); }
         function onXaiEnabledChanged() { loadApiKeys(); }
+        function onOllamaEnabledChanged() { loadApiKeys(); }
+        function onOpenrouterEnabledChanged() { loadApiKeys(); }
+        function onTogetherEnabledChanged() { loadApiKeys(); }
+        function onCohereEnabledChanged() { loadApiKeys(); }
         function onGoogleveoEnabledChanged() { loadApiKeys(); }
         function onAzureEnabledChanged() { loadApiKeys(); }
         function onLoofiEnabledChanged() { refreshAll(); }
@@ -992,6 +1016,10 @@ PlasmoidItem {
         function onDeepseekModelChanged() { deepseekBackend.model = plasmoid.configuration.deepseekModel; }
         function onGroqModelChanged() { groqBackend.model = plasmoid.configuration.groqModel; }
         function onXaiModelChanged() { xaiBackend.model = plasmoid.configuration.xaiModel; }
+        function onOllamaModelChanged() { ollamaBackend.model = plasmoid.configuration.ollamaModel; }
+        function onOpenrouterModelChanged() { openrouterBackend.model = plasmoid.configuration.openrouterModel; }
+        function onTogetherModelChanged() { togetherBackend.model = plasmoid.configuration.togetherModel; }
+        function onCohereModelChanged() { cohereBackend.model = plasmoid.configuration.cohereModel; }
         function onGoogleveoModelChanged() { googleveoBackend.model = plasmoid.configuration.googleveoModel; }
         function onAzureModelChanged() { azureBackend.model = plasmoid.configuration.azureModel; }
         function onAzureDeploymentIdChanged() { azureBackend.deploymentId = plasmoid.configuration.azureDeploymentId; }

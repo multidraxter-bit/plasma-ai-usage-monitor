@@ -29,6 +29,7 @@ KCM.SimpleKCM {
     property alias cfg_deepseekNotificationsEnabled: deepseekNotifySwitch.checked
     property alias cfg_groqNotificationsEnabled: groqNotifySwitch.checked
     property alias cfg_xaiNotificationsEnabled: xaiNotifySwitch.checked
+    property alias cfg_ollamaNotificationsEnabled: ollamaNotifySwitch.checked
     property alias cfg_openrouterNotificationsEnabled: openrouterNotifySwitch.checked
     property alias cfg_togetherNotificationsEnabled: togetherNotifySwitch.checked
     property alias cfg_cohereNotificationsEnabled: cohereNotifySwitch.checked
@@ -207,6 +208,13 @@ KCM.SimpleKCM {
             Kirigami.FormData.label: i18n("xAI / Grok:")
             enabled: alertsSwitch.checked
             checked: plasmoid.configuration.xaiNotificationsEnabled
+        }
+
+        QQC2.Switch {
+            id: ollamaNotifySwitch
+            Kirigami.FormData.label: i18n("Ollama Cloud:")
+            enabled: alertsSwitch.checked
+            checked: plasmoid.configuration.ollamaNotificationsEnabled
         }
 
         QQC2.Switch {

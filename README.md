@@ -22,7 +22,7 @@
 
 A native KDE Plasma 6 plasmoid that monitors AI API token usage, rate limits, and costs across multiple providers. Sits in your panel as a compact icon with a colored status badge and expands into a detailed popup with per-provider stats, usage history charts, and budget tracking. Also tracks subscription-based AI coding tool usage limits for Claude Code, Codex CLI, and GitHub Copilot.
 
-> **Current release:** `v5.1.0 "Lighthouse — The Analyst"` adds a dedicated analyst view with yearly activity heatmaps, efficiency KPIs, provider diagnostics, anomaly surfacing, model-aware analytics, and copyable weekly/monthly reports.
+> **Current release:** `v5.1.4 "Lighthouse — The Analyst"` adds Ollama Cloud provider support, immediate runtime reloads for OpenAI-compatible providers, and keeps the analyst dashboard and history workflow introduced in the Lighthouse line.
 
 ## Quick Links
 
@@ -34,14 +34,14 @@ A native KDE Plasma 6 plasmoid that monitors AI API token usage, rate limits, an
 > **VS Code note:** use **Remote - SSH** for the real Fedora 43 KDE VM workflow, or **Dev Containers** for a headless Fedora 43 build/test environment. The container is great for build/test/mock-server work, but real Plasma UI validation still requires a Linux desktop session.
 > **Demo Mode:** Contributors can run the widget in a deterministic offline mode for testing and screenshots. In the Fedora KDE guest, run `bash scripts/demo/setup_fedora43_kde_test_env.sh --install-missing`, then start `python scripts/demo/mock_ai_usage_server.py` and reload Plasma with `PLASMA_AI_MONITOR_DEMO=1 plasmashell --replace &`.
 
-**Supported providers:** Loofi Server, OpenAI, Azure OpenAI, Anthropic (Claude), Google Gemini, Mistral AI, DeepSeek, Groq, xAI (Grok), OpenRouter, Together AI, Cohere, Google Veo
+**Supported providers:** Loofi Server, OpenAI, Azure OpenAI, Anthropic (Claude), Google Gemini, Mistral AI, DeepSeek, Groq, xAI (Grok), Ollama Cloud, OpenRouter, Together AI, Cohere, Google Veo
 
 **Supported subscription tools:** Claude Code, OpenAI Codex CLI, GitHub Copilot
 
 ## Features
 
 - **Real-time monitoring** — Periodic background polling with configurable per-provider refresh intervals (default 5 min) and manual refresh
-- **13 AI providers** — Loofi Server, OpenAI, Azure OpenAI, Anthropic, Google Gemini, Mistral AI, DeepSeek, Groq, xAI/Grok, OpenRouter, Together AI, Cohere, Google Veo
+- **14 AI providers** — Loofi Server, OpenAI, Azure OpenAI, Anthropic, Google Gemini, Mistral AI, DeepSeek, Groq, xAI/Grok, Ollama Cloud, OpenRouter, Together AI, Cohere, Google Veo
 - **Token usage tracking** — Input/output tokens used, requests made, quota/tier limits
 - **Cost tracking** — Dollar spending with daily and monthly cost breakdowns; automatic token-based cost estimation for providers without billing APIs (~30 models with pricing tables)
 - **Budget management** — Per-provider daily/monthly budgets with configurable warning thresholds and notifications when budgets are exceeded
@@ -477,7 +477,7 @@ plasma-ai-usage-monitor/
 └── plugin/                         # C++ QML plugin
     ├── CMakeLists.txt
     ├── qmldir                      # QML module registration
-    ├── aiusageplugin.{h,cpp}       # QQmlExtensionPlugin (20 types)
+    ├── aiusageplugin.{h,cpp}       # QQmlExtensionPlugin (23 creatable/singleton types)
     ├── appinfo.{h,cpp}             # App version singleton for QML (build-version source of truth)
     ├── secretsmanager.{h,cpp}      # KWallet wrapper
     ├── clipboardhelper.h            # Clipboard copy/paste helper
@@ -490,6 +490,7 @@ plasma-ai-usage-monitor/
     ├── deepseekprovider.{h,cpp}    # DeepSeek (extends OpenAICompatibleProvider)
     ├── groqprovider.{h,cpp}        # Groq (extends OpenAICompatibleProvider)
     ├── xaiprovider.{h,cpp}         # xAI/Grok (extends OpenAICompatibleProvider)
+    ├── ollamacloudprovider.{h,cpp} # Ollama Cloud (extends OpenAICompatibleProvider)
     ├── openrouterprovider.{h,cpp}  # OpenRouter (extends OpenAICompatibleProvider)
     ├── togetherprovider.{h,cpp}    # Together AI (extends OpenAICompatibleProvider)
     ├── cohereprovider.{h,cpp}      # Cohere (extends OpenAICompatibleProvider)
@@ -505,7 +506,7 @@ plasma-ai-usage-monitor/
 
 ### C++ Plugin
 
-The QML plugin (`com.github.loofi.aiusagemonitor`) provides 20 types:
+The QML plugin (`com.github.loofi.aiusagemonitor`) provides 23 creatable/singleton types:
 
 - **`AppInfo`** — QML singleton exposing the build version (`AppInfo.version`) so update checks and About pages stay in sync with CMake/package metadata.
 - **`SecretsManager`** — Wraps KWallet for secure API key storage. Uses wallet folder `"ai-usage-monitor"` with async open and a pending operations queue.
@@ -516,6 +517,7 @@ The QML plugin (`com.github.loofi.aiusagemonitor`) provides 20 types:
 - **`GoogleProvider`** — Pings `POST /v1beta/models/{model}:countTokens`. Applies static known free-tier limits. Registers pricing for Gemini models.
 - **`MistralProvider`** — Extends `OpenAICompatibleProvider`. Registers pricing for 6 Mistral models.
 - **`DeepSeekProvider`** — Extends `OpenAICompatibleProvider`. Also fetches prepaid balance from `/user/balance`. Registers pricing for deepseek-chat and deepseek-reasoner.
+- **`OllamaCloudProvider`** — Extends `OpenAICompatibleProvider`. Talks to `https://ollama.com/v1` using an Ollama API key and monitors usage from the OpenAI-compatible cloud API.
 - **`GroqProvider`** — Extends `OpenAICompatibleProvider`. Registers pricing for 5 Groq models.
 - **`XAIProvider`** — Extends `OpenAICompatibleProvider`. Registers pricing for grok-3, grok-3-mini, grok-2.
 - **`OpenRouterProvider`** — Extends `OpenAICompatibleProvider`. Registers pricing for 22 models. Fetches credits balance.
@@ -531,7 +533,7 @@ The QML plugin (`com.github.loofi.aiusagemonitor`) provides 20 types:
 
 ### QML Frontend
 
-- **`main.qml`** — Instantiates 13 provider backends + 3 subscription tool monitors, manages per-provider refresh timers, handles KWallet lifecycle, fires KDE notifications with cooldown and DND support, records snapshots to UsageDatabase. Uses `allProviders` and `allSubscriptionTools` arrays to drive tooltips, refresh, and notification routing.
+- **`main.qml`** — Instantiates 14 provider backends + 3 subscription tool monitors, manages per-provider refresh timers, handles KWallet lifecycle, fires KDE notifications with cooldown and DND support, records snapshots to UsageDatabase. Uses `allProviders` and `allSubscriptionTools` arrays to drive tooltips, refresh, and notification routing.
 - **`CompactRepresentation.qml`** — Panel icon with 3 display modes (icon with status badge, cost display, provider count), smooth animations, and screen reader accessibility
 - **`FullRepresentation.qml`** — Popup with status summary bar, tabbed Live/History view, data-driven provider cards via Repeater, subscription tool cards section, detail history, compare mode (providers/tools + metrics), responsive history controls, loading/empty states, and export buttons
 - **`MultiSeriesChart.qml`** — Multi-line comparison chart with compact legend chips, hover crosshair, and ranked per-series tooltip values

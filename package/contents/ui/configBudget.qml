@@ -22,6 +22,8 @@ KCM.SimpleKCM {
     property int cfg_groqMonthlyBudget
     property int cfg_xaiDailyBudget
     property int cfg_xaiMonthlyBudget
+    property int cfg_ollamaDailyBudget
+    property int cfg_ollamaMonthlyBudget
     property int cfg_openrouterDailyBudget
     property int cfg_openrouterMonthlyBudget
     property int cfg_togetherDailyBudget
@@ -43,6 +45,7 @@ KCM.SimpleKCM {
         { name: "DeepSeek",      dailyKey: "deepseekDailyBudget",  monthlyKey: "deepseekMonthlyBudget"  },
         { name: "Groq",          dailyKey: "groqDailyBudget",      monthlyKey: "groqMonthlyBudget"      },
         { name: "xAI / Grok",    dailyKey: "xaiDailyBudget",       monthlyKey: "xaiMonthlyBudget"       },
+        { name: "Ollama Cloud",  dailyKey: "ollamaDailyBudget",    monthlyKey: "ollamaMonthlyBudget"    },
         { name: "OpenRouter",    dailyKey: "openrouterDailyBudget", monthlyKey: "openrouterMonthlyBudget" },
         { name: "Together AI",   dailyKey: "togetherDailyBudget",   monthlyKey: "togetherMonthlyBudget"   },
         { name: "Cohere",        dailyKey: "cohereDailyBudget",    monthlyKey: "cohereMonthlyBudget"    },

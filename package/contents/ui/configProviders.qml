@@ -53,6 +53,10 @@ KCM.SimpleKCM {
     property alias cfg_xaiModel: xaiModelField.text
     property alias cfg_xaiCustomBaseUrl: xaiBaseUrlField.text
 
+    property alias cfg_ollamaEnabled: ollamaSwitch.checked
+    property alias cfg_ollamaModel: ollamaModelField.text
+    property alias cfg_ollamaCustomBaseUrl: ollamaBaseUrlField.text
+
     property alias cfg_openrouterEnabled: openrouterSwitch.checked
     property alias cfg_openrouterModel: openrouterModelField.text
     property alias cfg_openrouterCustomBaseUrl: openrouterBaseUrlField.text
@@ -78,6 +82,7 @@ KCM.SimpleKCM {
     property bool deepseekKeyDirty: false
     property bool groqKeyDirty: false
     property bool xaiKeyDirty: false
+    property bool ollamaKeyDirty: false
     property bool openrouterKeyDirty: false
     property bool togetherKeyDirty: false
     property bool cohereKeyDirty: false
@@ -112,6 +117,7 @@ KCM.SimpleKCM {
             { name: "deepseek", field: deepseekKeyField, dirtyProp: "deepseekKeyDirty" },
             { name: "groq", field: groqKeyField, dirtyProp: "groqKeyDirty" },
             { name: "xai", field: xaiKeyField, dirtyProp: "xaiKeyDirty" },
+            { name: "ollama", field: ollamaKeyField, dirtyProp: "ollamaKeyDirty" },
             { name: "openrouter", field: openrouterKeyField, dirtyProp: "openrouterKeyDirty" },
             { name: "together", field: togetherKeyField, dirtyProp: "togetherKeyDirty" },
             { name: "cohere", field: cohereKeyField, dirtyProp: "cohereKeyDirty" },
@@ -139,6 +145,7 @@ KCM.SimpleKCM {
             { name: "deepseek", field: deepseekKeyField, dirty: deepseekKeyDirty },
             { name: "groq", field: groqKeyField, dirty: groqKeyDirty },
             { name: "xai", field: xaiKeyField, dirty: xaiKeyDirty },
+            { name: "ollama", field: ollamaKeyField, dirty: ollamaKeyDirty },
             { name: "openrouter", field: openrouterKeyField, dirty: openrouterKeyDirty },
             { name: "together", field: togetherKeyField, dirty: togetherKeyDirty },
             { name: "cohere", field: cohereKeyField, dirty: cohereKeyDirty },
@@ -1059,6 +1066,106 @@ KCM.SimpleKCM {
 
         QQC2.Label {
             visible: xaiBaseUrlField.text.toLowerCase().startsWith("http://")
+            text: i18n("⚠ Using HTTP is insecure. API keys will be sent unencrypted.")
+            color: Kirigami.Theme.negativeTextColor
+            font.pointSize: Kirigami.Theme.smallFont.pointSize
+            wrapMode: Text.WordWrap
+            Layout.fillWidth: true
+        }
+
+        // ══════════════════════════════════════════════
+        // ── Ollama Cloud ──
+        // ══════════════════════════════════════════════
+
+        Kirigami.Separator {
+            Kirigami.FormData.isSection: true
+            Kirigami.FormData.label: i18n("Ollama Cloud")
+        }
+
+        QQC2.Switch {
+            id: ollamaSwitch
+            Kirigami.FormData.label: i18n("Enable:")
+            checked: plasmoid.configuration.ollamaEnabled
+        }
+
+        RowLayout {
+            Kirigami.FormData.label: i18n("API Key:")
+            Layout.fillWidth: true
+            spacing: Kirigami.Units.smallSpacing
+
+            QQC2.TextField {
+                id: ollamaKeyField
+                enabled: ollamaSwitch.checked
+                echoMode: ollamaKeyVisible.checked ? TextInput.Normal : TextInput.Password
+                placeholderText: i18n("Create a key in ollama.com/settings")
+                Layout.fillWidth: true
+                onTextEdited: providersPage.ollamaKeyDirty = true
+            }
+
+            QQC2.ToolButton {
+                id: ollamaKeyVisible
+                checkable: true; checked: false
+                icon.name: checked ? "password-show-off" : "password-show-on"
+                display: QQC2.AbstractButton.IconOnly
+                QQC2.ToolTip.text: checked ? i18n("Hide key") : i18n("Show key")
+                QQC2.ToolTip.visible: hovered
+            }
+
+            QQC2.ToolButton {
+                icon.name: "edit-clear"
+                enabled: ollamaKeyField.text.length > 0
+                display: QQC2.AbstractButton.IconOnly
+                QQC2.ToolTip.text: i18n("Clear key"); QQC2.ToolTip.visible: hovered
+                onClicked: { ollamaKeyField.text = ""; providersPage.ollamaKeyDirty = true; }
+            }
+        }
+
+        QQC2.Label {
+            visible: ollamaSwitch.checked
+            text: i18n("Uses Ollama Cloud's OpenAI-compatible API at ollama.com/v1. Create an API key in your Ollama settings to monitor cloud usage from the widget.")
+            font.pointSize: Kirigami.Theme.smallFont.pointSize
+            opacity: 0.6; wrapMode: Text.WordWrap; Layout.fillWidth: true
+        }
+
+        QQC2.ComboBox {
+            id: ollamaModelField
+            Kirigami.FormData.label: i18n("Model:")
+            enabled: ollamaSwitch.checked
+            editable: true
+            editText: plasmoid.configuration.ollamaModel
+            model: [
+                "gpt-oss:120b",
+                "gpt-oss:20b",
+                "glm-5:cloud",
+                "deepseek-r1:671b"
+            ]
+            onEditTextChanged: plasmoid.configuration.ollamaModel = editText
+            property alias text: ollamaModelField.editText
+        }
+
+        QQC2.TextField {
+            id: ollamaBaseUrlField
+            Kirigami.FormData.label: i18n("Custom base URL:")
+            enabled: ollamaSwitch.checked
+            text: plasmoid.configuration.ollamaCustomBaseUrl
+            placeholderText: i18n("Leave empty for default")
+            Layout.fillWidth: true
+            QQC2.ToolTip.text: i18n("Override the Ollama Cloud API endpoint for proxies or gateways. Must start with https://")
+            QQC2.ToolTip.visible: hovered
+            QQC2.ToolTip.delay: 500
+        }
+
+        QQC2.Label {
+            visible: providersPage.isInvalidUrl(ollamaBaseUrlField.text)
+            text: i18n("⚠ URL must start with https:// or http://")
+            color: Kirigami.Theme.negativeTextColor
+            font.pointSize: Kirigami.Theme.smallFont.pointSize
+            wrapMode: Text.WordWrap
+            Layout.fillWidth: true
+        }
+
+        QQC2.Label {
+            visible: ollamaBaseUrlField.text.toLowerCase().startsWith("http://")
             text: i18n("⚠ Using HTTP is insecure. API keys will be sent unencrypted.")
             color: Kirigami.Theme.negativeTextColor
             font.pointSize: Kirigami.Theme.smallFont.pointSize

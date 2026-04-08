@@ -59,6 +59,10 @@ ProviderBackend::ProviderId ProviderBackend::providerIdFromKey(const QString &pr
     if (normalized == QLatin1String("deepseek")) return ProviderId::DeepSeek;
     if (normalized == QLatin1String("groq")) return ProviderId::Groq;
     if (normalized == QLatin1String("xai") || normalized == QLatin1String("x-ai")) return ProviderId::XAI;
+    if (normalized == QLatin1String("ollama") || normalized == QLatin1String("ollama-cloud")
+        || normalized == QLatin1String("ollama_cloud")) {
+        return ProviderId::OllamaCloud;
+    }
     if (normalized == QLatin1String("openrouter")) return ProviderId::OpenRouter;
     if (normalized == QLatin1String("together")) return ProviderId::Together;
     if (normalized == QLatin1String("cohere")) return ProviderId::Cohere;
@@ -81,6 +85,7 @@ QString ProviderBackend::providerKeyFromId(ProviderId providerId)
     case ProviderId::DeepSeek: return QStringLiteral("deepseek");
     case ProviderId::Groq: return QStringLiteral("groq");
     case ProviderId::XAI: return QStringLiteral("xai");
+    case ProviderId::OllamaCloud: return QStringLiteral("ollama");
     case ProviderId::OpenRouter: return QStringLiteral("openrouter");
     case ProviderId::Together: return QStringLiteral("together");
     case ProviderId::Cohere: return QStringLiteral("cohere");
@@ -131,6 +136,7 @@ ProviderBackend::NormalizedUsageCost ProviderBackend::normalizeUsageCost(Provide
     case ProviderId::DeepSeek:
     case ProviderId::Groq:
     case ProviderId::XAI:
+    case ProviderId::OllamaCloud:
     case ProviderId::OpenRouter:
     case ProviderId::Together:
     case ProviderId::Cohere:

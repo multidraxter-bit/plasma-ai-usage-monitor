@@ -983,6 +983,7 @@ PlasmaExtras.Representation {
             || plasmoid.configuration.deepseekEnabled
             || plasmoid.configuration.groqEnabled
             || plasmoid.configuration.xaiEnabled
+            || plasmoid.configuration.ollamaEnabled
             || plasmoid.configuration.openrouterEnabled
             || plasmoid.configuration.togetherEnabled
             || plasmoid.configuration.cohereEnabled

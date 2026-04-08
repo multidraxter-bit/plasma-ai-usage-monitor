@@ -12,6 +12,7 @@ set(aiusagemonitor_SRCS
     deepseekprovider.cpp
     groqprovider.cpp
     xaiprovider.cpp
+    ollamacloudprovider.cpp
     openrouterprovider.cpp
     togetherprovider.cpp
     cohereprovider.cpp
@@ -40,6 +41,7 @@ set(aiusagemonitor_HDRS
     deepseekprovider.h
     groqprovider.h
     xaiprovider.h
+    ollamacloudprovider.h
     openrouterprovider.h
     togetherprovider.h
     cohereprovider.h
