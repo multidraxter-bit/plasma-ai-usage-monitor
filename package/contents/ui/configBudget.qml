@@ -1,3 +1,5 @@
+pragma ComponentBehavior: Bound
+
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls as QQC2
@@ -36,22 +38,7 @@ KCM.SimpleKCM {
     property int cfg_googleveoMonthlyBudget
     property alias cfg_budgetWarningPercent: warningPercentSlider.value
 
-    // Model for all providers
-    readonly property var providerBudgets: [
-        { name: "OpenAI",        dailyKey: "openaiDailyBudget",    monthlyKey: "openaiMonthlyBudget"    },
-        { name: "Anthropic",     dailyKey: "anthropicDailyBudget", monthlyKey: "anthropicMonthlyBudget" },
-        { name: "Google Gemini", dailyKey: "googleDailyBudget",    monthlyKey: "googleMonthlyBudget"    },
-        { name: "Mistral AI",    dailyKey: "mistralDailyBudget",   monthlyKey: "mistralMonthlyBudget"   },
-        { name: "DeepSeek",      dailyKey: "deepseekDailyBudget",  monthlyKey: "deepseekMonthlyBudget"  },
-        { name: "Groq",          dailyKey: "groqDailyBudget",      monthlyKey: "groqMonthlyBudget"      },
-        { name: "xAI / Grok",    dailyKey: "xaiDailyBudget",       monthlyKey: "xaiMonthlyBudget"       },
-        { name: "Ollama Cloud",  dailyKey: "ollamaDailyBudget",    monthlyKey: "ollamaMonthlyBudget"    },
-        { name: "OpenRouter",    dailyKey: "openrouterDailyBudget", monthlyKey: "openrouterMonthlyBudget" },
-        { name: "Together AI",   dailyKey: "togetherDailyBudget",   monthlyKey: "togetherMonthlyBudget"   },
-        { name: "Cohere",        dailyKey: "cohereDailyBudget",    monthlyKey: "cohereMonthlyBudget"    },
-        { name: "Azure OpenAI",  dailyKey: "azureDailyBudget",     monthlyKey: "azureMonthlyBudget"     },
-        { name: "Google Veo",    dailyKey: "googleveoDailyBudget", monthlyKey: "googleveoMonthlyBudget" }
-    ]
+    property ProviderCatalog providerCatalog: ProviderCatalog {}
 
     // Shared formatting functions
     function centsToText(value) {
@@ -103,7 +90,7 @@ KCM.SimpleKCM {
 
         // ── Per-provider budget sections (data-driven) ──
         Repeater {
-            model: budgetPage.providerBudgets
+            model: providerCatalog.budgetProviders
 
             ColumnLayout {
                 spacing: 0
@@ -111,7 +98,7 @@ KCM.SimpleKCM {
 
                 Kirigami.Separator {
                     Kirigami.FormData.isSection: true
-                    Kirigami.FormData.label: modelData.name
+                    Kirigami.FormData.label: modelData.label
                     Layout.fillWidth: true
                 }
 
@@ -119,7 +106,7 @@ KCM.SimpleKCM {
                     id: dailyField
                     Kirigami.FormData.label: i18n("Daily budget ($):")
                     from: 0; to: 100000; stepSize: 100
-                    value: budgetPage["cfg_" + modelData.dailyKey]
+                    value: budgetPage["cfg_" + modelData.dailyBudgetConfigKey]
 
                     textFromValue: function(value, locale) {
                         return budgetPage.centsToText(value);
@@ -129,11 +116,11 @@ KCM.SimpleKCM {
                     }
 
                     onValueModified: {
-                        budgetPage["cfg_" + modelData.dailyKey] = value;
+                        budgetPage["cfg_" + modelData.dailyBudgetConfigKey] = value;
                     }
 
                     Component.onCompleted: {
-                        value = budgetPage["cfg_" + modelData.dailyKey];
+                        value = budgetPage["cfg_" + modelData.dailyBudgetConfigKey];
                     }
                 }
 
@@ -141,7 +128,7 @@ KCM.SimpleKCM {
                     id: monthlyField
                     Kirigami.FormData.label: i18n("Monthly budget ($):")
                     from: 0; to: 1000000; stepSize: 500
-                    value: budgetPage["cfg_" + modelData.monthlyKey]
+                    value: budgetPage["cfg_" + modelData.monthlyBudgetConfigKey]
 
                     textFromValue: function(value, locale) {
                         return budgetPage.centsToText(value);
@@ -151,11 +138,11 @@ KCM.SimpleKCM {
                     }
 
                     onValueModified: {
-                        budgetPage["cfg_" + modelData.monthlyKey] = value;
+                        budgetPage["cfg_" + modelData.monthlyBudgetConfigKey] = value;
                     }
 
                     Component.onCompleted: {
-                        value = budgetPage["cfg_" + modelData.monthlyKey];
+                        value = budgetPage["cfg_" + modelData.monthlyBudgetConfigKey];
                     }
                 }
             }

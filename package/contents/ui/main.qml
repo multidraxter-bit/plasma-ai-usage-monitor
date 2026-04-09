@@ -4,7 +4,6 @@ import org.kde.plasma.plasmoid
 import org.kde.plasma.core as PlasmaCore
 import org.kde.plasma.components as PlasmaComponents
 import org.kde.kirigami as Kirigami
-import org.kde.notification
 import com.github.loofi.aiusagemonitor 1.0
 
 PlasmoidItem {
@@ -16,20 +15,21 @@ PlasmoidItem {
     toolTipMainText: i18n("AI Usage Monitor")
     toolTipSubText: {
         var lines = [];
-        var providers = root.allProviders;
+        var providers = root.allProviders || [];
         for (var i = 0; i < providers.length; i++) {
-            var p = providers[i];
-            if (p.enabled && p.backend.connected) {
-                var info = p.name + ": ";
-                if (p.configKey === "loofi") {
-                    info += (p.backend.activeModel || i18n("No model")) + " | ";
-                    info += (p.backend.trainingStage || i18n("idle")) + " | ";
-                    info += i18n("GPU %1%", Math.round(Math.max(0, p.backend.gpuMemoryPct || 0))) + " | ";
-                    info += i18n("%1 req/24h", formatCompactMetric(p.backend.requestCount || 0));
+            var provider = providers[i];
+            if (provider.enabled && provider.backend && provider.backend.connected) {
+                var info = provider.name + ": ";
+                if (provider.configKey === "loofi") {
+                    info += (provider.backend.activeModel || i18n("No model")) + " | ";
+                    info += (provider.backend.trainingStage || i18n("idle")) + " | ";
+                    info += i18n("GPU %1%", Math.round(Math.max(0, provider.backend.gpuMemoryPct || 0))) + " | ";
+                    info += i18n("%1 req/24h", root.formatCompactMetric(provider.backend.requestCount || 0));
                 } else {
-                    if (p.backend.cost > 0)
-                        info += "$" + p.backend.cost.toFixed(2) + " | ";
-                    info += p.backend.rateLimitRequestsRemaining + " req left";
+                    if (provider.backend.cost > 0) {
+                        info += "$" + provider.backend.cost.toFixed(2) + " | ";
+                    }
+                    info += provider.backend.rateLimitRequestsRemaining + " req left";
                 }
                 lines.push(info);
             }
@@ -37,7 +37,6 @@ PlasmoidItem {
         return lines.length > 0 ? lines.join("\n") : i18n("Click to configure providers");
     }
 
-    // Expose backends to child QML components
     property alias openai: openaiBackend
     property alias anthropic: anthropicBackend
     property alias google: googleBackend
@@ -54,36 +53,50 @@ PlasmoidItem {
     property alias loofi: loofiBackend
     property alias usageDb: usageDatabase
 
-    // Subscription tool monitors
     property alias claudeCode: claudeCodeMonitor
     property alias codexCli: codexCliMonitor
     property alias copilot: copilotMonitor
+    property alias intelligenceEngine: analystIntelligence
 
-    // Notification cooldown tracking
-    property var lastNotificationTimes: ({})
-    readonly property string brandedNotificationIcon: "com.github.loofi.aiusagemonitor"
-    readonly property string warningNotificationIcon: "dialog-warning"
-    readonly property string errorNotificationIcon: "dialog-error"
+    readonly property var allProviders: providerRegistry.allProviders
+    readonly property var allSubscriptionTools: providerRegistry.allSubscriptionTools
+    readonly property int enabledToolCount: providerRegistry.enabledToolCount
+    readonly property int connectedCount: providerRegistry.connectedCount
+    readonly property double totalCost: providerRegistry.totalCost
 
-    // ── Secrets Manager (KWallet) ──
-    SecretsManager {
-        id: secrets
-
-        onWalletOpenChanged: {
-            if (walletOpen) {
-                loadApiKeys();
-            }
-        }
+    function formatCompactMetric(value) {
+        return providerRegistry.formatCompactMetric(value);
     }
 
-    // ── Usage Database (SQLite) ──
+    function refreshAll() {
+        refreshScheduler.refreshAll();
+    }
+
+    function performBrowserSync() {
+        refreshScheduler.performBrowserSync();
+    }
+
+    function generateAnalystInsight() {
+        if (!analystIntelligence) {
+            return;
+        }
+
+        var activity = usageDatabase.getYearlyActivity(plasmoid.configuration.analystIntensityMode);
+        var efficiency = usageDatabase.getEfficiencySeries(14);
+        var overview = usageDatabase.getAnalystOverview(30);
+
+        analystIntelligence.generateInsight(activity.days, efficiency, overview);
+    }
+
+    SecretsManager {
+        id: secrets
+    }
+
     UsageDatabase {
         id: usageDatabase
         enabled: plasmoid.configuration.historyEnabled
         retentionDays: plasmoid.configuration.historyRetentionDays
     }
-
-    // ── C++ Provider Backends ──
 
     OpenAIProvider {
         id: openaiBackend
@@ -211,22 +224,10 @@ PlasmoidItem {
         customBaseUrl: plasmoid.configuration.loofiServerUrl
     }
 
-    // ── Subscription Tool Monitors ──
-
-    // Browser cookie extractor for sync
     BrowserCookieExtractor {
         id: browserCookies
         browserType: plasmoid.configuration.browserSyncBrowser
         selectedFirefoxProfile: plasmoid.configuration.browserSyncProfile
-    }
-
-    // Browser sync timer
-    Timer {
-        id: browserSyncTimer
-        interval: Math.max(60, plasmoid.configuration.browserSyncInterval) * 1000
-        running: plasmoid.configuration.browserSyncEnabled
-        repeat: true
-        onTriggered: performBrowserSync()
     }
 
     ClaudeCodeMonitor {
@@ -237,27 +238,17 @@ PlasmoidItem {
         Component.onCompleted: {
             checkToolInstalled();
             syncEnabled = Qt.binding(function() { return plasmoid.configuration.browserSyncEnabled; });
-            // Set plan from config index
             var plans = availablePlans();
             var idx = plasmoid.configuration.claudeCodePlan;
             if (idx >= 0 && idx < plans.length) {
                 planTier = plans[idx];
-                if (usageLimit === 0) usageLimit = defaultLimitForPlan(plans[idx]);
-                if (hasSecondaryLimit) secondaryUsageLimit = defaultSecondaryLimitForPlan(plans[idx]);
+                if (usageLimit === 0) {
+                    usageLimit = defaultLimitForPlan(plans[idx]);
+                }
+                if (hasSecondaryLimit) {
+                    secondaryUsageLimit = defaultSecondaryLimitForPlan(plans[idx]);
+                }
             }
-        }
-
-        onLimitWarning: function(tool, percent) {
-            handleToolLimitWarning(tool, percent);
-        }
-        onLimitReached: function(tool) {
-            handleToolLimitReached(tool);
-        }
-        onSyncDiagnostic: function(toolName, code, message) {
-            handleToolSyncDiagnostic(toolName, code, message);
-        }
-        onUsageUpdated: {
-            recordToolUsageSnapshot(claudeCodeMonitor);
         }
     }
 
@@ -273,22 +264,13 @@ PlasmoidItem {
             var idx = plasmoid.configuration.codexPlan;
             if (idx >= 0 && idx < plans.length) {
                 planTier = plans[idx];
-                if (usageLimit === 0) usageLimit = defaultLimitForPlan(plans[idx]);
-                if (hasSecondaryLimit) secondaryUsageLimit = defaultSecondaryLimitForPlan(plans[idx]);
+                if (usageLimit === 0) {
+                    usageLimit = defaultLimitForPlan(plans[idx]);
+                }
+                if (hasSecondaryLimit) {
+                    secondaryUsageLimit = defaultSecondaryLimitForPlan(plans[idx]);
+                }
             }
-        }
-
-        onLimitWarning: function(tool, percent) {
-            handleToolLimitWarning(tool, percent);
-        }
-        onLimitReached: function(tool) {
-            handleToolLimitReached(tool);
-        }
-        onSyncDiagnostic: function(toolName, code, message) {
-            handleToolSyncDiagnostic(toolName, code, message);
-        }
-        onUsageUpdated: {
-            recordToolUsageSnapshot(codexCliMonitor);
         }
     }
 
@@ -304,83 +286,71 @@ PlasmoidItem {
             var idx = plasmoid.configuration.copilotPlan;
             if (idx >= 0 && idx < plans.length) {
                 planTier = plans[idx];
-                if (usageLimit === 0) usageLimit = defaultLimitForPlan(plans[idx]);
+                if (usageLimit === 0) {
+                    usageLimit = defaultLimitForPlan(plans[idx]);
+                }
             }
-            // Load GitHub token from KWallet
             if (secrets.walletOpen && secrets.hasKey("copilot_github")) {
                 githubToken = secrets.getKey("copilot_github");
             }
-            // Fetch org metrics if configured
             fetchOrgMetrics();
         }
-
-        onLimitWarning: function(tool, percent) {
-            handleToolLimitWarning(tool, percent);
-        }
-        onLimitReached: function(tool) {
-            handleToolLimitReached(tool);
-        }
-        onSyncDiagnostic: function(toolName, code, message) {
-            handleToolSyncDiagnostic(toolName, code, message);
-        }
-        onUsageUpdated: {
-            recordToolUsageSnapshot(copilotMonitor);
-        }
     }
 
-    // ── Subscription Notification ──
+    ProviderRegistry {
+        id: providerRegistry
+        configuration: plasmoid.configuration
 
-    Notification {
-        id: subscriptionNotification
-        componentName: "plasma_applet_com.github.loofi.aiusagemonitor"
-        eventId: "quotaWarning"
-        title: i18n("AI Usage Monitor - Subscription")
-        iconName: root.warningNotificationIcon
+        openaiBackend: openaiBackend
+        anthropicBackend: anthropicBackend
+        googleBackend: googleBackend
+        mistralBackend: mistralBackend
+        deepseekBackend: deepseekBackend
+        groqBackend: groqBackend
+        xaiBackend: xaiBackend
+        ollamaBackend: ollamaBackend
+        openrouterBackend: openrouterBackend
+        togetherBackend: togetherBackend
+        cohereBackend: cohereBackend
+        googleveoBackend: googleveoBackend
+        azureBackend: azureBackend
+        loofiBackend: loofiBackend
+
+        claudeCodeMonitor: claudeCodeMonitor
+        codexCliMonitor: codexCliMonitor
+        copilotMonitor: copilotMonitor
     }
 
-    // ── KDE Notifications ──
-
-    Notification {
-        id: warningNotification
-        componentName: "plasma_applet_com.github.loofi.aiusagemonitor"
-        eventId: "quotaWarning"
-        title: i18n("AI Usage Monitor")
-        iconName: root.warningNotificationIcon
+    NotificationController {
+        id: notificationController
+        configuration: plasmoid.configuration
+        registry: providerRegistry
+        usageDatabase: usageDatabase
     }
 
-    Notification {
-        id: errorNotification
-        componentName: "plasma_applet_com.github.loofi.aiusagemonitor"
-        eventId: "apiError"
-        title: i18n("AI Usage Monitor")
-        iconName: root.errorNotificationIcon
+    RefreshScheduler {
+        id: refreshScheduler
+        configuration: plasmoid.configuration
+        registry: providerRegistry
+        browserCookies: browserCookies
+        claudeCodeMonitor: claudeCodeMonitor
+        codexCliMonitor: codexCliMonitor
+        copilotMonitor: copilotMonitor
+        usageDatabase: usageDatabase
     }
 
-    Notification {
-        id: budgetNotification
-        componentName: "plasma_applet_com.github.loofi.aiusagemonitor"
-        eventId: "budgetWarning"
-        title: i18n("AI Usage Monitor - Budget")
-        iconName: root.brandedNotificationIcon
+    RuntimeCoordinator {
+        id: runtimeCoordinator
+        configuration: plasmoid.configuration
+        registry: providerRegistry
+        secrets: secrets
+        usageDatabase: usageDatabase
+        notificationController: notificationController
+        scheduler: refreshScheduler
+        claudeCodeMonitor: claudeCodeMonitor
+        codexCliMonitor: codexCliMonitor
+        copilotMonitor: copilotMonitor
     }
-
-    Notification {
-        id: connectionNotification
-        componentName: "plasma_applet_com.github.loofi.aiusagemonitor"
-        eventId: "providerDisconnected"
-        title: i18n("AI Usage Monitor")
-        iconName: root.brandedNotificationIcon
-    }
-
-    Notification {
-        id: updateNotification
-        componentName: "plasma_applet_com.github.loofi.aiusagemonitor"
-        eventId: "updateAvailable"
-        title: i18n("AI Usage Monitor - Update Available")
-        iconName: root.brandedNotificationIcon
-    }
-
-    // ── Update Checker ──
 
     UpdateChecker {
         id: updateChecker
@@ -390,193 +360,16 @@ PlasmoidItem {
         checkIntervalHours: plasmoid.configuration.updateCheckInterval || 12
 
         onUpdateAvailable: function(latestVersion, releaseUrl) {
-            if (!plasmoid.configuration.notifyOnUpdate) return;
-            updateNotification.text = i18n("Version %1 is available! Visit %2 to update.",
-                                           latestVersion, releaseUrl);
-            updateNotification.sendEvent();
+            notificationController.sendUpdateAvailable(latestVersion, releaseUrl);
         }
     }
 
-    // ── Intelligence Engine (v5.0.0) ──
-    property alias intelligenceEngine: analystIntelligence
     IntelligenceEngine {
         id: analystIntelligence
     }
 
-    function generateAnalystInsight() {
-        if (!analystIntelligence) return;
-        
-        // Fetch data from DB for context
-        var activity = usageDatabase.getYearlyActivity(plasmoid.configuration.analystIntensityMode);
-        var efficiency = usageDatabase.getEfficiencySeries(14);
-        var overview = usageDatabase.getAnalystOverview(30);
-        
-        analystIntelligence.generateInsight(activity.days, efficiency, overview);
-    }
-
-    // ── UI Representations ──
-
     compactRepresentation: CompactRepresentation {}
     fullRepresentation: FullRepresentation {}
-
-    // ── Refresh Timers ──
-
-    // Helper to get effective interval for a provider (0 = use global)
-    function effectiveInterval(providerInterval) {
-        return (providerInterval > 0 ? providerInterval : plasmoid.configuration.refreshInterval) * 1000;
-    }
-
-    function canRefreshBackend(backend, requiresApiKey) {
-        return backend && (!requiresApiKey || backend.hasApiKey());
-    }
-
-    // Per-provider refresh timers
-    Timer {
-        id: openaiRefreshTimer
-        interval: effectiveInterval(plasmoid.configuration.openaiRefreshInterval)
-        running: plasmoid.configuration.openaiEnabled
-        repeat: true
-        onTriggered: {
-            if (canRefreshBackend(openaiBackend, true)) openaiBackend.refresh();
-        }
-    }
-    Timer {
-        id: anthropicRefreshTimer
-        interval: effectiveInterval(plasmoid.configuration.anthropicRefreshInterval)
-        running: plasmoid.configuration.anthropicEnabled
-        repeat: true
-        onTriggered: {
-            if (canRefreshBackend(anthropicBackend, true)) anthropicBackend.refresh();
-        }
-    }
-    Timer {
-        id: googleRefreshTimer
-        interval: effectiveInterval(plasmoid.configuration.googleRefreshInterval)
-        running: plasmoid.configuration.googleEnabled
-        repeat: true
-        onTriggered: {
-            if (canRefreshBackend(googleBackend, true)) googleBackend.refresh();
-        }
-    }
-    Timer {
-        id: mistralRefreshTimer
-        interval: effectiveInterval(plasmoid.configuration.mistralRefreshInterval)
-        running: plasmoid.configuration.mistralEnabled
-        repeat: true
-        onTriggered: {
-            if (canRefreshBackend(mistralBackend, true)) mistralBackend.refresh();
-        }
-    }
-    Timer {
-        id: deepseekRefreshTimer
-        interval: effectiveInterval(plasmoid.configuration.deepseekRefreshInterval)
-        running: plasmoid.configuration.deepseekEnabled
-        repeat: true
-        onTriggered: {
-            if (canRefreshBackend(deepseekBackend, true)) deepseekBackend.refresh();
-        }
-    }
-    Timer {
-        id: groqRefreshTimer
-        interval: effectiveInterval(plasmoid.configuration.groqRefreshInterval)
-        running: plasmoid.configuration.groqEnabled
-        repeat: true
-        onTriggered: {
-            if (canRefreshBackend(groqBackend, true)) groqBackend.refresh();
-        }
-    }
-    Timer {
-        id: xaiRefreshTimer
-        interval: effectiveInterval(plasmoid.configuration.xaiRefreshInterval)
-        running: plasmoid.configuration.xaiEnabled
-        repeat: true
-        onTriggered: {
-            if (canRefreshBackend(xaiBackend, true)) xaiBackend.refresh();
-        }
-    }
-    Timer {
-        id: ollamaRefreshTimer
-        interval: effectiveInterval(plasmoid.configuration.ollamaRefreshInterval)
-        running: plasmoid.configuration.ollamaEnabled
-        repeat: true
-        onTriggered: {
-            if (canRefreshBackend(ollamaBackend, true)) ollamaBackend.refresh();
-        }
-    }
-    Timer {
-        id: openrouterRefreshTimer
-        interval: effectiveInterval(plasmoid.configuration.openrouterRefreshInterval)
-        running: plasmoid.configuration.openrouterEnabled
-        repeat: true
-        onTriggered: {
-            if (canRefreshBackend(openrouterBackend, true)) openrouterBackend.refresh();
-        }
-    }
-    Timer {
-        id: togetherRefreshTimer
-        interval: effectiveInterval(plasmoid.configuration.togetherRefreshInterval)
-        running: plasmoid.configuration.togetherEnabled
-        repeat: true
-        onTriggered: {
-            if (canRefreshBackend(togetherBackend, true)) togetherBackend.refresh();
-        }
-    }
-    Timer {
-        id: cohereRefreshTimer
-        interval: effectiveInterval(plasmoid.configuration.cohereRefreshInterval)
-        running: plasmoid.configuration.cohereEnabled
-        repeat: true
-        onTriggered: {
-            if (canRefreshBackend(cohereBackend, true)) cohereBackend.refresh();
-        }
-    }
-    Timer {
-        id: googleveoRefreshTimer
-        interval: effectiveInterval(plasmoid.configuration.googleveoRefreshInterval)
-        running: plasmoid.configuration.googleveoEnabled
-        repeat: true
-        onTriggered: {
-            if (canRefreshBackend(googleveoBackend, true)) googleveoBackend.refresh();
-        }
-    }
-    Timer {
-        id: azureRefreshTimer
-        interval: effectiveInterval(plasmoid.configuration.azureRefreshInterval)
-        running: plasmoid.configuration.azureEnabled
-        repeat: true
-        onTriggered: {
-            if (canRefreshBackend(azureBackend, true)) azureBackend.refresh();
-        }
-    }
-    Timer {
-        id: loofiRefreshTimer
-        interval: effectiveInterval(plasmoid.configuration.loofiRefreshInterval)
-        running: plasmoid.configuration.loofiEnabled
-        repeat: true
-        onTriggered: {
-            if (canRefreshBackend(loofiBackend, false)) loofiBackend.refresh();
-        }
-    }
-
-    // Daily prune timer (runs once every 24h)
-    Timer {
-        id: pruneTimer
-        interval: 24 * 60 * 60 * 1000 // 24 hours
-        running: true
-        repeat: true
-        onTriggered: usageDatabase.pruneOldData()
-    }
-
-    // Copilot org metrics refresh (runs once every hour)
-    Timer {
-        id: copilotOrgTimer
-        interval: 60 * 60 * 1000 // 1 hour
-        running: plasmoid.configuration.copilotEnabled && copilotMonitor.githubToken !== "" && copilotMonitor.orgName !== ""
-        repeat: true
-        onTriggered: copilotMonitor.fetchOrgMetrics()
-    }
-
-    // ── Context Menu Actions ──
 
     Plasmoid.contextualActions: [
         PlasmaCore.Action {
@@ -585,463 +378,4 @@ PlasmoidItem {
             onTriggered: root.refreshAll()
         }
     ]
-
-    // ── Helper: all provider info ──
-
-    readonly property var allProviders: [
-        { name: "Loofi Server", dbName: "LoofiServer", configKey: "loofi", backend: loofiBackend, enabled: plasmoid.configuration.loofiEnabled, color: "#FF6B35", requiresApiKey: false },
-        { name: "OpenAI", dbName: "OpenAI", configKey: "openai", backend: openaiBackend, enabled: plasmoid.configuration.openaiEnabled, color: "#10A37F" },
-        { name: "Anthropic", dbName: "Anthropic", configKey: "anthropic", backend: anthropicBackend, enabled: plasmoid.configuration.anthropicEnabled, color: "#D4A574" },
-        { name: "Google Gemini", dbName: "Google", configKey: "google", backend: googleBackend, enabled: plasmoid.configuration.googleEnabled, color: "#4285F4" },
-        { name: "Mistral AI", dbName: "Mistral", configKey: "mistral", backend: mistralBackend, enabled: plasmoid.configuration.mistralEnabled, color: "#FF7000" },
-        { name: "DeepSeek", dbName: "DeepSeek", configKey: "deepseek", backend: deepseekBackend, enabled: plasmoid.configuration.deepseekEnabled, color: "#5B6EE1" },
-        { name: "Groq", dbName: "Groq", configKey: "groq", backend: groqBackend, enabled: plasmoid.configuration.groqEnabled, color: "#F55036" },
-        { name: "xAI / Grok", dbName: "xAI", configKey: "xai", backend: xaiBackend, enabled: plasmoid.configuration.xaiEnabled, color: "#1DA1F2" },
-        { name: "Ollama Cloud", dbName: "OllamaCloud", configKey: "ollama", backend: ollamaBackend, enabled: plasmoid.configuration.ollamaEnabled, color: "#111827" },
-        { name: "OpenRouter", dbName: "OpenRouter", configKey: "openrouter", backend: openrouterBackend, enabled: plasmoid.configuration.openrouterEnabled, color: "#6366F1" },
-        { name: "Together AI", dbName: "Together", configKey: "together", backend: togetherBackend, enabled: plasmoid.configuration.togetherEnabled, color: "#0EA5E9" },
-        { name: "Cohere", dbName: "Cohere", configKey: "cohere", backend: cohereBackend, enabled: plasmoid.configuration.cohereEnabled, color: "#39D353" },
-        { name: "Google Veo", dbName: "GoogleVeo", configKey: "googleveo", backend: googleveoBackend, enabled: plasmoid.configuration.googleveoEnabled, color: "#EA4335" },
-        { name: "Azure OpenAI", dbName: "AzureOpenAI", configKey: "azure", backend: azureBackend, enabled: plasmoid.configuration.azureEnabled, color: "#0078D4" }
-    ]
-
-    readonly property var allSubscriptionTools: [
-        { name: "Claude Code", monitor: claudeCodeMonitor, enabled: plasmoid.configuration.claudeCodeEnabled, notify: plasmoid.configuration.claudeCodeNotifications },
-        { name: "Codex CLI", monitor: codexCliMonitor, enabled: plasmoid.configuration.codexEnabled, notify: plasmoid.configuration.codexNotifications },
-        { name: "GitHub Copilot", monitor: copilotMonitor, enabled: plasmoid.configuration.copilotEnabled, notify: plasmoid.configuration.copilotNotifications }
-    ]
-
-    readonly property int enabledToolCount: {
-        var count = 0;
-        for (var i = 0; i < allSubscriptionTools.length; i++) {
-            if (allSubscriptionTools[i].enabled) count++;
-        }
-        return count;
-    }
-
-    readonly property int connectedCount: {
-        var count = 0;
-        for (var i = 0; i < allProviders.length; i++) {
-            if (allProviders[i].enabled && allProviders[i].backend.connected) count++;
-        }
-        return count;
-    }
-
-    readonly property double totalCost: {
-        var total = 0;
-        for (var i = 0; i < allProviders.length; i++) {
-            if (allProviders[i].enabled && allProviders[i].backend.connected)
-                total += allProviders[i].backend.cost;
-        }
-        for (var j = 0; j < allSubscriptionTools.length; j++) {
-            if (allSubscriptionTools[j].enabled
-                && allSubscriptionTools[j].monitor
-                && allSubscriptionTools[j].monitor.hasSubscriptionCost) {
-                total += allSubscriptionTools[j].monitor.subscriptionCost;
-            }
-        }
-        return total;
-    }
-
-    // ── Functions ──
-
-    function formatCompactMetric(value) {
-        if (value >= 1000000)
-            return (value / 1000000).toFixed(1) + "M";
-        if (value >= 1000)
-            return (value / 1000).toFixed(1) + "K";
-        return value.toString();
-    }
-
-    function refreshAll() {
-        for (var i = 0; i < allProviders.length; i++) {
-            var provider = allProviders[i];
-            if (provider.enabled && canRefreshBackend(provider.backend, provider.requiresApiKey !== false)) {
-                allProviders[i].backend.refresh();
-            }
-        }
-    }
-
-    function loadApiKeys() {
-        for (var i = 0; i < allProviders.length; i++) {
-            if (allProviders[i].enabled && allProviders[i].requiresApiKey !== false) {
-                var key = secrets.getKey(allProviders[i].configKey);
-                if (key) allProviders[i].backend.setApiKey(key);
-            }
-        }
-
-        // Trigger initial refresh after loading keys
-        refreshAll();
-    }
-
-    function recordProviderSnapshot(providerName, backend) {
-        if (!usageDatabase.enabled) return;
-        var activeModel = "";
-        if (backend && backend.model !== undefined && backend.model !== null) {
-            activeModel = backend.model;
-        }
-        usageDatabase.recordSnapshot(
-            providerName,
-            backend.inputTokens,
-            backend.outputTokens,
-            backend.requestCount,
-            backend.cost,
-            backend.dailyCost,
-            backend.monthlyCost,
-            backend.rateLimitRequests,
-            backend.rateLimitRequestsRemaining,
-            backend.rateLimitTokens,
-            backend.rateLimitTokensRemaining,
-            activeModel,
-            backend.isEstimatedCost
-        );
-    }
-
-    // Connect common signal handlers for all providers (avoids 7× copy-paste)
-    function connectProviderSignals() {
-        for (var i = 0; i < allProviders.length; i++) {
-            var p = allProviders[i];
-            var b = p.backend;
-            // First 4 signals pass provider name, so direct connection works
-            b.quotaWarning.connect(handleQuotaWarning);
-            b.budgetWarning.connect(handleBudgetWarning);
-            b.budgetExceeded.connect(handleBudgetExceeded);
-            b.providerDisconnected.connect(handleProviderDisconnected);
-            b.providerReconnected.connect(handleProviderReconnected);
-            // Error & snapshot need per-provider closure
-            b.errorChanged.connect(makeErrorHandler(p.name, p.configKey, b));
-            b.dataUpdated.connect(makeSnapshotHandler(p.dbName, b));
-        }
-    }
-
-    function makeErrorHandler(displayName, configKey, backend) {
-        return function() {
-            if (backend.error && plasmoid.configuration.notifyOnError
-                && plasmoid.configuration[configKey + "NotificationsEnabled"]) {
-                sendNotification(i18n("%1 Error", displayName), backend.error);
-            }
-        };
-    }
-
-    function makeSnapshotHandler(dbName, backend) {
-        return function() {
-            recordProviderSnapshot(dbName, backend);
-        };
-    }
-
-    function providerConfigKey(providerName) {
-        for (var i = 0; i < allProviders.length; i++) {
-            var p = allProviders[i];
-            if (p.name === providerName
-                || p.dbName === providerName
-                || p.name.indexOf(providerName) === 0
-                || providerName.indexOf(p.name) === 0) {
-                return p.configKey;
-            }
-        }
-        return "";
-    }
-
-    function isProviderNotificationEnabled(providerName) {
-        var key = providerConfigKey(providerName);
-        if (key === "") return true;
-        return plasmoid.configuration[key + "NotificationsEnabled"];
-    }
-
-    function canNotify(eventKey) {
-        var cooldown = plasmoid.configuration.notificationCooldownMinutes * 60 * 1000;
-        var now = Date.now();
-        var last = lastNotificationTimes[eventKey] || 0;
-        if (now - last < cooldown) return false;
-
-        // Check DND
-        var dndStart = plasmoid.configuration.dndStartHour;
-        var dndEnd = plasmoid.configuration.dndEndHour;
-        if (dndStart >= 0 && dndEnd >= 0) {
-            var hour = new Date().getHours();
-            if (dndStart < dndEnd) {
-                if (hour >= dndStart && hour < dndEnd) return false;
-            } else {
-                // Overnight DND (e.g., 22:00 - 07:00)
-                if (hour >= dndStart || hour < dndEnd) return false;
-            }
-        }
-
-        lastNotificationTimes[eventKey] = now;
-        return true;
-    }
-
-    function handleQuotaWarning(provider, percentUsed) {
-        if (!plasmoid.configuration.alertsEnabled) return;
-        if (!isProviderNotificationEnabled(provider)) return;
-        if (!canNotify("quota_" + provider)) return;
-
-        // Record event in database
-        usageDatabase.recordRateLimitEvent(provider,
-            percentUsed >= plasmoid.configuration.criticalThreshold ? "critical" : "warning",
-            percentUsed);
-
-        var isCritical = percentUsed >= plasmoid.configuration.criticalThreshold;
-        var isWarning = percentUsed >= plasmoid.configuration.warningThreshold;
-
-        if (isCritical) {
-            warningNotification.text = i18n("%1: CRITICAL - %2% of rate limit used!", provider, percentUsed);
-            warningNotification.urgency = Notification.CriticalUrgency;
-            warningNotification.sendEvent();
-        } else if (isWarning) {
-            warningNotification.text = i18n("%1: Warning - %2% of rate limit used", provider, percentUsed);
-            warningNotification.urgency = Notification.NormalUrgency;
-            warningNotification.sendEvent();
-        }
-    }
-
-    function handleBudgetWarning(provider, period, spent, budget) {
-        if (!plasmoid.configuration.alertsEnabled) return;
-        if (!plasmoid.configuration.notifyOnBudgetWarning) return;
-        if (!isProviderNotificationEnabled(provider)) return;
-        if (!canNotify("budgetwarn_" + provider + "_" + period)) return;
-
-        budgetNotification.text = i18n("%1: %2 budget at %3% — $%4 / $%5",
-            provider, period, Math.round(spent / budget * 100),
-            spent.toFixed(2), budget.toFixed(2));
-        budgetNotification.urgency = Notification.NormalUrgency;
-        budgetNotification.sendEvent();
-    }
-
-    function handleBudgetExceeded(provider, period, spent, budget) {
-        if (!plasmoid.configuration.alertsEnabled) return;
-        if (!plasmoid.configuration.notifyOnBudgetWarning) return;
-        if (!isProviderNotificationEnabled(provider)) return;
-        if (!canNotify("budget_" + provider + "_" + period)) return;
-
-        budgetNotification.text = i18n("%1: %2 budget exceeded! $%3 / $%4",
-            provider, period, spent.toFixed(2), budget.toFixed(2));
-        budgetNotification.urgency = Notification.CriticalUrgency;
-        budgetNotification.sendEvent();
-    }
-
-    function handleProviderDisconnected(provider) {
-        if (!plasmoid.configuration.notifyOnDisconnect) return;
-        if (!isProviderNotificationEnabled(provider)) return;
-        if (!canNotify("disconnect_" + provider)) return;
-
-        connectionNotification.eventId = "providerDisconnected";
-        connectionNotification.iconName = root.brandedNotificationIcon;
-        connectionNotification.text = i18n("%1 has disconnected", provider);
-        connectionNotification.urgency = Notification.NormalUrgency;
-        connectionNotification.sendEvent();
-    }
-
-    function handleProviderReconnected(provider) {
-        if (!plasmoid.configuration.notifyOnReconnect) return;
-        if (!isProviderNotificationEnabled(provider)) return;
-        if (!canNotify("reconnect_" + provider)) return;
-
-        connectionNotification.eventId = "providerReconnected";
-        connectionNotification.iconName = root.brandedNotificationIcon;
-        connectionNotification.text = i18n("%1 has reconnected", provider);
-        connectionNotification.urgency = Notification.LowUrgency;
-        connectionNotification.sendEvent();
-    }
-
-    function sendNotification(title, message) {
-        if (!canNotify("error_" + title)) return;
-        errorNotification.title = title;
-        errorNotification.text = message;
-        errorNotification.sendEvent();
-    }
-
-    function handleToolLimitWarning(toolName, percentUsed) {
-        if (!plasmoid.configuration.alertsEnabled) return;
-        // Check per-tool notification setting
-        var tools = allSubscriptionTools;
-        for (var i = 0; i < tools.length; i++) {
-            if (tools[i].name === toolName && !tools[i].notify) return;
-        }
-        if (!canNotify("tool_warning_" + toolName)) return;
-
-        subscriptionNotification.text = i18n("%1: %2% of usage limit reached", toolName, Math.round(percentUsed));
-        subscriptionNotification.urgency = percentUsed >= 95 ? Notification.CriticalUrgency : Notification.NormalUrgency;
-        subscriptionNotification.sendEvent();
-    }
-
-    function handleToolLimitReached(toolName) {
-        if (!plasmoid.configuration.alertsEnabled) return;
-        var tools = allSubscriptionTools;
-        for (var i = 0; i < tools.length; i++) {
-            if (tools[i].name === toolName && !tools[i].notify) return;
-        }
-        if (!canNotify("tool_limit_" + toolName)) return;
-
-        subscriptionNotification.text = i18n("%1: Usage limit reached!", toolName);
-        subscriptionNotification.urgency = Notification.CriticalUrgency;
-        subscriptionNotification.sendEvent();
-    }
-
-    function isToolNotificationEnabled(toolName) {
-        var tools = allSubscriptionTools;
-        for (var i = 0; i < tools.length; i++) {
-            if (tools[i].name === toolName) {
-                return tools[i].notify;
-            }
-        }
-        return true;
-    }
-
-    function handleToolSyncDiagnostic(toolName, code, message) {
-        if (!plasmoid.configuration.alertsEnabled) return;
-        if (!isToolNotificationEnabled(toolName)) return;
-        if (code === "not_logged_in" || code === "cookies_not_found") return;
-        if (!canNotify("tool_sync_" + toolName + "_" + code)) return;
-
-        var severity = Notification.LowUrgency;
-        if (code === "session_expired" || code === "format_changed" || code === "organization_missing") {
-            severity = Notification.CriticalUrgency;
-        } else if (code === "network_error" || code === "invalid_response" || code === "unsupported_browser") {
-            severity = Notification.NormalUrgency;
-        }
-
-        subscriptionNotification.text = i18n("%1 sync: %2", toolName, message);
-        subscriptionNotification.urgency = severity;
-        subscriptionNotification.sendEvent();
-    }
-
-    function recordToolUsageSnapshot(monitor) {
-        if (!usageDatabase.enabled) return;
-        usageDatabase.recordToolSnapshot(
-            monitor.toolName,
-            monitor.usageCount,
-            monitor.usageLimit,
-            monitor.periodLabel,
-            monitor.planTier,
-            monitor.limitReached
-        );
-    }
-
-    // ── Browser Sync ──
-
-    function performBrowserSync() {
-        if (!plasmoid.configuration.browserSyncEnabled) return;
-
-        // Sync Claude Code (claude.ai cookies)
-        if (plasmoid.configuration.claudeCodeEnabled && claudeCodeMonitor.installed) {
-            var claudeHeader = browserCookies.getCookieHeader("claude.ai");
-            claudeCodeMonitor.syncFromBrowser(claudeHeader, plasmoid.configuration.browserSyncBrowser);
-        }
-
-        // Sync Codex CLI (chatgpt.com cookies)
-        if (plasmoid.configuration.codexEnabled && codexCliMonitor.installed) {
-            var codexHeader = browserCookies.getCookieHeader("chatgpt.com");
-            codexCliMonitor.syncFromBrowser(codexHeader, plasmoid.configuration.browserSyncBrowser);
-        }
-    }
-
-    // ── Lifecycle ──
-
-    Component.onCompleted: {
-        // Wire up shared signal handlers for all providers
-        connectProviderSignals();
-
-        // Eagerly initialize database (avoids blocking on first write)
-        usageDatabase.init();
-
-        // Delay data fetching slightly to not block UI loading
-        startupTimer.start();
-
-        // Delay initial prune
-        initialPruneTimer.start();
-
-        // Initial browser sync after a short delay
-        if (plasmoid.configuration.browserSyncEnabled) {
-            initialSyncTimer.start();
-        }
-    }
-
-    Timer {
-        id: startupTimer
-        interval: 200 // 200ms delay for startup data fetch
-        repeat: false
-        onTriggered: {
-            if (secrets.walletOpen) {
-                loadApiKeys();
-            } else {
-                refreshAll();
-            }
-        }
-    }
-
-    Timer {
-        id: initialPruneTimer
-        interval: 2000 // 2 second delay for initial prune
-        repeat: false
-        onTriggered: usageDatabase.pruneOldData()
-    }
-
-    Timer {
-        id: initialSyncTimer
-        interval: 5000 // 5 second delay for sync
-        repeat: false
-        onTriggered: performBrowserSync()
-    }
-
-    // React to config changes
-    Connections {
-        target: plasmoid.configuration
-
-        function onOpenaiEnabledChanged() { loadApiKeys(); }
-        function onAnthropicEnabledChanged() { loadApiKeys(); }
-        function onGoogleEnabledChanged() { loadApiKeys(); }
-        function onMistralEnabledChanged() { loadApiKeys(); }
-        function onDeepseekEnabledChanged() { loadApiKeys(); }
-        function onGroqEnabledChanged() { loadApiKeys(); }
-        function onXaiEnabledChanged() { loadApiKeys(); }
-        function onOllamaEnabledChanged() { loadApiKeys(); }
-        function onOpenrouterEnabledChanged() { loadApiKeys(); }
-        function onTogetherEnabledChanged() { loadApiKeys(); }
-        function onCohereEnabledChanged() { loadApiKeys(); }
-        function onGoogleveoEnabledChanged() { loadApiKeys(); }
-        function onAzureEnabledChanged() { loadApiKeys(); }
-        function onLoofiEnabledChanged() { refreshAll(); }
-        function onLoofiServerUrlChanged() {
-            if (plasmoid.configuration.loofiEnabled) loofiBackend.refresh();
-        }
-        function onBrowserSyncProfileChanged() {
-            browserCookies.selectedFirefoxProfile = plasmoid.configuration.browserSyncProfile;
-        }
-
-        function onOpenaiModelChanged() { openaiBackend.model = plasmoid.configuration.openaiModel; }
-        function onAnthropicModelChanged() { anthropicBackend.model = plasmoid.configuration.anthropicModel; }
-        function onGoogleModelChanged() { googleBackend.model = plasmoid.configuration.googleModel; }
-        function onMistralModelChanged() { mistralBackend.model = plasmoid.configuration.mistralModel; }
-        function onDeepseekModelChanged() { deepseekBackend.model = plasmoid.configuration.deepseekModel; }
-        function onGroqModelChanged() { groqBackend.model = plasmoid.configuration.groqModel; }
-        function onXaiModelChanged() { xaiBackend.model = plasmoid.configuration.xaiModel; }
-        function onOllamaModelChanged() { ollamaBackend.model = plasmoid.configuration.ollamaModel; }
-        function onOpenrouterModelChanged() { openrouterBackend.model = plasmoid.configuration.openrouterModel; }
-        function onTogetherModelChanged() { togetherBackend.model = plasmoid.configuration.togetherModel; }
-        function onCohereModelChanged() { cohereBackend.model = plasmoid.configuration.cohereModel; }
-        function onGoogleveoModelChanged() { googleveoBackend.model = plasmoid.configuration.googleveoModel; }
-        function onAzureModelChanged() { azureBackend.model = plasmoid.configuration.azureModel; }
-        function onAzureDeploymentIdChanged() { azureBackend.deploymentId = plasmoid.configuration.azureDeploymentId; }
-
-        function onRefreshIntervalChanged() {
-            // The per-provider Timer declarations use declarative bindings
-            // on effectiveInterval(), so they auto-update when the global
-            // refreshInterval changes.  No imperative re-assignment needed.
-        }
-
-        // Subscription tool config changes
-        function onClaudeCodeEnabledChanged() {
-            claudeCodeMonitor.enabled = plasmoid.configuration.claudeCodeEnabled;
-            if (claudeCodeMonitor.enabled) claudeCodeMonitor.checkToolInstalled();
-        }
-        function onCodexEnabledChanged() {
-            codexCliMonitor.enabled = plasmoid.configuration.codexEnabled;
-            if (codexCliMonitor.enabled) codexCliMonitor.checkToolInstalled();
-        }
-        function onCopilotEnabledChanged() {
-            copilotMonitor.enabled = plasmoid.configuration.copilotEnabled;
-            if (copilotMonitor.enabled) copilotMonitor.checkToolInstalled();
-        }
-    }
 }

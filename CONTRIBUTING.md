@@ -19,9 +19,8 @@ sudo dnf install cmake extra-cmake-modules gcc-c++ \
 ```bash
 git clone https://github.com/multidraxter-bit/plasma-ai-usage-monitor.git
 cd plasma-ai-usage-monitor
-mkdir build && cd build
-cmake .. -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Debug
-make -j$(nproc)
+cmake -S . -B build -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTING=ON
+cmake --build build --parallel
 ```
 
 ### Installing for Testing
@@ -42,23 +41,27 @@ sudo cmake --install build
 
 ### Testing Changes
 
-After modifying QML files, restart Plasma Shell to pick up changes:
+For QML-only changes, use the fast local dev loop:
 
 ```bash
-plasmashell --replace &
+just dev
 ```
 
-You can also use:
+For C++ plugin changes, rebuild/install the plugin and reload Plasma:
 
 ```bash
-./scripts/reload_plasma.sh
+just install
+just reload
 ```
 
-If the UI still shows an old app version, run:
+If the UI still shows an old app version or stale behavior, run:
 
 ```bash
-./scripts/show_installed_versions.sh
+just versions
+just smoke
 ```
+
+`just smoke` is the quickest check for version shadowing and the common case where the plasmoid package updated but the compiled plugin did not.
 
 To test in a standalone window (without adding to panel):
 
@@ -69,12 +72,9 @@ plasmawindowed com.github.loofi.aiusagemonitor
 Run automated tests before submitting:
 
 ```bash
-cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug
-cmake --build build --parallel
-ctest --test-dir build --output-on-failure
-./scripts/check_version_consistency.sh
-./scripts/check_no_hardcoded_versions.sh
-./scripts/show_installed_versions.sh
+just test
+just check
+just doctor
 ```
 
 ## Project Structure
@@ -110,7 +110,11 @@ ctest --test-dir build --output-on-failure
 
 | Component | Purpose |
 |-----------|---------|
-| `main.qml` | Root PlasmoidItem — instantiates 13 provider backends + 3 subscription tool monitors, per-provider timers, notifications, database, `allProviders` and `allSubscriptionTools` arrays |
+| `main.qml` | Root PlasmoidItem — keeps provider/tool instantiation and applet wiring while delegating orchestration to controller components |
+| `ProviderRegistry.qml` | Central provider/tool descriptor registry for popup sections, scheduling, notifications, and aggregate stats |
+| `NotificationController.qml` | Notification routing, cooldown, DND, and provider/tool alert handling |
+| `RefreshScheduler.qml` | Registry-driven refresh timers plus recurring browser-sync/prune/org-metrics timers |
+| `RuntimeCoordinator.qml` | Startup sequencing, API-key load, browser sync bootstrap, and snapshot recording |
 | `CompactRepresentation.qml` | Panel icon with 3 display modes (icon/cost/count) and accessibility |
 | `FullRepresentation.qml` | Popup with status bar, Live/History tabs, detail and compare history modes, responsive history controls, loading/empty states, export buttons |
 | `ProviderCard.qml` | Collapsible provider stats card with budget bars, cost estimation labels, error details, and accessibility |
@@ -128,9 +132,10 @@ ctest --test-dir build --output-on-failure
 
 ### Test Targets
 
-- `usagedatabase_series` — validates `UsageDatabase::getProviderSeries()` and `getToolSeries()` metrics/shape/bucketing behavior
-- `history_mapping_regression` — validates display-name vs db-name history query behavior
-- `version_consistency` — validates version alignment across `CMakeLists.txt`, `package/metadata.json`, and `plasma-ai-usage-monitor.spec`
+- `just test` currently runs 12 local CTest targets covering provider mocked HTTP behavior, provider backend helpers, subscription tools, database/history flows, and update/version checks
+- `providers_mocked_http` includes regression coverage for shipped provider request flows, including stale-generation handling for delayed replies
+- `subscription_tools` covers local tool usage tracking, reset windows, and sync-related edge cases
+- `version_consistency` validates version alignment across `CMakeLists.txt`, `package/metadata.json`, and `plasma-ai-usage-monitor.spec`
 
 ## Coding Standards
 
@@ -153,7 +158,7 @@ ctest --test-dir build --output-on-failure
 - Use `Kirigami.Units` and `Kirigami.Theme` for sizing and colors — no hardcoded pixel values or colors
 - Child components access root PlasmoidItem properties via the `root` id (dynamic scoping)
 - Provider cards are data-driven via `Repeater` over `root.allProviders` — do not hardcode per-provider cards in `FullRepresentation.qml`
-- New providers only need to be added to the `allProviders` array in `main.qml` (with `name`, `configKey`, `backend`, `enabled`, `color`)
+- Shared provider metadata lives in `ProviderRegistry.qml`; keep provider descriptors there instead of reintroducing scattered per-provider arrays/timers in `main.qml`
 - Add `Accessible.role` and `Accessible.name` to interactive and informational components for screen reader support
 - Budget config values are stored as integers in cents (e.g., 1050 = $10.50) — convert with `/ 100.0` when passing to C++ backends
 
@@ -176,8 +181,8 @@ If the new provider uses an OpenAI-compatible chat completions API:
 5. Add source files to `plugin/CMakeLists.txt`
 6. Add config entries in `package/contents/config/main.xml` (enable, model, customBaseUrl, budget, notifications, refresh interval)
 7. Add UI elements in `configProviders.qml`, `configBudget.qml`, `configAlerts.qml`, and `configGeneral.qml`
-8. Add the provider to the `allProviders` array in `main.qml` with `name`, `configKey`, `backend`, `enabled`, and `color`
-9. Instantiate the backend in `main.qml` with budget conversion (`/ 100.0`) and notification handlers
+8. Add the provider descriptor to `ProviderRegistry.qml` and keep the config key, display name, color, and runtime wiring aligned there
+9. Instantiate the backend in `main.qml` with budget conversion (`/ 100.0`) and expose it to the registry/controller wiring
 
 See `MistralProvider` or `GroqProvider` for minimal examples (~15 lines of C++ each).
 

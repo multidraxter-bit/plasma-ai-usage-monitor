@@ -1,7 +1,7 @@
 # Roadmap — Plasma AI Usage Monitor
 
-> **Current version:** v5.1.4 (Lighthouse — The Analyst)
-> **Last updated:** 2026-04-08
+> **Current version:** v5.2.0 (Lighthouse — Operator Clarity)
+> **Last updated:** 2026-04-09
 
 ---
 
@@ -9,8 +9,9 @@
 
 | Version | Codename       | Theme                                                             | Status   |
 | ------- | -------------- | ----------------------------------------------------------------- | -------- |
-| v5.1.4  | **Lighthouse** | Analyst dashboard + provider expansion + release polish           | Active   |
-| v5.0.0  | **Lighthouse** | Intelligence + Forecasting                                        | Active   |
+| v5.2.0  | **Lighthouse** | Attention-first live UX + shared provider settings + runtime split | Active   |
+| v5.1.4  | **Lighthouse** | Analyst dashboard + provider expansion + release polish           | Released |
+| v5.0.0  | **Lighthouse** | Intelligence + Forecasting                                        | Released |
 | v3.9.0  | **Showcase**   | Stabilization + Demo Environment + Store-Ready Assets             | Released |
 | v3.8.1  | **Pulse**      | Release packaging + build fix hotpatch                            | Released |
 | v3.8.0  | **Pulse**      | Install UX polish + stale local install shadow detection          | Released |
@@ -22,7 +23,6 @@
 | v3.5.0  | **Pulse**      | Packaging Consistency Hardening                                   | Released |
 | v3.4.0  | **Pulse**      | Subscription Cost Aggregation + Copilot Activity Detection        | Released |
 | v4.0.0  | **Horizon**    | UX Polish + Provider Expansion                                    | Planned  |
-| v5.0.0  | **Lighthouse** | Intelligence + Forecasting                                        | Planned  |
 | v6.0.0  | **Nexus**      | Team + Multi-User                                                 | Planned  |
 | v7.0.0  | **Forge**      | Extensibility + Ecosystem                                         | Planned  |
 | v8.0.0  | **Cosmos**     | Cross-Platform + Cloud                                            | Planned  |

@@ -15,4 +15,4 @@ nohup plasmashell >/dev/null 2>&1 &
 PLASMA_PID=$!
 echo "plasmashell restarted (PID $PLASMA_PID)."
 echo "Wait a few seconds for the panel to appear, then right-click to add the widget."
-
+echo "If your latest C++ plugin changes are missing, reload alone was not enough; rebuild/install the plugin first, then reload again."

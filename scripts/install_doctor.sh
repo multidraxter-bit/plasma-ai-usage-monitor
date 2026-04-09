@@ -58,7 +58,7 @@ check_cmd() {
 }
 
 required_cmds=(cmake g++ kpackagetool6)
-warning_cmds=(plasmashell plasmawindowed)
+warning_cmds=(plasmashell plasmawindowed qmllint)
 
 missing_required=()
 missing_warning=()
@@ -101,6 +101,75 @@ if [[ -f /usr/lib64/qt6/plugins/sqldrivers/libqsqlite.so ]] || [[ -f /usr/lib/qt
   sqlite_driver_ok=true
 fi
 
+PLASMOID_ID="com.github.loofi.aiusagemonitor"
+USER_PLASMOID_DIR="${HOME}/.local/share/plasma/plasmoids/${PLASMOID_ID}"
+SYSTEM_PLASMOID_DIR="/usr/share/plasma/plasmoids/${PLASMOID_ID}"
+QML_RELATIVE_DIR="com/github/loofi/aiusagemonitor"
+
+find_qml_module_dir() {
+  local candidates=(
+    "${HOME}/.local/lib64/qt6/qml/${QML_RELATIVE_DIR}"
+    "${HOME}/.local/lib/qt6/qml/${QML_RELATIVE_DIR}"
+    "${HOME}/.local/lib/qml/${QML_RELATIVE_DIR}"
+    "/usr/lib64/qt6/qml/${QML_RELATIVE_DIR}"
+    "/usr/lib/qt6/qml/${QML_RELATIVE_DIR}"
+    "/usr/lib/x86_64-linux-gnu/qt6/qml/${QML_RELATIVE_DIR}"
+    "/usr/lib/qml/${QML_RELATIVE_DIR}"
+  )
+
+  local dir
+  for dir in "${candidates[@]}"; do
+    if [[ -f "${dir}/qmldir" ]]; then
+      echo "$dir"
+      return 0
+    fi
+  done
+
+  return 1
+}
+
+find_plugin_library() {
+  local module_dir="$1"
+  local candidates=(
+    "${module_dir}/libaiusagemonitorplugin.so"
+    "${module_dir}/aiusagemonitorplugin.so"
+  )
+
+  local candidate
+  for candidate in "${candidates[@]}"; do
+    if [[ -f "$candidate" ]]; then
+      echo "$candidate"
+      return 0
+    fi
+  done
+
+  local discovered
+  discovered="$(find "$module_dir" -maxdepth 1 -type f -name '*aiusage*plugin*.so' 2>/dev/null | head -1 || true)"
+  if [[ -n "$discovered" ]]; then
+    echo "$discovered"
+    return 0
+  fi
+
+  return 1
+}
+
+user_plasmoid_present=false
+system_plasmoid_present=false
+[[ -d "$USER_PLASMOID_DIR" ]] && user_plasmoid_present=true
+[[ -d "$SYSTEM_PLASMOID_DIR" ]] && system_plasmoid_present=true
+
+qml_module_dir="$(find_qml_module_dir || true)"
+qml_import_ready=false
+compiled_plugin_ok=false
+compiled_plugin_path=""
+if [[ -n "$qml_module_dir" ]]; then
+  qml_import_ready=true
+  compiled_plugin_path="$(find_plugin_library "$qml_module_dir" || true)"
+  if [[ -n "$compiled_plugin_path" ]]; then
+    compiled_plugin_ok=true
+  fi
+fi
+
 echo "=== Plasma AI Usage Monitor - Install Doctor ==="
 echo "OS: $OS_PRETTY"
 echo
@@ -133,6 +202,10 @@ if [[ "$OS_ID" == "fedora" ]] && command -v rpm >/dev/null 2>&1; then
 fi
 
 echo "SQLite driver: $([[ "$sqlite_driver_ok" == true ]] && echo "ok" || echo "warning: not found")"
+echo "Plasmoid package (user-local): $([[ "$user_plasmoid_present" == true ]] && echo "present" || echo "not found")"
+echo "Plasmoid package (system): $([[ "$system_plasmoid_present" == true ]] && echo "present" || echo "not found")"
+echo "QML import readiness: $([[ "$qml_import_ready" == true ]] && echo "ok (${qml_module_dir}/qmldir)" || echo "warning: qmldir not found")"
+echo "Compiled plugin: $([[ "$compiled_plugin_ok" == true ]] && echo "ok (${compiled_plugin_path})" || echo "warning: shared library not found")"
 
 do_install=false
 if [[ "$AUTO_INSTALL" == true ]] && [[ "$OS_ID" == "fedora" ]]; then
@@ -166,6 +239,18 @@ fi
 
 if [[ "$sqlite_driver_ok" != true ]]; then
   echo "Warning: Qt SQLite driver not detected. History charts may not work until Qt SQL driver is available."
+fi
+
+if [[ "$user_plasmoid_present" == true && "$system_plasmoid_present" == true ]]; then
+  echo "Warning: both user-local and system plasmoid packages are installed. The user-local package usually shadows the system install."
+fi
+
+if [[ "$user_plasmoid_present" == true && "$compiled_plugin_ok" != true ]]; then
+  echo "Warning: a user-local plasmoid package was found, but the compiled plugin was not. QML edits may load while C++ changes remain stale."
+fi
+
+if [[ "$qml_import_ready" != true ]]; then
+  echo "Warning: the installed QML module qmldir was not found in common Qt6 import paths."
 fi
 
 if [[ ${#missing_warning[@]} -gt 0 ]]; then

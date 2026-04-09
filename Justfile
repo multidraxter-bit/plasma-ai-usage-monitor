@@ -39,6 +39,10 @@ doctor-fix:
 versions:
     bash scripts/show_installed_versions.sh
 
+# Smoke-check the active dev install and next-step hints
+smoke:
+    bash scripts/dev_smoke_check.sh
+
 # Clean the build directory
 clean:
     rm -rf build

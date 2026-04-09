@@ -37,37 +37,37 @@ KCM.SimpleKCM {
     property string cfg_googleTier: "free"
     property alias cfg_googleCustomBaseUrl: googleBaseUrlField.text
 
-    property alias cfg_mistralEnabled: mistralSwitch.checked
-    property alias cfg_mistralModel: mistralModelField.text
-    property alias cfg_mistralCustomBaseUrl: mistralBaseUrlField.text
+    property bool cfg_mistralEnabled: plasmoid.configuration.mistralEnabled
+    property string cfg_mistralModel: plasmoid.configuration.mistralModel
+    property string cfg_mistralCustomBaseUrl: plasmoid.configuration.mistralCustomBaseUrl
 
-    property alias cfg_deepseekEnabled: deepseekSwitch.checked
-    property alias cfg_deepseekModel: deepseekModelField.text
-    property alias cfg_deepseekCustomBaseUrl: deepseekBaseUrlField.text
+    property bool cfg_deepseekEnabled: plasmoid.configuration.deepseekEnabled
+    property string cfg_deepseekModel: plasmoid.configuration.deepseekModel
+    property string cfg_deepseekCustomBaseUrl: plasmoid.configuration.deepseekCustomBaseUrl
 
-    property alias cfg_groqEnabled: groqSwitch.checked
-    property alias cfg_groqModel: groqModelField.text
-    property alias cfg_groqCustomBaseUrl: groqBaseUrlField.text
+    property bool cfg_groqEnabled: plasmoid.configuration.groqEnabled
+    property string cfg_groqModel: plasmoid.configuration.groqModel
+    property string cfg_groqCustomBaseUrl: plasmoid.configuration.groqCustomBaseUrl
 
-    property alias cfg_xaiEnabled: xaiSwitch.checked
-    property alias cfg_xaiModel: xaiModelField.text
-    property alias cfg_xaiCustomBaseUrl: xaiBaseUrlField.text
+    property bool cfg_xaiEnabled: plasmoid.configuration.xaiEnabled
+    property string cfg_xaiModel: plasmoid.configuration.xaiModel
+    property string cfg_xaiCustomBaseUrl: plasmoid.configuration.xaiCustomBaseUrl
 
-    property alias cfg_ollamaEnabled: ollamaSwitch.checked
-    property alias cfg_ollamaModel: ollamaModelField.text
-    property alias cfg_ollamaCustomBaseUrl: ollamaBaseUrlField.text
+    property bool cfg_ollamaEnabled: plasmoid.configuration.ollamaEnabled
+    property string cfg_ollamaModel: plasmoid.configuration.ollamaModel
+    property string cfg_ollamaCustomBaseUrl: plasmoid.configuration.ollamaCustomBaseUrl
 
-    property alias cfg_openrouterEnabled: openrouterSwitch.checked
-    property alias cfg_openrouterModel: openrouterModelField.text
-    property alias cfg_openrouterCustomBaseUrl: openrouterBaseUrlField.text
+    property bool cfg_openrouterEnabled: plasmoid.configuration.openrouterEnabled
+    property string cfg_openrouterModel: plasmoid.configuration.openrouterModel
+    property string cfg_openrouterCustomBaseUrl: plasmoid.configuration.openrouterCustomBaseUrl
 
-    property alias cfg_togetherEnabled: togetherSwitch.checked
-    property alias cfg_togetherModel: togetherModelField.text
-    property alias cfg_togetherCustomBaseUrl: togetherBaseUrlField.text
+    property bool cfg_togetherEnabled: plasmoid.configuration.togetherEnabled
+    property string cfg_togetherModel: plasmoid.configuration.togetherModel
+    property string cfg_togetherCustomBaseUrl: plasmoid.configuration.togetherCustomBaseUrl
 
-    property alias cfg_cohereEnabled: cohereSwitch.checked
-    property alias cfg_cohereModel: cohereModelField.text
-    property alias cfg_cohereCustomBaseUrl: cohereBaseUrlField.text
+    property bool cfg_cohereEnabled: plasmoid.configuration.cohereEnabled
+    property string cfg_cohereModel: plasmoid.configuration.cohereModel
+    property string cfg_cohereCustomBaseUrl: plasmoid.configuration.cohereCustomBaseUrl
 
     property alias cfg_googleveoEnabled: googleveoSwitch.checked
     property alias cfg_googleveoModel: googleveoModelField.text
@@ -113,14 +113,14 @@ KCM.SimpleKCM {
             { name: "openai", field: openaiKeyField, dirtyProp: "openaiKeyDirty" },
             { name: "anthropic", field: anthropicKeyField, dirtyProp: "anthropicKeyDirty" },
             { name: "google", field: googleKeyField, dirtyProp: "googleKeyDirty" },
-            { name: "mistral", field: mistralKeyField, dirtyProp: "mistralKeyDirty" },
-            { name: "deepseek", field: deepseekKeyField, dirtyProp: "deepseekKeyDirty" },
-            { name: "groq", field: groqKeyField, dirtyProp: "groqKeyDirty" },
-            { name: "xai", field: xaiKeyField, dirtyProp: "xaiKeyDirty" },
-            { name: "ollama", field: ollamaKeyField, dirtyProp: "ollamaKeyDirty" },
-            { name: "openrouter", field: openrouterKeyField, dirtyProp: "openrouterKeyDirty" },
-            { name: "together", field: togetherKeyField, dirtyProp: "togetherKeyDirty" },
-            { name: "cohere", field: cohereKeyField, dirtyProp: "cohereKeyDirty" },
+            { name: "mistral", field: mistralSection.keyField, dirtyProp: "mistralKeyDirty" },
+            { name: "deepseek", field: deepseekSection.keyField, dirtyProp: "deepseekKeyDirty" },
+            { name: "groq", field: groqSection.keyField, dirtyProp: "groqKeyDirty" },
+            { name: "xai", field: xaiSection.keyField, dirtyProp: "xaiKeyDirty" },
+            { name: "ollama", field: ollamaSection.keyField, dirtyProp: "ollamaKeyDirty" },
+            { name: "openrouter", field: openrouterSection.keyField, dirtyProp: "openrouterKeyDirty" },
+            { name: "together", field: togetherSection.keyField, dirtyProp: "togetherKeyDirty" },
+            { name: "cohere", field: cohereSection.keyField, dirtyProp: "cohereKeyDirty" },
             { name: "googleveo", field: googleveoKeyField, dirtyProp: "googleveoKeyDirty" },
             { name: "azure", field: azureKeyField, dirtyProp: "azureKeyDirty" }
         ];
@@ -141,14 +141,14 @@ KCM.SimpleKCM {
             { name: "openai", field: openaiKeyField, dirty: openaiKeyDirty },
             { name: "anthropic", field: anthropicKeyField, dirty: anthropicKeyDirty },
             { name: "google", field: googleKeyField, dirty: googleKeyDirty },
-            { name: "mistral", field: mistralKeyField, dirty: mistralKeyDirty },
-            { name: "deepseek", field: deepseekKeyField, dirty: deepseekKeyDirty },
-            { name: "groq", field: groqKeyField, dirty: groqKeyDirty },
-            { name: "xai", field: xaiKeyField, dirty: xaiKeyDirty },
-            { name: "ollama", field: ollamaKeyField, dirty: ollamaKeyDirty },
-            { name: "openrouter", field: openrouterKeyField, dirty: openrouterKeyDirty },
-            { name: "together", field: togetherKeyField, dirty: togetherKeyDirty },
-            { name: "cohere", field: cohereKeyField, dirty: cohereKeyDirty },
+            { name: "mistral", field: mistralSection.keyField, dirty: mistralSection.keyDirty },
+            { name: "deepseek", field: deepseekSection.keyField, dirty: deepseekSection.keyDirty },
+            { name: "groq", field: groqSection.keyField, dirty: groqSection.keyDirty },
+            { name: "xai", field: xaiSection.keyField, dirty: xaiSection.keyDirty },
+            { name: "ollama", field: ollamaSection.keyField, dirty: ollamaSection.keyDirty },
+            { name: "openrouter", field: openrouterSection.keyField, dirty: openrouterSection.keyDirty },
+            { name: "together", field: togetherSection.keyField, dirty: togetherSection.keyDirty },
+            { name: "cohere", field: cohereSection.keyField, dirty: cohereSection.keyDirty },
             { name: "googleveo", field: googleveoKeyField, dirty: googleveoKeyDirty },
             { name: "azure", field: azureKeyField, dirty: azureKeyDirty }
         ];
@@ -671,67 +671,16 @@ KCM.SimpleKCM {
             Layout.fillWidth: true
         }
 
-        // ══════════════════════════════════════════════
-        // ── Mistral AI ──
-        // ══════════════════════════════════════════════
-
-        Kirigami.Separator {
-            Kirigami.FormData.isSection: true
-            Kirigami.FormData.label: i18n("Mistral AI")
-        }
-
-        QQC2.Switch {
-            id: mistralSwitch
-            Kirigami.FormData.label: i18n("Enable:")
-            checked: plasmoid.configuration.mistralEnabled
-        }
-
-        RowLayout {
-            Kirigami.FormData.label: i18n("API Key:")
-            Layout.fillWidth: true
-            spacing: Kirigami.Units.smallSpacing
-
-            QQC2.TextField {
-                id: mistralKeyField
-                enabled: mistralSwitch.checked
-                echoMode: mistralKeyVisible.checked ? TextInput.Normal : TextInput.Password
-                placeholderText: i18n("Enter Mistral API key...")
-                Layout.fillWidth: true
-                onTextEdited: providersPage.mistralKeyDirty = true
-            }
-
-            QQC2.ToolButton {
-                id: mistralKeyVisible
-                checkable: true; checked: false
-                icon.name: checked ? "password-show-off" : "password-show-on"
-                display: QQC2.AbstractButton.IconOnly
-                QQC2.ToolTip.text: checked ? i18n("Hide key") : i18n("Show key")
-                QQC2.ToolTip.visible: hovered
-            }
-
-            QQC2.ToolButton {
-                icon.name: "edit-clear"
-                enabled: mistralKeyField.text.length > 0
-                display: QQC2.AbstractButton.IconOnly
-                QQC2.ToolTip.text: i18n("Clear key"); QQC2.ToolTip.visible: hovered
-                onClicked: { mistralKeyField.text = ""; providersPage.mistralKeyDirty = true; }
-            }
-        }
-
-        QQC2.Label {
-            visible: mistralSwitch.checked
-            text: i18n("Rate limits and token usage via chat/completions endpoint")
-            font.pointSize: Kirigami.Theme.smallFont.pointSize
-            opacity: 0.6; wrapMode: Text.WordWrap; Layout.fillWidth: true
-        }
-
-        QQC2.ComboBox {
-            id: mistralModelField
-            Kirigami.FormData.label: i18n("Model:")
-            enabled: mistralSwitch.checked
-            editable: true
-            editText: plasmoid.configuration.mistralModel
-            model: [
+        OpenAICompatibleProviderSection {
+            id: mistralSection
+            configPage: providersPage
+            providerTitle: i18n("Mistral AI")
+            enabledProp: "cfg_mistralEnabled"
+            modelProp: "cfg_mistralModel"
+            baseUrlProp: "cfg_mistralCustomBaseUrl"
+            description: i18n("Rate limits and token usage via chat/completions endpoint")
+            keyPlaceholder: i18n("Enter Mistral API key...")
+            modelOptions: [
                 "mistral-large-latest",
                 "mistral-medium-latest",
                 "mistral-small-latest",
@@ -739,501 +688,87 @@ KCM.SimpleKCM {
                 "open-mixtral-8x7b",
                 "codestral-latest"
             ]
-            onEditTextChanged: plasmoid.configuration.mistralModel = editText
-            property alias text: mistralModelField.editText
         }
 
-        QQC2.TextField {
-            id: mistralBaseUrlField
-            Kirigami.FormData.label: i18n("Custom base URL:")
-            enabled: mistralSwitch.checked
-            text: plasmoid.configuration.mistralCustomBaseUrl
-            placeholderText: i18n("Leave empty for default")
-            Layout.fillWidth: true
-            QQC2.ToolTip.text: i18n("Override the API endpoint for proxies or self-hosted gateways. Must start with https://")
-            QQC2.ToolTip.visible: hovered
-            QQC2.ToolTip.delay: 500
-        }
-
-        QQC2.Label {
-            visible: providersPage.isInvalidUrl(mistralBaseUrlField.text)
-            text: i18n("⚠ URL must start with https:// or http://")
-            color: Kirigami.Theme.negativeTextColor
-            font.pointSize: Kirigami.Theme.smallFont.pointSize
-            wrapMode: Text.WordWrap
-            Layout.fillWidth: true
-        }
-
-        QQC2.Label {
-            visible: mistralBaseUrlField.text.toLowerCase().startsWith("http://")
-            text: i18n("⚠ Using HTTP is insecure. API keys will be sent unencrypted.")
-            color: Kirigami.Theme.negativeTextColor
-            font.pointSize: Kirigami.Theme.smallFont.pointSize
-            wrapMode: Text.WordWrap
-            Layout.fillWidth: true
-        }
-
-        // ══════════════════════════════════════════════
-        // ── DeepSeek ──
-        // ══════════════════════════════════════════════
-
-        Kirigami.Separator {
-            Kirigami.FormData.isSection: true
-            Kirigami.FormData.label: i18n("DeepSeek")
-        }
-
-        QQC2.Switch {
-            id: deepseekSwitch
-            Kirigami.FormData.label: i18n("Enable:")
-            checked: plasmoid.configuration.deepseekEnabled
-        }
-
-        RowLayout {
-            Kirigami.FormData.label: i18n("API Key:")
-            Layout.fillWidth: true
-            spacing: Kirigami.Units.smallSpacing
-
-            QQC2.TextField {
-                id: deepseekKeyField
-                enabled: deepseekSwitch.checked
-                echoMode: deepseekKeyVisible.checked ? TextInput.Normal : TextInput.Password
-                placeholderText: i18n("Enter DeepSeek API key...")
-                Layout.fillWidth: true
-                onTextEdited: providersPage.deepseekKeyDirty = true
-            }
-
-            QQC2.ToolButton {
-                id: deepseekKeyVisible
-                checkable: true; checked: false
-                icon.name: checked ? "password-show-off" : "password-show-on"
-                display: QQC2.AbstractButton.IconOnly
-                QQC2.ToolTip.text: checked ? i18n("Hide key") : i18n("Show key")
-                QQC2.ToolTip.visible: hovered
-            }
-
-            QQC2.ToolButton {
-                icon.name: "edit-clear"
-                enabled: deepseekKeyField.text.length > 0
-                display: QQC2.AbstractButton.IconOnly
-                QQC2.ToolTip.text: i18n("Clear key"); QQC2.ToolTip.visible: hovered
-                onClicked: { deepseekKeyField.text = ""; providersPage.deepseekKeyDirty = true; }
-            }
-        }
-
-        QQC2.Label {
-            visible: deepseekSwitch.checked
-            text: i18n("Tracks rate limits, token usage, and account balance")
-            font.pointSize: Kirigami.Theme.smallFont.pointSize
-            opacity: 0.6; wrapMode: Text.WordWrap; Layout.fillWidth: true
-        }
-
-        QQC2.ComboBox {
-            id: deepseekModelField
-            Kirigami.FormData.label: i18n("Model:")
-            enabled: deepseekSwitch.checked
-            editable: true
-            editText: plasmoid.configuration.deepseekModel
-            model: [
+        OpenAICompatibleProviderSection {
+            id: deepseekSection
+            configPage: providersPage
+            providerTitle: i18n("DeepSeek")
+            enabledProp: "cfg_deepseekEnabled"
+            modelProp: "cfg_deepseekModel"
+            baseUrlProp: "cfg_deepseekCustomBaseUrl"
+            description: i18n("Tracks rate limits, token usage, and account balance")
+            keyPlaceholder: i18n("Enter DeepSeek API key...")
+            modelOptions: [
                 "deepseek-chat",
                 "deepseek-coder",
                 "deepseek-reasoner"
             ]
-            onEditTextChanged: plasmoid.configuration.deepseekModel = editText
-            property alias text: deepseekModelField.editText
         }
 
-        QQC2.TextField {
-            id: deepseekBaseUrlField
-            Kirigami.FormData.label: i18n("Custom base URL:")
-            enabled: deepseekSwitch.checked
-            text: plasmoid.configuration.deepseekCustomBaseUrl
-            placeholderText: i18n("Leave empty for default")
-            Layout.fillWidth: true
-            QQC2.ToolTip.text: i18n("Override the API endpoint for proxies or self-hosted gateways. Must start with https://")
-            QQC2.ToolTip.visible: hovered
-            QQC2.ToolTip.delay: 500
-        }
-
-        QQC2.Label {
-            visible: providersPage.isInvalidUrl(deepseekBaseUrlField.text)
-            text: i18n("⚠ URL must start with https:// or http://")
-            color: Kirigami.Theme.negativeTextColor
-            font.pointSize: Kirigami.Theme.smallFont.pointSize
-            wrapMode: Text.WordWrap
-            Layout.fillWidth: true
-        }
-
-        QQC2.Label {
-            visible: deepseekBaseUrlField.text.toLowerCase().startsWith("http://")
-            text: i18n("⚠ Using HTTP is insecure. API keys will be sent unencrypted.")
-            color: Kirigami.Theme.negativeTextColor
-            font.pointSize: Kirigami.Theme.smallFont.pointSize
-            wrapMode: Text.WordWrap
-            Layout.fillWidth: true
-        }
-
-        // ══════════════════════════════════════════════
-        // ── Groq ──
-        // ══════════════════════════════════════════════
-
-        Kirigami.Separator {
-            Kirigami.FormData.isSection: true
-            Kirigami.FormData.label: i18n("Groq")
-        }
-
-        QQC2.Switch {
-            id: groqSwitch
-            Kirigami.FormData.label: i18n("Enable:")
-            checked: plasmoid.configuration.groqEnabled
-        }
-
-        RowLayout {
-            Kirigami.FormData.label: i18n("API Key:")
-            Layout.fillWidth: true
-            spacing: Kirigami.Units.smallSpacing
-
-            QQC2.TextField {
-                id: groqKeyField
-                enabled: groqSwitch.checked
-                echoMode: groqKeyVisible.checked ? TextInput.Normal : TextInput.Password
-                placeholderText: i18n("Enter Groq API key...")
-                Layout.fillWidth: true
-                onTextEdited: providersPage.groqKeyDirty = true
-            }
-
-            QQC2.ToolButton {
-                id: groqKeyVisible
-                checkable: true; checked: false
-                icon.name: checked ? "password-show-off" : "password-show-on"
-                display: QQC2.AbstractButton.IconOnly
-                QQC2.ToolTip.text: checked ? i18n("Hide key") : i18n("Show key")
-                QQC2.ToolTip.visible: hovered
-            }
-
-            QQC2.ToolButton {
-                icon.name: "edit-clear"
-                enabled: groqKeyField.text.length > 0
-                display: QQC2.AbstractButton.IconOnly
-                QQC2.ToolTip.text: i18n("Clear key"); QQC2.ToolTip.visible: hovered
-                onClicked: { groqKeyField.text = ""; providersPage.groqKeyDirty = true; }
-            }
-        }
-
-        QQC2.Label {
-            visible: groqSwitch.checked
-            text: i18n("OpenAI-compatible API with rate limit headers")
-            font.pointSize: Kirigami.Theme.smallFont.pointSize
-            opacity: 0.6; wrapMode: Text.WordWrap; Layout.fillWidth: true
-        }
-
-        QQC2.ComboBox {
-            id: groqModelField
-            Kirigami.FormData.label: i18n("Model:")
-            enabled: groqSwitch.checked
-            editable: true
-            editText: plasmoid.configuration.groqModel
-            model: [
+        OpenAICompatibleProviderSection {
+            id: groqSection
+            configPage: providersPage
+            providerTitle: i18n("Groq")
+            enabledProp: "cfg_groqEnabled"
+            modelProp: "cfg_groqModel"
+            baseUrlProp: "cfg_groqCustomBaseUrl"
+            description: i18n("OpenAI-compatible API with rate limit headers")
+            keyPlaceholder: i18n("Enter Groq API key...")
+            modelOptions: [
                 "llama-3.3-70b-versatile",
                 "llama-3.1-70b-versatile",
                 "llama-3.1-8b-instant",
                 "mixtral-8x7b-32768",
                 "gemma2-9b-it"
             ]
-            onEditTextChanged: plasmoid.configuration.groqModel = editText
-            property alias text: groqModelField.editText
         }
 
-        QQC2.TextField {
-            id: groqBaseUrlField
-            Kirigami.FormData.label: i18n("Custom base URL:")
-            enabled: groqSwitch.checked
-            text: plasmoid.configuration.groqCustomBaseUrl
-            placeholderText: i18n("Leave empty for default")
-            Layout.fillWidth: true
-            QQC2.ToolTip.text: i18n("Override the API endpoint for proxies or self-hosted gateways. Must start with https://")
-            QQC2.ToolTip.visible: hovered
-            QQC2.ToolTip.delay: 500
-        }
-
-        QQC2.Label {
-            visible: providersPage.isInvalidUrl(groqBaseUrlField.text)
-            text: i18n("⚠ URL must start with https:// or http://")
-            color: Kirigami.Theme.negativeTextColor
-            font.pointSize: Kirigami.Theme.smallFont.pointSize
-            wrapMode: Text.WordWrap
-            Layout.fillWidth: true
-        }
-
-        QQC2.Label {
-            visible: groqBaseUrlField.text.toLowerCase().startsWith("http://")
-            text: i18n("⚠ Using HTTP is insecure. API keys will be sent unencrypted.")
-            color: Kirigami.Theme.negativeTextColor
-            font.pointSize: Kirigami.Theme.smallFont.pointSize
-            wrapMode: Text.WordWrap
-            Layout.fillWidth: true
-        }
-
-        // ══════════════════════════════════════════════
-        // ── xAI / Grok ──
-        // ══════════════════════════════════════════════
-
-        Kirigami.Separator {
-            Kirigami.FormData.isSection: true
-            Kirigami.FormData.label: i18n("xAI / Grok")
-        }
-
-        QQC2.Switch {
-            id: xaiSwitch
-            Kirigami.FormData.label: i18n("Enable:")
-            checked: plasmoid.configuration.xaiEnabled
-        }
-
-        RowLayout {
-            Kirigami.FormData.label: i18n("API Key:")
-            Layout.fillWidth: true
-            spacing: Kirigami.Units.smallSpacing
-
-            QQC2.TextField {
-                id: xaiKeyField
-                enabled: xaiSwitch.checked
-                echoMode: xaiKeyVisible.checked ? TextInput.Normal : TextInput.Password
-                placeholderText: i18n("Enter xAI API key...")
-                Layout.fillWidth: true
-                onTextEdited: providersPage.xaiKeyDirty = true
-            }
-
-            QQC2.ToolButton {
-                id: xaiKeyVisible
-                checkable: true; checked: false
-                icon.name: checked ? "password-show-off" : "password-show-on"
-                display: QQC2.AbstractButton.IconOnly
-                QQC2.ToolTip.text: checked ? i18n("Hide key") : i18n("Show key")
-                QQC2.ToolTip.visible: hovered
-            }
-
-            QQC2.ToolButton {
-                icon.name: "edit-clear"
-                enabled: xaiKeyField.text.length > 0
-                display: QQC2.AbstractButton.IconOnly
-                QQC2.ToolTip.text: i18n("Clear key"); QQC2.ToolTip.visible: hovered
-                onClicked: { xaiKeyField.text = ""; providersPage.xaiKeyDirty = true; }
-            }
-        }
-
-        QQC2.Label {
-            visible: xaiSwitch.checked
-            text: i18n("OpenAI-compatible API for Grok models")
-            font.pointSize: Kirigami.Theme.smallFont.pointSize
-            opacity: 0.6; wrapMode: Text.WordWrap; Layout.fillWidth: true
-        }
-
-        QQC2.ComboBox {
-            id: xaiModelField
-            Kirigami.FormData.label: i18n("Model:")
-            enabled: xaiSwitch.checked
-            editable: true
-            editText: plasmoid.configuration.xaiModel
-            model: [
+        OpenAICompatibleProviderSection {
+            id: xaiSection
+            configPage: providersPage
+            providerTitle: i18n("xAI / Grok")
+            enabledProp: "cfg_xaiEnabled"
+            modelProp: "cfg_xaiModel"
+            baseUrlProp: "cfg_xaiCustomBaseUrl"
+            description: i18n("OpenAI-compatible API for Grok models")
+            keyPlaceholder: i18n("Enter xAI API key...")
+            modelOptions: [
                 "grok-3",
                 "grok-3-mini",
                 "grok-2",
                 "grok-2-mini"
             ]
-            onEditTextChanged: plasmoid.configuration.xaiModel = editText
-            property alias text: xaiModelField.editText
         }
 
-        QQC2.TextField {
-            id: xaiBaseUrlField
-            Kirigami.FormData.label: i18n("Custom base URL:")
-            enabled: xaiSwitch.checked
-            text: plasmoid.configuration.xaiCustomBaseUrl
-            placeholderText: i18n("Leave empty for default")
-            Layout.fillWidth: true
-            QQC2.ToolTip.text: i18n("Override the API endpoint for proxies or self-hosted gateways. Must start with https://")
-            QQC2.ToolTip.visible: hovered
-            QQC2.ToolTip.delay: 500
-        }
-
-        QQC2.Label {
-            visible: providersPage.isInvalidUrl(xaiBaseUrlField.text)
-            text: i18n("⚠ URL must start with https:// or http://")
-            color: Kirigami.Theme.negativeTextColor
-            font.pointSize: Kirigami.Theme.smallFont.pointSize
-            wrapMode: Text.WordWrap
-            Layout.fillWidth: true
-        }
-
-        QQC2.Label {
-            visible: xaiBaseUrlField.text.toLowerCase().startsWith("http://")
-            text: i18n("⚠ Using HTTP is insecure. API keys will be sent unencrypted.")
-            color: Kirigami.Theme.negativeTextColor
-            font.pointSize: Kirigami.Theme.smallFont.pointSize
-            wrapMode: Text.WordWrap
-            Layout.fillWidth: true
-        }
-
-        // ══════════════════════════════════════════════
-        // ── Ollama Cloud ──
-        // ══════════════════════════════════════════════
-
-        Kirigami.Separator {
-            Kirigami.FormData.isSection: true
-            Kirigami.FormData.label: i18n("Ollama Cloud")
-        }
-
-        QQC2.Switch {
-            id: ollamaSwitch
-            Kirigami.FormData.label: i18n("Enable:")
-            checked: plasmoid.configuration.ollamaEnabled
-        }
-
-        RowLayout {
-            Kirigami.FormData.label: i18n("API Key:")
-            Layout.fillWidth: true
-            spacing: Kirigami.Units.smallSpacing
-
-            QQC2.TextField {
-                id: ollamaKeyField
-                enabled: ollamaSwitch.checked
-                echoMode: ollamaKeyVisible.checked ? TextInput.Normal : TextInput.Password
-                placeholderText: i18n("Create a key in ollama.com/settings")
-                Layout.fillWidth: true
-                onTextEdited: providersPage.ollamaKeyDirty = true
-            }
-
-            QQC2.ToolButton {
-                id: ollamaKeyVisible
-                checkable: true; checked: false
-                icon.name: checked ? "password-show-off" : "password-show-on"
-                display: QQC2.AbstractButton.IconOnly
-                QQC2.ToolTip.text: checked ? i18n("Hide key") : i18n("Show key")
-                QQC2.ToolTip.visible: hovered
-            }
-
-            QQC2.ToolButton {
-                icon.name: "edit-clear"
-                enabled: ollamaKeyField.text.length > 0
-                display: QQC2.AbstractButton.IconOnly
-                QQC2.ToolTip.text: i18n("Clear key"); QQC2.ToolTip.visible: hovered
-                onClicked: { ollamaKeyField.text = ""; providersPage.ollamaKeyDirty = true; }
-            }
-        }
-
-        QQC2.Label {
-            visible: ollamaSwitch.checked
-            text: i18n("Uses Ollama Cloud's OpenAI-compatible API at ollama.com/v1. Create an API key in your Ollama settings to monitor cloud usage from the widget.")
-            font.pointSize: Kirigami.Theme.smallFont.pointSize
-            opacity: 0.6; wrapMode: Text.WordWrap; Layout.fillWidth: true
-        }
-
-        QQC2.ComboBox {
-            id: ollamaModelField
-            Kirigami.FormData.label: i18n("Model:")
-            enabled: ollamaSwitch.checked
-            editable: true
-            editText: plasmoid.configuration.ollamaModel
-            model: [
+        OpenAICompatibleProviderSection {
+            id: ollamaSection
+            configPage: providersPage
+            providerTitle: i18n("Ollama Cloud")
+            enabledProp: "cfg_ollamaEnabled"
+            modelProp: "cfg_ollamaModel"
+            baseUrlProp: "cfg_ollamaCustomBaseUrl"
+            description: i18n("Uses Ollama Cloud's OpenAI-compatible API at ollama.com/v1. Create an API key in your Ollama settings to monitor cloud usage from the widget.")
+            keyPlaceholder: i18n("Create a key in ollama.com/settings")
+            baseUrlTooltip: i18n("Override the Ollama Cloud API endpoint for proxies or gateways. Must start with https://")
+            modelOptions: [
                 "gpt-oss:120b",
                 "gpt-oss:20b",
                 "glm-5:cloud",
                 "deepseek-r1:671b"
             ]
-            onEditTextChanged: plasmoid.configuration.ollamaModel = editText
-            property alias text: ollamaModelField.editText
         }
 
-        QQC2.TextField {
-            id: ollamaBaseUrlField
-            Kirigami.FormData.label: i18n("Custom base URL:")
-            enabled: ollamaSwitch.checked
-            text: plasmoid.configuration.ollamaCustomBaseUrl
-            placeholderText: i18n("Leave empty for default")
-            Layout.fillWidth: true
-            QQC2.ToolTip.text: i18n("Override the Ollama Cloud API endpoint for proxies or gateways. Must start with https://")
-            QQC2.ToolTip.visible: hovered
-            QQC2.ToolTip.delay: 500
-        }
-
-        QQC2.Label {
-            visible: providersPage.isInvalidUrl(ollamaBaseUrlField.text)
-            text: i18n("⚠ URL must start with https:// or http://")
-            color: Kirigami.Theme.negativeTextColor
-            font.pointSize: Kirigami.Theme.smallFont.pointSize
-            wrapMode: Text.WordWrap
-            Layout.fillWidth: true
-        }
-
-        QQC2.Label {
-            visible: ollamaBaseUrlField.text.toLowerCase().startsWith("http://")
-            text: i18n("⚠ Using HTTP is insecure. API keys will be sent unencrypted.")
-            color: Kirigami.Theme.negativeTextColor
-            font.pointSize: Kirigami.Theme.smallFont.pointSize
-            wrapMode: Text.WordWrap
-            Layout.fillWidth: true
-        }
-
-        // ══════════════════════════════════════════════
-        // ── OpenRouter ──
-        // ══════════════════════════════════════════════
-
-        Kirigami.Separator {
-            Kirigami.FormData.isSection: true
-            Kirigami.FormData.label: i18n("OpenRouter")
-        }
-
-        QQC2.Switch {
-            id: openrouterSwitch
-            Kirigami.FormData.label: i18n("Enable:")
-            checked: plasmoid.configuration.openrouterEnabled
-        }
-
-        RowLayout {
-            Kirigami.FormData.label: i18n("API Key:")
-            Layout.fillWidth: true
-            spacing: Kirigami.Units.smallSpacing
-
-            QQC2.TextField {
-                id: openrouterKeyField
-                enabled: openrouterSwitch.checked
-                echoMode: openrouterKeyVisible.checked ? TextInput.Normal : TextInput.Password
-                placeholderText: i18n("sk-or-...")
-                Layout.fillWidth: true
-                onTextEdited: providersPage.openrouterKeyDirty = true
-            }
-
-            QQC2.ToolButton {
-                id: openrouterKeyVisible
-                checkable: true; checked: false
-                icon.name: checked ? "password-show-off" : "password-show-on"
-                display: QQC2.AbstractButton.IconOnly
-                QQC2.ToolTip.text: checked ? i18n("Hide key") : i18n("Show key")
-                QQC2.ToolTip.visible: hovered
-            }
-
-            QQC2.ToolButton {
-                icon.name: "edit-clear"
-                enabled: openrouterKeyField.text.length > 0
-                display: QQC2.AbstractButton.IconOnly
-                QQC2.ToolTip.text: i18n("Clear key"); QQC2.ToolTip.visible: hovered
-                onClicked: { openrouterKeyField.text = ""; providersPage.openrouterKeyDirty = true; }
-            }
-        }
-
-        QQC2.Label {
-            visible: openrouterSwitch.checked
-            text: i18n("Unified gateway to 600+ models. Shows credits balance and usage.")
-            font.pointSize: Kirigami.Theme.smallFont.pointSize
-            opacity: 0.6; wrapMode: Text.WordWrap; Layout.fillWidth: true
-        }
-
-        QQC2.ComboBox {
-            id: openrouterModelField
-            Kirigami.FormData.label: i18n("Model:")
-            enabled: openrouterSwitch.checked
-            editable: true
-            editText: plasmoid.configuration.openrouterModel
-            model: [
+        OpenAICompatibleProviderSection {
+            id: openrouterSection
+            configPage: providersPage
+            providerTitle: i18n("OpenRouter")
+            enabledProp: "cfg_openrouterEnabled"
+            modelProp: "cfg_openrouterModel"
+            baseUrlProp: "cfg_openrouterCustomBaseUrl"
+            description: i18n("Unified gateway to 600+ models. Shows credits balance and usage.")
+            keyPlaceholder: i18n("sk-or-...")
+            modelOptions: [
                 "openai/gpt-4o",
                 "openai/gpt-4o-mini",
                 "openai/gpt-4.1",
@@ -1253,101 +788,18 @@ KCM.SimpleKCM {
                 "qwen/qwen-2.5-72b-instruct",
                 "mistralai/mistral-large"
             ]
-            onEditTextChanged: plasmoid.configuration.openrouterModel = editText
-            property alias text: openrouterModelField.editText
         }
 
-        QQC2.TextField {
-            id: openrouterBaseUrlField
-            Kirigami.FormData.label: i18n("Custom base URL:")
-            enabled: openrouterSwitch.checked
-            text: plasmoid.configuration.openrouterCustomBaseUrl
-            placeholderText: i18n("Leave empty for default")
-            Layout.fillWidth: true
-            QQC2.ToolTip.text: i18n("Override the API endpoint for proxies or self-hosted gateways. Must start with https://")
-            QQC2.ToolTip.visible: hovered
-            QQC2.ToolTip.delay: 500
-        }
-
-        QQC2.Label {
-            visible: providersPage.isInvalidUrl(openrouterBaseUrlField.text)
-            text: i18n("⚠ URL must start with https:// or http://")
-            color: Kirigami.Theme.negativeTextColor
-            font.pointSize: Kirigami.Theme.smallFont.pointSize
-            wrapMode: Text.WordWrap
-            Layout.fillWidth: true
-        }
-
-        QQC2.Label {
-            visible: openrouterBaseUrlField.text.toLowerCase().startsWith("http://")
-            text: i18n("⚠ Using HTTP is insecure. API keys will be sent unencrypted.")
-            color: Kirigami.Theme.negativeTextColor
-            font.pointSize: Kirigami.Theme.smallFont.pointSize
-            wrapMode: Text.WordWrap
-            Layout.fillWidth: true
-        }
-
-        // ══════════════════════════════════════════════
-        // ── Together AI ──
-        // ══════════════════════════════════════════════
-
-        Kirigami.Separator {
-            Kirigami.FormData.isSection: true
-            Kirigami.FormData.label: i18n("Together AI")
-        }
-
-        QQC2.Switch {
-            id: togetherSwitch
-            Kirigami.FormData.label: i18n("Enable:")
-            checked: plasmoid.configuration.togetherEnabled
-        }
-
-        RowLayout {
-            Kirigami.FormData.label: i18n("API Key:")
-            Layout.fillWidth: true
-            spacing: Kirigami.Units.smallSpacing
-
-            QQC2.TextField {
-                id: togetherKeyField
-                enabled: togetherSwitch.checked
-                echoMode: togetherKeyVisible.checked ? TextInput.Normal : TextInput.Password
-                placeholderText: i18n("Enter Together AI API key...")
-                Layout.fillWidth: true
-                onTextEdited: providersPage.togetherKeyDirty = true
-            }
-
-            QQC2.ToolButton {
-                id: togetherKeyVisible
-                checkable: true; checked: false
-                icon.name: checked ? "password-show-off" : "password-show-on"
-                display: QQC2.AbstractButton.IconOnly
-                QQC2.ToolTip.text: checked ? i18n("Hide key") : i18n("Show key")
-                QQC2.ToolTip.visible: hovered
-            }
-
-            QQC2.ToolButton {
-                icon.name: "edit-clear"
-                enabled: togetherKeyField.text.length > 0
-                display: QQC2.AbstractButton.IconOnly
-                QQC2.ToolTip.text: i18n("Clear key"); QQC2.ToolTip.visible: hovered
-                onClicked: { togetherKeyField.text = ""; providersPage.togetherKeyDirty = true; }
-            }
-        }
-
-        QQC2.Label {
-            visible: togetherSwitch.checked
-            text: i18n("Fast inference for open-source models (Llama, Qwen, DeepSeek)")
-            font.pointSize: Kirigami.Theme.smallFont.pointSize
-            opacity: 0.6; wrapMode: Text.WordWrap; Layout.fillWidth: true
-        }
-
-        QQC2.ComboBox {
-            id: togetherModelField
-            Kirigami.FormData.label: i18n("Model:")
-            enabled: togetherSwitch.checked
-            editable: true
-            editText: plasmoid.configuration.togetherModel
-            model: [
+        OpenAICompatibleProviderSection {
+            id: togetherSection
+            configPage: providersPage
+            providerTitle: i18n("Together AI")
+            enabledProp: "cfg_togetherEnabled"
+            modelProp: "cfg_togetherModel"
+            baseUrlProp: "cfg_togetherCustomBaseUrl"
+            description: i18n("Fast inference for open-source models (Llama, Qwen, DeepSeek)")
+            keyPlaceholder: i18n("Enter Together AI API key...")
+            modelOptions: [
                 "meta-llama/Llama-3.3-70B-Instruct-Turbo",
                 "meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo",
                 "meta-llama/Meta-Llama-3.1-405B-Instruct-Turbo",
@@ -1360,101 +812,18 @@ KCM.SimpleKCM {
                 "mistralai/Mixtral-8x7B-Instruct-v0.1",
                 "google/gemma-2-27b-it"
             ]
-            onEditTextChanged: plasmoid.configuration.togetherModel = editText
-            property alias text: togetherModelField.editText
         }
 
-        QQC2.TextField {
-            id: togetherBaseUrlField
-            Kirigami.FormData.label: i18n("Custom base URL:")
-            enabled: togetherSwitch.checked
-            text: plasmoid.configuration.togetherCustomBaseUrl
-            placeholderText: i18n("Leave empty for default")
-            Layout.fillWidth: true
-            QQC2.ToolTip.text: i18n("Override the API endpoint for proxies or self-hosted gateways. Must start with https://")
-            QQC2.ToolTip.visible: hovered
-            QQC2.ToolTip.delay: 500
-        }
-
-        QQC2.Label {
-            visible: providersPage.isInvalidUrl(togetherBaseUrlField.text)
-            text: i18n("⚠ URL must start with https:// or http://")
-            color: Kirigami.Theme.negativeTextColor
-            font.pointSize: Kirigami.Theme.smallFont.pointSize
-            wrapMode: Text.WordWrap
-            Layout.fillWidth: true
-        }
-
-        QQC2.Label {
-            visible: togetherBaseUrlField.text.toLowerCase().startsWith("http://")
-            text: i18n("⚠ Using HTTP is insecure. API keys will be sent unencrypted.")
-            color: Kirigami.Theme.negativeTextColor
-            font.pointSize: Kirigami.Theme.smallFont.pointSize
-            wrapMode: Text.WordWrap
-            Layout.fillWidth: true
-        }
-
-        // ══════════════════════════════════════════════
-        // ── Cohere ──
-        // ══════════════════════════════════════════════
-
-        Kirigami.Separator {
-            Kirigami.FormData.isSection: true
-            Kirigami.FormData.label: i18n("Cohere")
-        }
-
-        QQC2.Switch {
-            id: cohereSwitch
-            Kirigami.FormData.label: i18n("Enable:")
-            checked: plasmoid.configuration.cohereEnabled
-        }
-
-        RowLayout {
-            Kirigami.FormData.label: i18n("API Key:")
-            Layout.fillWidth: true
-            spacing: Kirigami.Units.smallSpacing
-
-            QQC2.TextField {
-                id: cohereKeyField
-                enabled: cohereSwitch.checked
-                echoMode: cohereKeyVisible.checked ? TextInput.Normal : TextInput.Password
-                placeholderText: i18n("Enter Cohere API key...")
-                Layout.fillWidth: true
-                onTextEdited: providersPage.cohereKeyDirty = true
-            }
-
-            QQC2.ToolButton {
-                id: cohereKeyVisible
-                checkable: true; checked: false
-                icon.name: checked ? "password-show-off" : "password-show-on"
-                display: QQC2.AbstractButton.IconOnly
-                QQC2.ToolTip.text: checked ? i18n("Hide key") : i18n("Show key")
-                QQC2.ToolTip.visible: hovered
-            }
-
-            QQC2.ToolButton {
-                icon.name: "edit-clear"
-                enabled: cohereKeyField.text.length > 0
-                display: QQC2.AbstractButton.IconOnly
-                QQC2.ToolTip.text: i18n("Clear key"); QQC2.ToolTip.visible: hovered
-                onClicked: { cohereKeyField.text = ""; providersPage.cohereKeyDirty = true; }
-            }
-        }
-
-        QQC2.Label {
-            visible: cohereSwitch.checked
-            text: i18n("Enterprise RAG and multilingual models via OpenAI-compatible API")
-            font.pointSize: Kirigami.Theme.smallFont.pointSize
-            opacity: 0.6; wrapMode: Text.WordWrap; Layout.fillWidth: true
-        }
-
-        QQC2.ComboBox {
-            id: cohereModelField
-            Kirigami.FormData.label: i18n("Model:")
-            enabled: cohereSwitch.checked
-            editable: true
-            editText: plasmoid.configuration.cohereModel
-            model: [
+        OpenAICompatibleProviderSection {
+            id: cohereSection
+            configPage: providersPage
+            providerTitle: i18n("Cohere")
+            enabledProp: "cfg_cohereEnabled"
+            modelProp: "cfg_cohereModel"
+            baseUrlProp: "cfg_cohereCustomBaseUrl"
+            description: i18n("Enterprise RAG and multilingual models via OpenAI-compatible API")
+            keyPlaceholder: i18n("Enter Cohere API key...")
+            modelOptions: [
                 "command-a-03-2025",
                 "command-r-plus-08-2024",
                 "command-r-plus",
@@ -1463,38 +832,6 @@ KCM.SimpleKCM {
                 "command-light",
                 "command"
             ]
-            onEditTextChanged: plasmoid.configuration.cohereModel = editText
-            property alias text: cohereModelField.editText
-        }
-
-        QQC2.TextField {
-            id: cohereBaseUrlField
-            Kirigami.FormData.label: i18n("Custom base URL:")
-            enabled: cohereSwitch.checked
-            text: plasmoid.configuration.cohereCustomBaseUrl
-            placeholderText: i18n("Leave empty for default")
-            Layout.fillWidth: true
-            QQC2.ToolTip.text: i18n("Override the API endpoint for proxies or self-hosted gateways. Must start with https://")
-            QQC2.ToolTip.visible: hovered
-            QQC2.ToolTip.delay: 500
-        }
-
-        QQC2.Label {
-            visible: providersPage.isInvalidUrl(cohereBaseUrlField.text)
-            text: i18n("⚠ URL must start with https:// or http://")
-            color: Kirigami.Theme.negativeTextColor
-            font.pointSize: Kirigami.Theme.smallFont.pointSize
-            wrapMode: Text.WordWrap
-            Layout.fillWidth: true
-        }
-
-        QQC2.Label {
-            visible: cohereBaseUrlField.text.toLowerCase().startsWith("http://")
-            text: i18n("⚠ Using HTTP is insecure. API keys will be sent unencrypted.")
-            color: Kirigami.Theme.negativeTextColor
-            font.pointSize: Kirigami.Theme.smallFont.pointSize
-            wrapMode: Text.WordWrap
-            Layout.fillWidth: true
         }
 
         // ── Google Veo ──

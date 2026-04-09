@@ -22,7 +22,7 @@
 
 A native KDE Plasma 6 plasmoid that monitors AI API token usage, rate limits, and costs across multiple providers. Sits in your panel as a compact icon with a colored status badge and expands into a detailed popup with per-provider stats, usage history charts, and budget tracking. Also tracks subscription-based AI coding tool usage limits for Claude Code, Codex CLI, and GitHub Copilot.
 
-> **Current release:** `v5.1.4 "Lighthouse — The Analyst"` adds Ollama Cloud provider support, immediate runtime reloads for OpenAI-compatible providers, and keeps the analyst dashboard and history workflow introduced in the Lighthouse line.
+> **Current release:** `v5.2.0 "Lighthouse — Operator Clarity"` adds an attention-first Live popup, shared OpenAI-compatible provider settings sections across the KCM, and a cleaner runtime split for notifications, scheduling, and startup wiring.
 
 ## Quick Links
 
@@ -180,6 +180,7 @@ sudo dnf install just   # Fedora
 | `just doctor`             | Validate install/build prerequisites                           |
 | `just doctor-fix`         | Validate and auto-install missing Fedora deps                  |
 | `just versions`           | Show repo / user-local / system installed versions             |
+| `just smoke`              | Check active dev install, version shadowing, and next steps    |
 | `just clean`              | Remove the `build/` directory                                  |
 | **System-wide (sudo)**    |                                                                |
 | `just install`            | Build then `sudo cmake --install build`                        |
@@ -207,6 +208,7 @@ sudo dnf install just   # Fedora
 ```bash
 # Edit package/contents/ui/*.qml, then:
 just dev
+just smoke   # optional: confirm the live package/plugin state
 ```
 
 **Typical dev loop (C++ plugin changes):**
@@ -215,7 +217,13 @@ just dev
 # Edit plugin/*.cpp, then:
 just install   # sudo required; rebuilds and installs to /usr
 just reload
+just smoke
 ```
+
+`just smoke` is the quickest way to catch the two most common local-dev failure modes:
+
+- a user-local plasmoid package shadowing the system install
+- a fresh QML package reload with a stale or missing compiled plugin
 
 **Release a new version:**
 
@@ -297,6 +305,7 @@ Run only dependency checks:
 
 ```bash
 ./scripts/install_doctor.sh
+# or: just doctor
 ```
 
 ### Install from COPR (Recommended)
@@ -459,15 +468,21 @@ plasma-ai-usage-monitor/
 │       │   ├── config.qml          # Config tab definitions (6 tabs)
 │       │   └── main.xml            # KConfigXT schema
 │       └── ui/
-│           ├── main.qml            # Root PlasmoidItem (providers, tools, timers, notifications)
+│           ├── main.qml            # Root PlasmoidItem composition root
 │           ├── CompactRepresentation.qml  # Panel icon (3 display modes)
 │           ├── FullRepresentation.qml     # Popup with Live/History tabs + subscription tools
+│           ├── ProviderCatalog.qml        # Shared provider metadata for config pages and runtime wiring
+│           ├── ProviderRegistry.qml       # Unified provider/tool registry used across runtime surfaces
+│           ├── NotificationController.qml # Notification routing, cooldown, and DND handling
+│           ├── RefreshScheduler.qml       # Registry-driven refresh timers and recurring sync/prune tasks
+│           ├── RuntimeCoordinator.qml     # Startup sequencing, API-key loading, and snapshot wiring
 │           ├── ProviderCard.qml           # Collapsible provider stats card
 │           ├── SubscriptionToolCard.qml   # Subscription tool usage card
 │           ├── CostSummaryCard.qml        # Aggregate cost breakdown
 │           ├── UsageChart.qml             # Canvas line/area chart
 │           ├── MultiSeriesChart.qml       # Multi-line compare chart for analytics mode
 │           ├── TrendSummary.qml           # Summary stats grid
+│           ├── OpenAICompatibleProviderSection.qml # Shared KCM section for OpenAI-compatible providers
 │           ├── configGeneral.qml
 │           ├── configProviders.qml
 │           ├── configAlerts.qml
@@ -533,12 +548,18 @@ The QML plugin (`com.github.loofi.aiusagemonitor`) provides 23 creatable/singlet
 
 ### QML Frontend
 
-- **`main.qml`** — Instantiates 14 provider backends + 3 subscription tool monitors, manages per-provider refresh timers, handles KWallet lifecycle, fires KDE notifications with cooldown and DND support, records snapshots to UsageDatabase. Uses `allProviders` and `allSubscriptionTools` arrays to drive tooltips, refresh, and notification routing.
+- **`main.qml`** — Instantiates provider backends and tool monitors, then delegates provider metadata, refresh scheduling, notification routing, and startup orchestration to focused helper components.
 - **`CompactRepresentation.qml`** — Panel icon with 3 display modes (icon with status badge, cost display, provider count), smooth animations, and screen reader accessibility
-- **`FullRepresentation.qml`** — Popup with status summary bar, tabbed Live/History view, data-driven provider cards via Repeater, subscription tool cards section, detail history, compare mode (providers/tools + metrics), responsive history controls, loading/empty states, and export buttons
+- **`ProviderCatalog.qml`** — Central source of provider labels, config keys, refresh keys, notification keys, and budget mappings for the KCM and runtime helpers.
+- **`ProviderRegistry.qml`** — Builds `allProviders` and `allSubscriptionTools` from the shared catalog and current runtime backend/monitor instances.
+- **`NotificationController.qml`** — Owns KDE notification objects plus cooldown, DND, and provider/tool notification gating.
+- **`RefreshScheduler.qml`** — Creates registry-driven provider timers and owns recurring browser-sync, prune, and Copilot org-metrics timers.
+- **`RuntimeCoordinator.qml`** — Handles startup sequencing, KWallet key loading, provider/tool signal wiring, and snapshot recording.
+- **`FullRepresentation.qml`** — Popup with status summary bar, attention-first Live view, remembered provider/tool expansion state, tabbed Live/History sections, detail history, compare mode (providers/tools + metrics), responsive history controls, loading/empty states, and export buttons
 - **`MultiSeriesChart.qml`** — Multi-line comparison chart with compact legend chips, hover crosshair, and ranked per-series tooltip values
 - **`ProviderCard.qml`** — Collapsible card showing connection status, token usage, cost (real or estimated), rate limit bars, budget progress bars, error badges with expandable details, relative time display, and accessibility annotations
 - **`SubscriptionToolCard.qml`** — Card for subscription tool usage showing plan tier badge, color-coded progress bars for primary and secondary limits, time-until-reset countdown, last activity, limit-reached warning, and manual increment/reset buttons
+- **`OpenAICompatibleProviderSection.qml`** — Shared provider-settings section used by the KCM for OpenAI-compatible services to keep API key, model, and base URL controls aligned.
 
 ## API Key Requirements
 

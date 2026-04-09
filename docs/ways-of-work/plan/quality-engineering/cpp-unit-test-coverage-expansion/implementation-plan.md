@@ -1,5 +1,7 @@
 # Implementation Plan: C++ Unit Test Coverage Expansion
 
+> Historical note (2026-04-09): this document was written before the current test suite expansion. The repository now has a materially broader local CTest suite, and GitHub Actions build workflows are currently disabled. Treat any `build.yml` references below as historical context; the maintained verification path is local `just test` / `ctest`.
+
 ## Goal
 
 This feature expands deterministic unit-test coverage for core plugin logic that currently carries the highest regression risk: `ProviderBackend`, `SubscriptionToolBackend`, `UpdateChecker`, and `UsageDatabase`. The implementation keeps test scope pure and local by avoiding network, KWallet, or Plasma runtime dependencies, so tests remain stable in CI and on developer machines. It standardizes test patterns around Qt Test fixtures, minimal concrete subclasses for abstract backends, and isolated temporary data directories. The target outcome is reliable quality gates for business logic updates without introducing new runtime dependencies or changing production behavior.
@@ -13,7 +15,7 @@ This feature expands deterministic unit-test coverage for core plugin logic that
   - `SubscriptionToolBackend` (usage progression, warning thresholds, period reset logic, secondary limits)
   - `UpdateChecker` (version normalization/comparison and property/timer behavior)
   - `UsageDatabase` (retention, export, aggregation, throttling, provider/tool discovery)
-- Ensure all tests are automatically discovered by existing `plugin/tests/CMakeLists.txt` and run in GitHub Actions `build.yml`.
+- Ensure all tests are automatically discovered by existing `plugin/tests/CMakeLists.txt` and run locally via `just test` / `ctest --test-dir build --output-on-failure`.
 - Preserve security constraints: no real API keys, tokens, or user data in fixtures.
 
 ### Implementation Plan Specifics
@@ -21,7 +23,7 @@ This feature expands deterministic unit-test coverage for core plugin logic that
 1. Add/maintain one focused test file per class (`test_<classname>.cpp`) with narrow fixture scope.
 2. Build minimal concrete test doubles for abstract classes to expose protected logic through public wrappers.
 3. Use signal assertions (`QSignalSpy`) for warning/limit/state-change behavior.
-4. Validate CI compatibility with the existing workflow:
+4. Validate local CTest compatibility with the maintained developer workflow:
    - `cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug`
    - `cmake --build build --parallel`
    - `ctest --test-dir build --output-on-failure`
@@ -62,8 +64,8 @@ flowchart TB
 
   subgraph INFRA["Infrastructure Layer"]
     CMAKE["CMake + CTest"]
-    GHA["GitHub Actions build.yml (Fedora container)"]
-    DOCKER["Containerized CI runtime"]
+    LOCAL["Local maintainer/dev verification"]
+    DOCKER["Optional containerized dev runtime"]
   end
 
   MAIN -->|"bindings + invokables"| QMLAPI
@@ -84,8 +86,8 @@ flowchart TB
   RULES --> CACHE
   UDB --> CACHE
   CMAKE -->|"build & test"| BL
-  GHA --> CMAKE
-  DOCKER --> GHA
+  LOCAL --> CMAKE
+  DOCKER --> LOCAL
 ```
 
 - **Technology Stack Selection**
@@ -93,7 +95,7 @@ flowchart TB
   - API layer: QObject properties/invokables and Qt signals (no internal HTTP API layer in this desktop architecture).
   - Business logic: C++20 + Qt6 (`Core`, `Network`, `Sql`), KF6 integration.
   - Data: SQLite via `QSqlDatabase` with WAL mode and targeted indexes.
-  - Infrastructure: CMake/CTest, GitHub Actions Fedora container, clang-tidy gate.
+  - Infrastructure: CMake/CTest, local maintainer verification, optional Fedora container/dev VM workflows, clang-tidy gate.
 - **Integration Points**
   - QML only talks to registered plugin types (`qmlRegisterType`/`qmlRegisterUncreatableType`).
   - Business logic persists telemetry through `UsageDatabase` invokables.
@@ -305,7 +307,7 @@ flowchart LR
 4. **Phase 4: Usage database extended unit tests**
    - Add/verify prune, export, aggregation, and write-throttle behavior.
 5. **Phase 5: CI validation and documentation**
-   - Ensure tests are registered/discovered and pass in local + GitHub Actions workflows.
+   - Ensure tests are registered/discovered and pass in the maintained local CTest workflow.
 
 Dependencies:
 
@@ -319,8 +321,8 @@ Dependencies:
   - `cmake --build build --parallel`
 - **Gate 2: Full CTest pass**
   - `ctest --test-dir build --output-on-failure`
-- **Gate 3: CI workflow pass**
-  - `.github/workflows/build.yml` build, clang-tidy, and test steps succeed.
+- **Gate 3: Local verification pass**
+  - `just test` succeeds and all affected targets remain registered in CTest.
 - **Gate 4: No behavior drift**
   - Production plugin runtime behavior remains unchanged (test-only scope).
 

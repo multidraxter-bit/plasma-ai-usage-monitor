@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.2.0] — 2026-04-09
+
+### Added
+
+- Add `ProviderCatalog.qml`, `ProviderRegistry.qml`, `NotificationController.qml`, `RefreshScheduler.qml`, and `RuntimeCoordinator.qml` to split provider metadata, notification routing, refresh scheduling, and startup wiring out of `main.qml`
+- Add `OpenAICompatibleProviderSection.qml` for reusable OpenAI-compatible provider settings in the KCM
+- Add `scripts/dev_smoke_check.sh` and a matching `just smoke` recipe for local install-shadowing and stale-plugin diagnostics
+- Add delayed-reply stale-generation regression coverage for `OllamaCloudProvider` in mocked HTTP tests
+
+### Changed
+
+- Refactor `configProviders.qml` to reuse shared OpenAI-compatible forms for Mistral, DeepSeek, Groq, xAI, Ollama Cloud, OpenRouter, Together AI, and Cohere
+- Refactor `configAlerts.qml`, `configBudget.qml`, and `configGeneral.qml` around shared provider catalog metadata so provider labels, refresh intervals, budgets, and notification toggles stay aligned
+- Rework the Live popup with a `Needs Attention` strip and remembered manual expansion for provider and tool cards so attention items stay open while healthy cards default-collapsed
+- Slim down `package/contents/ui/main.qml` into a composition root centered on backend instantiation and shared wiring
+- Expand install/version diagnostics to report plasmoid shadowing, compiled QML module presence, and missing-plugin failure modes
+- Refresh contributor and planning docs to reflect the current local test suite and the fact that GitHub Actions build workflows are currently disabled
+
 ## [5.1.4] — 2026-04-08
 
 ### Added
@@ -485,7 +503,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - KWallet integration for secure API key storage
 - KDE notifications for rate limit warnings
 
-[Unreleased]: https://github.com/multidraxter-bit/plasma-ai-usage-monitor/compare/v5.1.4...HEAD
+[Unreleased]: https://github.com/multidraxter-bit/plasma-ai-usage-monitor/compare/v5.2.0...HEAD
+[5.2.0]: https://github.com/multidraxter-bit/plasma-ai-usage-monitor/compare/v5.1.4...v5.2.0
 [5.1.4]: https://github.com/multidraxter-bit/plasma-ai-usage-monitor/compare/v5.1.3...v5.1.4
 [5.1.3]: https://github.com/multidraxter-bit/plasma-ai-usage-monitor/compare/v5.1.2...v5.1.3
 [5.1.2]: https://github.com/multidraxter-bit/plasma-ai-usage-monitor/compare/v5.1.1...v5.1.2

@@ -22,4 +22,7 @@ fi
 
 echo "Done. Local package installed at:"
 echo "  ${HOME}/.local/share/plasma/plasmoids/com.github.loofi.aiusagemonitor"
-
+echo
+echo "Next step:"
+echo "  - For QML-only changes, reload Plasma: ./scripts/reload_plasma.sh"
+echo "  - For C++ plugin changes, a plasmoid-only install is not enough; rebuild and reinstall the plugin before reloading Plasma"

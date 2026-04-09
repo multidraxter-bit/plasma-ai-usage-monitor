@@ -10,16 +10,18 @@ tags: [feature, testing, quality, chore]
 
 # Introduction
 
+> Historical note (2026-04-09): this plan predates the current test expansion. The repository no longer has only two test files, and GitHub Actions build workflows are currently disabled. Use local `just test` / `ctest --test-dir build --output-on-failure` as the maintained gate.
+
 ![Status: Planned](https://img.shields.io/badge/status-Planned-blue)
 
-The plasma-ai-usage-monitor plugin contains 16 registered C++ QML types but only 2 test files — both covering `UsageDatabase` (series metrics and history mapping regression). Core business logic in `ProviderBackend`, `SubscriptionToolBackend`, `UpdateChecker`, and cost estimation is entirely untested. This plan adds unit tests for the testable non-network logic in these classes to catch regressions, validate budget/limit calculations, and improve confidence during future refactoring.
+The plasma-ai-usage-monitor plugin originally contained 16 registered C++ QML types but only 2 test files — both covering `UsageDatabase` (series metrics and history mapping regression). This plan documents the original gap analysis that drove the broader unit-test expansion across provider backends, subscription tools, update checking, and cost-estimation behavior.
 
 ## 1. Requirements & Constraints
 
 - **REQ-001**: All new tests must use the Qt Test framework (`QTest`) consistent with existing test infrastructure.
 - **REQ-002**: Tests must be buildable with the existing CMake/CTest pipeline (`cmake --build build && ctest --test-dir build`).
 - **REQ-003**: Tests must not require network access, KWallet, or a running Plasma session — pure unit tests only.
-- **REQ-004**: Tests must run in CI (GitHub Actions `build.yml`) without additional dependencies.
+- **REQ-004**: Tests must run in the maintained local CMake/CTest workflow without additional dependencies.
 - **SEC-001**: No API keys, credentials, or real user data in test fixtures.
 - **CON-001**: Cannot test `refresh()` or network-dependent provider methods without mocking `QNetworkAccessManager` (out of scope for Phase 1).
 - **CON-002**: Cannot instantiate abstract classes directly — use minimal concrete subclasses in test files.
@@ -95,7 +97,7 @@ The plasma-ai-usage-monitor plugin contains 16 registered C++ QML types but only
 | Task | Description | Completed | Date |
 |------|-------------|-----------|------|
 | TASK-032 | Run full test suite locally: `cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug && cmake --build build --parallel && ctest --test-dir build --output-on-failure`. | | |
-| TASK-033 | Verify existing CI workflow (`build.yml`) runs `ctest` and new tests are picked up automatically. | | |
+| TASK-033 | Verify the maintained local CTest workflow runs `ctest` and new tests are picked up automatically. | | |
 | TASK-034 | Update `README.md` "Run Tests" section if any new instructions are needed. | | |
 
 ## 3. Alternatives
@@ -124,14 +126,14 @@ The plasma-ai-usage-monitor plugin contains 16 registered C++ QML types but only
 - **TEST-002**: `test_subscriptiontoolbackend` — Validates usage counting, limit checking, period resets, warning signals, and secondary limit tracking.
 - **TEST-003**: `test_updatechecker` — Validates version property setters, normalization, and signal emission.
 - **TEST-004**: `test_usagedatabase_extended` — Validates pruning, export, summary aggregation, daily costs, throttling, and retention clamping.
-- **TEST-005**: CI gate — All tests pass in `ctest --test-dir build --output-on-failure` both locally and in GitHub Actions.
+- **TEST-005**: Local gate — All tests pass in `ctest --test-dir build --output-on-failure`.
 
 ## 7. Risks & Assumptions
 
 - **RISK-001**: `ProviderBackend` and `SubscriptionToolBackend` are abstract classes with protected members. Tests require concrete subclasses to access protected setters, which adds boilerplate. Mitigated by keeping test subclasses minimal.
 - **RISK-002**: Budget dedup flags (`m_dailyWarningEmitted`, etc.) are private with no public reset API. Tests may need to rely on constructing fresh instances per test case.
 - **RISK-003**: `checkAndResetPeriod()` is protected in `SubscriptionToolBackend`. Test subclass must expose it via a public wrapper.
-- **ASSUMPTION-001**: The existing CI workflow (`build.yml`) already runs `cmake --build` with `BUILD_TESTING=ON` and `ctest`, so new tests will be automatically discovered.
+- **ASSUMPTION-001**: The maintained local workflow runs `cmake --build` with `BUILD_TESTING=ON` and `ctest`, so new tests will be automatically discovered.
 - **ASSUMPTION-002**: All target classes can be instantiated without a running Plasma session or KWallet daemon when only testing non-network/non-wallet code paths.
 
 ## 8. Related Specifications / Further Reading
@@ -139,4 +141,4 @@ The plasma-ai-usage-monitor plugin contains 16 registered C++ QML types but only
 - [Qt Test Framework Documentation](https://doc.qt.io/qt-6/qttest-index.html)
 - [CMake CTest Documentation](https://cmake.org/cmake/help/latest/manual/ctest.1.html)
 - Existing tests: `plugin/tests/test_usagedatabase_series.cpp`, `plugin/tests/test_history_mapping_regression.cpp`
-- CI workflow: `.github/workflows/build.yml`
+- Maintained verification path: local `just test` / `ctest --test-dir build --output-on-failure`

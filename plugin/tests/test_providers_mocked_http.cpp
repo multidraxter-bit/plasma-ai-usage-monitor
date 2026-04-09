@@ -5,6 +5,7 @@
 #include <QHostAddress>
 #include <QTcpServer>
 #include <QTcpSocket>
+#include <QTimer>
 #include <QUrl>
 #include <QJsonObject>
 
@@ -17,6 +18,7 @@
 #include "loofiserverprovider.h"
 #include "groqprovider.h"
 #include "mistralprovider.h"
+#include "ollamacloudprovider.h"
 #include "openaiprovider.h"
 #include "openrouterprovider.h"
 #include "providerbackend.h"
@@ -32,6 +34,7 @@ public:
         int status = 200;
         QByteArray body = "{}";
         QList<QPair<QByteArray, QByteArray>> headers;
+        int delayMs = 0;
     };
 
     explicit HttpStubServer(QObject *parent = nullptr)
@@ -65,7 +68,15 @@ public:
                     m_hitCount[path] = m_hitCount.value(path) + 1;
 
                     const QString key = method + QStringLiteral(" ") + path;
-                    Response response = m_routes.value(key, Response{404, "{\"error\":\"not found\"}", {}});
+                    Response response;
+                    if (m_routeSequences.contains(key) && !m_routeSequences[key].isEmpty()) {
+                        response = m_routeSequences[key].takeFirst();
+                        if (m_routeSequences[key].isEmpty()) {
+                            m_routeSequences.remove(key);
+                        }
+                    } else {
+                        response = m_routes.value(key, Response{404, "{\"error\":\"not found\"}", {}, 0});
+                    }
 
                     QByteArray payload;
                     payload += "HTTP/1.1 " + QByteArray::number(response.status) + " OK\r\n";
@@ -77,8 +88,19 @@ public:
                     payload += "Connection: close\r\n\r\n";
                     payload += response.body;
 
-                    socket->write(payload);
-                    socket->disconnectFromHost();
+                    auto sendPayload = [socket, payload]() {
+                        if (socket->state() != QAbstractSocket::ConnectedState) {
+                            return;
+                        }
+                        socket->write(payload);
+                        socket->disconnectFromHost();
+                    };
+
+                    if (response.delayMs > 0) {
+                        QTimer::singleShot(response.delayMs, socket, sendPayload);
+                    } else {
+                        sendPayload();
+                    }
                 });
 
                 connect(socket, &QTcpSocket::disconnected, socket, &QObject::deleteLater);
@@ -105,6 +127,13 @@ public:
         m_routes.insert(method + QStringLiteral(" ") + path, Response{status, body, headers});
     }
 
+    void setResponseSequence(const QString &method,
+                             const QString &path,
+                             const QList<Response> &responses)
+    {
+        m_routeSequences.insert(method + QStringLiteral(" ") + path, responses);
+    }
+
     int hitCount(const QString &path) const
     {
         return m_hitCount.value(path, 0);
@@ -114,6 +143,7 @@ private:
     QTcpServer m_server;
     QHash<QTcpSocket *, QByteArray> m_buffers;
     QHash<QString, Response> m_routes;
+    QHash<QString, QList<Response>> m_routeSequences;
     QHash<QString, int> m_hitCount;
 };
 
@@ -133,6 +163,7 @@ private Q_SLOTS:
     void googleVeoUsagePayloadEstimatedCost();
     void googleVeoDurationSecondsEstimatedCost();
     void googleVeoAuthError();
+    void ollamaStaleGenerationDiscarded();
     void openRouterUsageAndCredits();
     void togetherAiUsageAndHeaders();
     void cohereUsageAndHeaders();
@@ -589,6 +620,76 @@ void ProvidersMockedHttpTest::googleVeoAuthError()
     QVERIFY(provider.errorCount() >= 1);
     QVERIFY(!provider.errorString().isEmpty());
     QVERIFY(!provider.isConnected());
+}
+
+void ProvidersMockedHttpTest::ollamaStaleGenerationDiscarded()
+{
+    HttpStubServer server;
+    QVERIFY(server.listen());
+
+    const QByteArray staleBody = R"JSON({
+        "usage": {
+            "prompt_tokens": 10,
+            "completion_tokens": 1,
+            "total_tokens": 11
+        }
+    })JSON";
+
+    const QByteArray freshBody = R"JSON({
+        "usage": {
+            "prompt_tokens": 99,
+            "completion_tokens": 5,
+            "total_tokens": 104
+        }
+    })JSON";
+
+    server.setResponseSequence(
+        QStringLiteral("POST"),
+        QStringLiteral("/v1/chat/completions"),
+        {
+            HttpStubServer::Response{
+                200,
+                staleBody,
+                {
+                    {"x-ratelimit-limit-requests", "100"},
+                    {"x-ratelimit-remaining-requests", "90"},
+                    {"x-ratelimit-limit-tokens", "2000"},
+                    {"x-ratelimit-remaining-tokens", "1900"},
+                },
+                250
+            },
+            HttpStubServer::Response{
+                200,
+                freshBody,
+                {
+                    {"x-ratelimit-limit-requests", "100"},
+                    {"x-ratelimit-remaining-requests", "10"},
+                    {"x-ratelimit-limit-tokens", "2000"},
+                    {"x-ratelimit-remaining-tokens", "1500"},
+                },
+                0
+            }
+        });
+
+    OllamaCloudProvider provider;
+    provider.setApiKey(QStringLiteral("test-key"));
+    provider.setCustomBaseUrl(server.baseUrl() + QStringLiteral("/v1"));
+
+    QSignalSpy dataSpy(&provider, &ProviderBackend::dataUpdated);
+
+    provider.refresh();
+    QTest::qWait(50);
+    provider.refresh();
+
+    QTRY_VERIFY_WITH_TIMEOUT(dataSpy.count() >= 1, 3000);
+    QTest::qWait(300);
+
+    QCOMPARE(provider.inputTokens(), 99);
+    QCOMPARE(provider.outputTokens(), 5);
+    QCOMPARE(provider.requestCount(), 1);
+    QCOMPARE(provider.rateLimitRequestsRemaining(), 10);
+    QCOMPARE(provider.rateLimitTokensRemaining(), 1500);
+    QCOMPARE(server.hitCount(QStringLiteral("/v1/chat/completions")), 2);
 }
 
 void ProvidersMockedHttpTest::openRouterUsageAndCredits()

@@ -23,6 +23,8 @@ PlasmaExtras.Representation {
     property date lastQueryTo: new Date(0)
     property bool historyLoading: false
     property int onboardingStep: 0
+    property string lastExpandedProviderName: ""
+    property string lastExpandedToolName: ""
     readonly property bool narrowPopup: width < Kirigami.Units.gridUnit * 18
     readonly property bool compactHistoryControls: width < Kirigami.Units.gridUnit * 15
     readonly property bool compactSectionHeaders: width < Kirigami.Units.gridUnit * 16
@@ -428,6 +430,151 @@ PlasmaExtras.Representation {
                             }
                         }
 
+                        ColumnLayout {
+                            Layout.fillWidth: true
+                            Layout.leftMargin: Kirigami.Units.smallSpacing
+                            Layout.rightMargin: Kirigami.Units.smallSpacing
+                            visible: attentionItemCount() > 0
+                            spacing: Kirigami.Units.smallSpacing
+
+                            RowLayout {
+                                Layout.fillWidth: true
+                                spacing: Kirigami.Units.smallSpacing
+
+                                PlasmaExtras.Heading {
+                                    level: 5
+                                    text: i18n("Needs Attention")
+                                    Layout.fillWidth: true
+                                    opacity: 0.82
+                                }
+
+                                Rectangle {
+                                    radius: Kirigami.Units.smallSpacing
+                                    color: Qt.alpha(Kirigami.Theme.negativeTextColor, 0.12)
+                                    border.width: 1
+                                    border.color: Qt.alpha(Kirigami.Theme.negativeTextColor, 0.24)
+                                    implicitWidth: attentionCountLabel.implicitWidth + Kirigami.Units.smallSpacing * 2
+                                    implicitHeight: attentionCountLabel.implicitHeight + Kirigami.Units.smallSpacing
+
+                                    PlasmaComponents.Label {
+                                        id: attentionCountLabel
+                                        anchors.centerIn: parent
+                                        text: i18n("%1 items", attentionItemCount())
+                                        font.pointSize: Kirigami.Theme.smallFont.pointSize
+                                        color: Kirigami.Theme.negativeTextColor
+                                    }
+                                }
+                            }
+
+                            Repeater {
+                                model: root.allProviders ?? []
+
+                                Rectangle {
+                                    readonly property string reason: fullRoot.providerAttentionReason(modelData)
+                                    Layout.fillWidth: true
+                                    visible: modelData.enabled && reason !== ""
+                                    radius: Kirigami.Units.smallSpacing
+                                    color: Qt.alpha(Kirigami.Theme.negativeTextColor, 0.06)
+                                    border.width: 1
+                                    border.color: Qt.alpha(Kirigami.Theme.negativeTextColor, 0.18)
+                                    implicitHeight: providerAttentionRow.implicitHeight + Kirigami.Units.smallSpacing * 2
+
+                                    RowLayout {
+                                        id: providerAttentionRow
+                                        anchors.fill: parent
+                                        anchors.margins: Kirigami.Units.smallSpacing
+                                        spacing: Kirigami.Units.smallSpacing
+
+                                        Kirigami.Icon {
+                                            source: modelData.backend?.iconName ?? "dialog-warning"
+                                            Layout.preferredWidth: Kirigami.Units.iconSizes.small
+                                            Layout.preferredHeight: Kirigami.Units.iconSizes.small
+                                        }
+
+                                        ColumnLayout {
+                                            Layout.fillWidth: true
+                                            spacing: 2
+
+                                            PlasmaComponents.Label {
+                                                Layout.fillWidth: true
+                                                text: modelData.name
+                                                font.bold: true
+                                                elide: Text.ElideRight
+                                            }
+
+                                            PlasmaComponents.Label {
+                                                Layout.fillWidth: true
+                                                text: reason
+                                                font.pointSize: Kirigami.Theme.smallFont.pointSize
+                                                opacity: 0.72
+                                                wrapMode: Text.WordWrap
+                                            }
+                                        }
+
+                                        PlasmaComponents.Button {
+                                            activeFocusOnTab: true
+                                            text: i18n("Review")
+                                            onClicked: fullRoot.lastExpandedProviderName = modelData.name
+                                        }
+                                    }
+                                }
+                            }
+
+                            Repeater {
+                                model: root.allSubscriptionTools ?? []
+
+                                Rectangle {
+                                    readonly property string reason: fullRoot.toolAttentionReason(modelData)
+                                    Layout.fillWidth: true
+                                    visible: modelData.enabled && reason !== ""
+                                    radius: Kirigami.Units.smallSpacing
+                                    color: Qt.alpha(Kirigami.Theme.neutralTextColor, 0.08)
+                                    border.width: 1
+                                    border.color: Qt.alpha(Kirigami.Theme.neutralTextColor, 0.2)
+                                    implicitHeight: toolAttentionRow.implicitHeight + Kirigami.Units.smallSpacing * 2
+
+                                    RowLayout {
+                                        id: toolAttentionRow
+                                        anchors.fill: parent
+                                        anchors.margins: Kirigami.Units.smallSpacing
+                                        spacing: Kirigami.Units.smallSpacing
+
+                                        Kirigami.Icon {
+                                            source: modelData.monitor?.iconName ?? "dialog-warning"
+                                            Layout.preferredWidth: Kirigami.Units.iconSizes.small
+                                            Layout.preferredHeight: Kirigami.Units.iconSizes.small
+                                        }
+
+                                        ColumnLayout {
+                                            Layout.fillWidth: true
+                                            spacing: 2
+
+                                            PlasmaComponents.Label {
+                                                Layout.fillWidth: true
+                                                text: modelData.name
+                                                font.bold: true
+                                                elide: Text.ElideRight
+                                            }
+
+                                            PlasmaComponents.Label {
+                                                Layout.fillWidth: true
+                                                text: reason
+                                                font.pointSize: Kirigami.Theme.smallFont.pointSize
+                                                opacity: 0.72
+                                                wrapMode: Text.WordWrap
+                                            }
+                                        }
+
+                                        PlasmaComponents.Button {
+                                            activeFocusOnTab: true
+                                            text: i18n("Review")
+                                            onClicked: fullRoot.lastExpandedToolName = modelData.name
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
                         CostSummaryCard {
                             Layout.fillWidth: true
                             Layout.margins: Kirigami.Units.smallSpacing
@@ -479,7 +626,9 @@ PlasmaExtras.Representation {
                             Layout.fillWidth: true
                             Layout.leftMargin: Kirigami.Units.smallSpacing
                             Layout.rightMargin: Kirigami.Units.smallSpacing
-                            visible: fullRoot.enabledProviderCount > 0 && !fullRoot.hasAnyConnectedProvider
+                            visible: fullRoot.enabledProviderCount > 0
+                                     && !fullRoot.hasAnyConnectedProvider
+                                     && attentionItemCount() === 0
                             iconName: "network-disconnect"
                             text: i18n("Providers are enabled but not connected")
                             explanation: i18n("Verify API keys, endpoint URLs, and connectivity, then use Refresh All.")
@@ -497,6 +646,15 @@ PlasmaExtras.Representation {
                                 backend: modelData.backend ?? null
                                 showCost: true
                                 showUsage: true
+                                collapsed: fullRoot.shouldCollapseProviderCard(modelData)
+
+                                onCollapsedChanged: {
+                                    if (!collapsed) {
+                                        fullRoot.lastExpandedProviderName = modelData.name;
+                                    } else if (fullRoot.lastExpandedProviderName === modelData.name) {
+                                        fullRoot.lastExpandedProviderName = "";
+                                    }
+                                }
                             }
                         }
 
@@ -544,9 +702,18 @@ PlasmaExtras.Representation {
                                 toolIcon: modelData.monitor?.iconName ?? "utilities-terminal"
                                 toolColor: modelData.monitor?.toolColor ?? Kirigami.Theme.textColor
                                 monitor: modelData.monitor ?? null
+                                collapsed: fullRoot.shouldCollapseToolCard(modelData)
 
                                 onSyncRequested: {
                                     root.performBrowserSync();
+                                }
+
+                                onCollapsedChanged: {
+                                    if (!collapsed) {
+                                        fullRoot.lastExpandedToolName = modelData.name;
+                                    } else if (fullRoot.lastExpandedToolName === modelData.name) {
+                                        fullRoot.lastExpandedToolName = "";
+                                    }
                                 }
                             }
                         }
@@ -991,6 +1158,82 @@ PlasmaExtras.Representation {
             || plasmoid.configuration.claudeCodeEnabled
             || plasmoid.configuration.codexEnabled
             || plasmoid.configuration.copilotEnabled;
+    }
+
+    function providerRateLimitPercent(backend) {
+        if (!backend) return 0;
+        var requestPercent = 0;
+        var tokenPercent = 0;
+        if ((backend.rateLimitRequests ?? 0) > 0) {
+            requestPercent = 100 - ((backend.rateLimitRequestsRemaining ?? 0) * 100 / backend.rateLimitRequests);
+        }
+        if ((backend.rateLimitTokens ?? 0) > 0) {
+            tokenPercent = 100 - ((backend.rateLimitTokensRemaining ?? 0) * 100 / backend.rateLimitTokens);
+        }
+        return Math.max(requestPercent, tokenPercent);
+    }
+
+    function providerAttentionReason(provider) {
+        if (!provider || !provider.enabled || !provider.backend) return "";
+        var backend = provider.backend;
+        var warningPercent = plasmoid.configuration.budgetWarningPercent || 80;
+        if (backend.error) return i18n("Error: %1", backend.error);
+        if (!backend.connected) return i18n("Not connected");
+        if ((backend.dailyBudget ?? 0) > 0 && (backend.dailyCost ?? 0) >= (backend.dailyBudget * warningPercent / 100.0)) {
+            return i18n("Daily budget nearing limit");
+        }
+        if ((backend.monthlyBudget ?? 0) > 0 && (backend.monthlyCost ?? 0) >= (backend.monthlyBudget * warningPercent / 100.0)) {
+            return i18n("Monthly budget nearing limit");
+        }
+        var rateLimitUsed = providerRateLimitPercent(backend);
+        if (rateLimitUsed >= (plasmoid.configuration.warningThreshold || 80)) {
+            return i18n("Rate limit usage at %1%", Math.round(rateLimitUsed));
+        }
+        return "";
+    }
+
+    function toolAttentionReason(tool) {
+        if (!tool || !tool.enabled || !tool.monitor) return "";
+        var monitor = tool.monitor;
+        if (!(monitor.installed ?? false)) return i18n("Tool not detected on this system");
+        if (monitor.limitReached ?? false) return i18n("Primary limit reached");
+        if (monitor.secondaryLimitReached ?? false) return i18n("Secondary limit reached");
+        if ((monitor.percentUsed ?? 0) >= 80) return i18n("Primary usage at %1%", Math.round(monitor.percentUsed));
+        if ((monitor.secondaryPercentUsed ?? 0) >= 80) return i18n("Secondary usage at %1%", Math.round(monitor.secondaryPercentUsed));
+        var syncStatus = monitor.syncStatus ?? "";
+        if (syncStatus !== "" && syncStatus !== "idle" && syncStatus !== "OK") {
+            return syncStatus;
+        }
+        return "";
+    }
+
+    function attentionItemCount() {
+        var count = 0;
+        var providers = root.allProviders ?? [];
+        for (var i = 0; i < providers.length; i++) {
+            if (providerAttentionReason(providers[i]) !== "") count++;
+        }
+        var tools = root.allSubscriptionTools ?? [];
+        for (var j = 0; j < tools.length; j++) {
+            if (toolAttentionReason(tools[j]) !== "") count++;
+        }
+        return count;
+    }
+
+    function shouldCollapseProviderCard(provider) {
+        if (!provider || !provider.enabled) return true;
+        if (providerAttentionReason(provider) !== "") return false;
+        return fullRoot.lastExpandedProviderName === ""
+            ? true
+            : fullRoot.lastExpandedProviderName !== provider.name;
+    }
+
+    function shouldCollapseToolCard(tool) {
+        if (!tool || !tool.enabled) return true;
+        if (toolAttentionReason(tool) !== "") return false;
+        return fullRoot.lastExpandedToolName === ""
+            ? true
+            : fullRoot.lastExpandedToolName !== tool.name;
     }
 
     function hasCostData() {
