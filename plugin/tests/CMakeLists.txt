@@ -23,9 +23,13 @@ set(TEST_PROVIDER_SRC
 
 set(TEST_SUBSCRIPTION_SRC
     ${CMAKE_SOURCE_DIR}/plugin/subscriptiontoolbackend.cpp
+    ${CMAKE_SOURCE_DIR}/plugin/localactivitymonitorbase.cpp
     ${CMAKE_SOURCE_DIR}/plugin/claudecodemonitor.cpp
     ${CMAKE_SOURCE_DIR}/plugin/codexclimonitor.cpp
     ${CMAKE_SOURCE_DIR}/plugin/copilotmonitor.cpp
+    ${CMAKE_SOURCE_DIR}/plugin/cursormonitor.cpp
+    ${CMAKE_SOURCE_DIR}/plugin/windsurfmonitor.cpp
+    ${CMAKE_SOURCE_DIR}/plugin/jetbrainsaimonitor.cpp
 )
 
 set(TEST_PROVIDER_BACKEND_ONLY_SRC
@@ -34,6 +38,14 @@ set(TEST_PROVIDER_BACKEND_ONLY_SRC
 
 set(TEST_SUBTOOL_ONLY_SRC
     ${CMAKE_SOURCE_DIR}/plugin/subscriptiontoolbackend.cpp
+    ${CMAKE_SOURCE_DIR}/plugin/localactivitymonitorbase.cpp
+)
+
+set(TEST_INTEGRATION_SRC
+    ${CMAKE_SOURCE_DIR}/plugin/localmetricsserver.cpp
+    ${CMAKE_SOURCE_DIR}/plugin/webhooknotifier.cpp
+    ${CMAKE_SOURCE_DIR}/plugin/usagedatabase.cpp
+    ${CMAKE_SOURCE_DIR}/plugin/awssigv4signer.cpp
 )
 
 set(TEST_UPDATECHECKER_SRC
@@ -135,6 +147,22 @@ target_link_libraries(test_subscriptiontoolbackend
 )
 
 add_test(NAME subscriptiontoolbackend COMMAND test_subscriptiontoolbackend)
+
+# --- Local integrations / signer tests ---
+add_executable(test_local_integrations
+    test_local_integrations.cpp
+    ${TEST_INTEGRATION_SRC}
+)
+
+target_include_directories(test_local_integrations
+    PRIVATE ${CMAKE_SOURCE_DIR}/plugin
+)
+
+target_link_libraries(test_local_integrations
+    PRIVATE Qt6::Core Qt6::Test Qt6::Network Qt6::Sql
+)
+
+add_test(NAME local_integrations COMMAND test_local_integrations)
 
 # --- UpdateChecker unit test ---
 add_executable(test_updatechecker

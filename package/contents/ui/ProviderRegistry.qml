@@ -18,11 +18,15 @@ QtObject {
     required property var cohereBackend
     required property var googleveoBackend
     required property var azureBackend
+    required property var bedrockBackend
     required property var loofiBackend
 
     required property var claudeCodeMonitor
     required property var codexCliMonitor
     required property var copilotMonitor
+    required property var cursorMonitor
+    required property var windsurfMonitor
+    required property var jetbrainsAiMonitor
 
     property ProviderCatalog providerCatalog: ProviderCatalog {}
 
@@ -56,6 +60,8 @@ QtObject {
             return googleveoBackend;
         case "azure":
             return azureBackend;
+        case "bedrock":
+            return bedrockBackend;
         default:
             return null;
         }
@@ -91,6 +97,8 @@ QtObject {
             return configuration.googleveoEnabled;
         case "azure":
             return configuration.azureEnabled;
+        case "bedrock":
+            return configuration.bedrockEnabled;
         default:
             return false;
         }
@@ -126,6 +134,8 @@ QtObject {
             return configuration.googleveoRefreshInterval;
         case "azure":
             return configuration.azureRefreshInterval;
+        case "bedrock":
+            return configuration.bedrockRefreshInterval;
         default:
             return 0;
         }
@@ -161,6 +171,8 @@ QtObject {
             return configuration.googleveoNotificationsEnabled;
         case "azure":
             return configuration.azureNotificationsEnabled;
+        case "bedrock":
+            return configuration.bedrockNotificationsEnabled;
         default:
             return false;
         }
@@ -205,6 +217,24 @@ QtObject {
             monitor: copilotMonitor,
             enabled: configuration.copilotEnabled,
             notify: configuration.copilotNotifications
+        },
+        {
+            name: "Cursor",
+            monitor: cursorMonitor,
+            enabled: configuration.cursorEnabled,
+            notify: configuration.cursorNotifications
+        },
+        {
+            name: "Windsurf",
+            monitor: windsurfMonitor,
+            enabled: configuration.windsurfEnabled,
+            notify: configuration.windsurfNotifications
+        },
+        {
+            name: "JetBrains AI",
+            monitor: jetbrainsAiMonitor,
+            enabled: configuration.jetbrainsAiEnabled,
+            notify: configuration.jetbrainsAiNotifications
         }
     ]
 

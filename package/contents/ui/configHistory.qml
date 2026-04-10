@@ -10,6 +10,12 @@ KCM.SimpleKCM {
 
     property alias cfg_historyEnabled: historySwitch.checked
     property alias cfg_historyRetentionDays: retentionSlider.value
+    property alias cfg_prometheusEnabled: prometheusSwitch.checked
+    property alias cfg_prometheusPort: prometheusPortSpin.value
+    property alias cfg_autoExportEnabled: autoExportSwitch.checked
+    property alias cfg_autoExportDirectory: autoExportDirectoryField.text
+    property alias cfg_autoExportIntervalMinutes: autoExportIntervalSpin.value
+    property string cfg_autoExportFormat: plasmoid.configuration.autoExportFormat
 
     // Database reference for size display
     UsageDatabase {
@@ -126,6 +132,107 @@ KCM.SimpleKCM {
             repeat: false
             // Trigger a binding re-evaluation by toggling a dummy property
             onTriggered: historyPage.forceActiveFocus()
+        }
+
+        Kirigami.Separator {
+            Kirigami.FormData.isSection: true
+            Kirigami.FormData.label: i18n("Prometheus")
+        }
+
+        QQC2.Switch {
+            id: prometheusSwitch
+            Kirigami.FormData.label: i18n("Enable metrics endpoint:")
+            checked: plasmoid.configuration.prometheusEnabled
+        }
+
+        RowLayout {
+            Kirigami.FormData.label: i18n("Port:")
+            enabled: prometheusSwitch.checked
+            spacing: Kirigami.Units.smallSpacing
+
+            QQC2.SpinBox {
+                id: prometheusPortSpin
+                from: 1024
+                to: 65535
+                value: plasmoid.configuration.prometheusPort
+            }
+
+            QQC2.Label {
+                text: i18n("Served locally on 127.0.0.1 only")
+                opacity: 0.6
+                Layout.fillWidth: true
+            }
+        }
+
+        Kirigami.Separator {
+            Kirigami.FormData.isSection: true
+            Kirigami.FormData.label: i18n("Auto Export")
+        }
+
+        QQC2.Switch {
+            id: autoExportSwitch
+            Kirigami.FormData.label: i18n("Enable scheduled export:")
+            checked: plasmoid.configuration.autoExportEnabled
+        }
+
+        QQC2.TextField {
+            id: autoExportDirectoryField
+            Kirigami.FormData.label: i18n("Directory:")
+            enabled: autoExportSwitch.checked
+            text: plasmoid.configuration.autoExportDirectory
+            placeholderText: i18n("/path/to/export-directory")
+            Layout.fillWidth: true
+        }
+
+        RowLayout {
+            Kirigami.FormData.label: i18n("Interval:")
+            enabled: autoExportSwitch.checked
+            spacing: Kirigami.Units.smallSpacing
+
+            QQC2.SpinBox {
+                id: autoExportIntervalSpin
+                from: 5
+                to: 1440
+                value: plasmoid.configuration.autoExportIntervalMinutes
+            }
+
+            QQC2.Label {
+                text: i18n("minutes")
+                opacity: 0.6
+            }
+        }
+
+        QQC2.ComboBox {
+            id: autoExportFormatCombo
+            Kirigami.FormData.label: i18n("Format:")
+            enabled: autoExportSwitch.checked
+            model: [
+                { label: i18n("JSON + CSV"), value: "both" },
+                { label: i18n("JSON only"), value: "json" },
+                { label: i18n("CSV only"), value: "csv" }
+            ]
+            textRole: "label"
+            currentIndex: {
+                if (historyPage.cfg_autoExportFormat === "json") return 1;
+                if (historyPage.cfg_autoExportFormat === "csv") return 2;
+                return 0;
+            }
+            onActivated: historyPage.cfg_autoExportFormat = model[currentIndex].value
+        }
+
+        QQC2.Button {
+            Kirigami.FormData.label: i18n("Export now:")
+            enabled: autoExportDirectoryField.text.length > 0
+            text: i18n("Write Export Files")
+            onClicked: {
+                var formats = ["json", "csv"];
+                if (historyPage.cfg_autoExportFormat === "json") {
+                    formats = ["json"];
+                } else if (historyPage.cfg_autoExportFormat === "csv") {
+                    formats = ["csv"];
+                }
+                historyDb.exportAllToDirectory(autoExportDirectoryField.text, formats);
+            }
         }
     }
 

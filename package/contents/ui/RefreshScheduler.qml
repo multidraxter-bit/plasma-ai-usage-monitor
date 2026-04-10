@@ -83,6 +83,24 @@ Item {
     }
 
     Timer {
+        interval: Math.max(5, scheduler.configuration.autoExportIntervalMinutes) * 60 * 1000
+        running: scheduler.configuration.autoExportEnabled
+                 && scheduler.configuration.autoExportDirectory !== ""
+        repeat: true
+        onTriggered: {
+            var formats = [];
+            if (scheduler.configuration.autoExportFormat === "json") {
+                formats = ["json"];
+            } else if (scheduler.configuration.autoExportFormat === "csv") {
+                formats = ["csv"];
+            } else {
+                formats = ["json", "csv"];
+            }
+            scheduler.usageDatabase.exportAllToDirectory(scheduler.configuration.autoExportDirectory, formats);
+        }
+    }
+
+    Timer {
         interval: 60 * 60 * 1000
         running: scheduler.configuration.copilotEnabled
                  && scheduler.copilotMonitor.githubToken !== ""

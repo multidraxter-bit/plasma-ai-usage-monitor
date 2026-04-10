@@ -1,7 +1,5 @@
 #include "claudecodemonitor.h"
-#include <QStandardPaths>
-#include <QFileInfo>
-#include <QProcess>
+#include <QDir>
 #include <QDebug>
 #include <QJsonDocument>
 #include <QJsonObject>
@@ -14,24 +12,23 @@
 #include "browsercookieextractor.h"
 
 ClaudeCodeMonitor::ClaudeCodeMonitor(QObject *parent)
-    : SubscriptionToolBackend(parent)
-    , m_watcher(new QFileSystemWatcher(this))
-    , m_debounceTimer(new QTimer(this))
+    : LocalActivityMonitorBase(parent)
 {
-    // Debounce: multiple filesystem events within 5 seconds count as one message
-    m_debounceTimer->setSingleShot(true);
-    m_debounceTimer->setInterval(5000);
-    connect(m_debounceTimer, &QTimer::timeout, this, [this]() {
-        if (m_pendingIncrement) {
-            m_pendingIncrement = false;
-            incrementUsage();
-        }
+    const QString configDir = claudeConfigDir();
+    setInstallExecutableNames({QStringLiteral("claude")});
+    setInstallPaths({
+        configDir,
+        QDir::homePath() + QStringLiteral("/.claude.json")
     });
-
-    connect(m_watcher, &QFileSystemWatcher::directoryChanged,
-            this, &ClaudeCodeMonitor::onDirectoryChanged);
-    connect(m_watcher, &QFileSystemWatcher::fileChanged,
-            this, &ClaudeCodeMonitor::onFileChanged);
+    setWatchedPaths({
+        configDir,
+        configDir + QStringLiteral("/projects"),
+        QDir::homePath() + QStringLiteral("/.claude.json")
+    });
+    setIgnoredPathSuffixes({
+        QStringLiteral("/settings.json"),
+        QStringLiteral("/.claude.json")
+    });
 }
 
 QString ClaudeCodeMonitor::claudeConfigDir() const
@@ -41,132 +38,6 @@ QString ClaudeCodeMonitor::claudeConfigDir() const
     QString envDir = QString::fromLocal8Bit(qgetenv("CLAUDE_CONFIG_DIR"));
     if (!envDir.isEmpty()) return envDir;
     return QDir::homePath() + QStringLiteral("/.claude");
-}
-
-void ClaudeCodeMonitor::checkToolInstalled()
-{
-    bool found = false;
-
-    // Check if 'claude' binary exists in PATH
-    QString claudePath = QStandardPaths::findExecutable(QStringLiteral("claude"));
-    if (!claudePath.isEmpty()) {
-        found = true;
-    }
-
-    // Also check for ~/.claude/ directory
-    QDir configDir(claudeConfigDir());
-    if (configDir.exists()) {
-        found = true;
-    }
-
-    setInstalled(found);
-
-    if (found && isEnabled()) {
-        setupWatcher();
-    }
-}
-
-void ClaudeCodeMonitor::setupWatcher()
-{
-    QString configDir = claudeConfigDir();
-    QDir dir(configDir);
-
-    if (dir.exists()) {
-        m_watcher->addPath(configDir);
-
-        // Watch key files that change during usage
-        QString settingsFile = configDir + QStringLiteral("/settings.json");
-        if (QFileInfo::exists(settingsFile)) {
-            m_watcher->addPath(settingsFile);
-        }
-
-        // Watch projects directory for conversation activity
-        QString projectsDir = configDir + QStringLiteral("/projects");
-        if (QDir(projectsDir).exists()) {
-            m_watcher->addPath(projectsDir);
-        }
-    }
-
-    // Also watch ~/.claude.json (global state file)
-    QString globalState = QDir::homePath() + QStringLiteral("/.claude.json");
-    if (QFileInfo::exists(globalState)) {
-        m_watcher->addPath(globalState);
-    }
-}
-
-void ClaudeCodeMonitor::detectActivity()
-{
-    // Manually check for recent activity by looking at file modification times
-    QString configDir = claudeConfigDir();
-    QDir dir(configDir);
-
-    if (!dir.exists()) return;
-
-    QDateTime latestMod;
-
-    // Check projects directory for recent changes
-    QString projectsDir = configDir + QStringLiteral("/projects");
-    QDir pDir(projectsDir);
-    if (pDir.exists()) {
-        const auto entries = pDir.entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot,
-                                                 QDir::Time);
-        if (!entries.isEmpty()) {
-            latestMod = entries.first().lastModified();
-        }
-    }
-
-    // Check global state file
-    QFileInfo globalState(QDir::homePath() + QStringLiteral("/.claude.json"));
-    if (globalState.exists() && globalState.lastModified() > latestMod) {
-        latestMod = globalState.lastModified();
-    }
-
-    // If we see a new modification since last check, schedule a debounced increment
-    if (latestMod.isValid() && latestMod > m_lastKnownModification) {
-        m_lastKnownModification = latestMod;
-        m_pendingIncrement = true;
-        if (!m_debounceTimer->isActive()) {
-            m_debounceTimer->start();
-        }
-    }
-}
-
-void ClaudeCodeMonitor::onDirectoryChanged(const QString &path)
-{
-    Q_UNUSED(path);
-    if (!isEnabled()) return;
-    detectActivity();
-}
-
-void ClaudeCodeMonitor::onFileChanged(const QString &path)
-{
-    Q_UNUSED(path);
-    if (!isEnabled()) return;
-
-    // Only count conversation-related file changes, not config edits
-    // Skip settings.json and other non-conversation files
-    if (path.endsWith(QStringLiteral("/settings.json"))
-        || path.endsWith(QStringLiteral("/.claude.json"))) {
-        // Re-add the file to the watcher but don't count as usage
-        if (!m_watcher->files().contains(path) && QFileInfo::exists(path)) {
-            m_watcher->addPath(path);
-        }
-        return;
-    }
-
-    QFileInfo fi(path);
-    if (fi.exists() && fi.lastModified() > m_lastKnownModification) {
-        m_lastKnownModification = fi.lastModified();
-        m_pendingIncrement = true;
-        if (!m_debounceTimer->isActive()) {
-            m_debounceTimer->start();
-        }
-    }
-
-    // Re-add the file to the watcher (QFileSystemWatcher removes files after change)
-    if (!m_watcher->files().contains(path) && QFileInfo::exists(path)) {
-        m_watcher->addPath(path);
-    }
 }
 
 QStringList ClaudeCodeMonitor::availablePlans() const
@@ -213,23 +84,15 @@ double ClaudeCodeMonitor::defaultCostForPlan(const QString &plan) const
 
 void ClaudeCodeMonitor::syncFromBrowser(const QString &cookieHeader, int browserType)
 {
+    Q_UNUSED(browserType);
     if (isSyncing()) return;
     setSyncing(true);
     setSyncStatus(QStringLiteral("Syncing..."));
 
-    if (browserType != BrowserCookieExtractor::Firefox) {
-        setSyncing(false);
-        setSyncStatus(i18n("Browser unsupported"));
-        const QString message = i18n("Browser Sync currently supports Firefox only");
-        Q_EMIT syncDiagnostic(toolName(), QStringLiteral("unsupported_browser"), message);
-        Q_EMIT syncCompleted(false, message);
-        return;
-    }
-
     if (cookieHeader.isEmpty()) {
         setSyncing(false);
         setSyncStatus(i18n("Not logged in"));
-        const QString message = i18n("Not logged in — open claude.ai in Firefox first");
+        const QString message = i18n("Not logged in — open claude.ai in the selected browser first");
         Q_EMIT syncDiagnostic(toolName(), QStringLiteral("not_logged_in"), message);
         Q_EMIT syncCompleted(false, message);
         return;

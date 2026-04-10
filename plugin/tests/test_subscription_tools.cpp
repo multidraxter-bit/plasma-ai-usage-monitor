@@ -44,7 +44,7 @@ private Q_SLOTS:
     void usageIncrementAndReset();
     void copilotDetectActivityIncrementsUsage();
     void browserSyncEmptyCookieDiagnostics();
-    void browserSyncUnsupportedBrowserDiagnostics();
+    void browserSyncChromeEmptyCookieDiagnostics();
 };
 
 void SubscriptionToolsTest::planDefaults()
@@ -195,43 +195,43 @@ void SubscriptionToolsTest::browserSyncEmptyCookieDiagnostics()
     QCOMPARE(codexDiagnosticArgs.at(1).toString(), QStringLiteral("not_logged_in"));
 }
 
-void SubscriptionToolsTest::browserSyncUnsupportedBrowserDiagnostics()
+void SubscriptionToolsTest::browserSyncChromeEmptyCookieDiagnostics()
 {
     ClaudeCodeMonitor claude;
     QSignalSpy claudeCompletedSpy(&claude, &SubscriptionToolBackend::syncCompleted);
     QSignalSpy claudeDiagnosticSpy(&claude, &SubscriptionToolBackend::syncDiagnostic);
 
-    claude.syncFromBrowser(QStringLiteral("sessionKey=test"), 1);
+    claude.syncFromBrowser(QString(), 1);
 
     QCOMPARE(claudeCompletedSpy.count(), 1);
     QCOMPARE(claudeDiagnosticSpy.count(), 1);
-    QCOMPARE(claude.syncStatus(), QStringLiteral("Browser unsupported"));
+    QCOMPARE(claude.syncStatus(), QStringLiteral("Not logged in"));
 
     const QList<QVariant> claudeCompletionArgs = claudeCompletedSpy.takeFirst();
     QCOMPARE(claudeCompletionArgs.at(0).toBool(), false);
-    QVERIFY(claudeCompletionArgs.at(1).toString().contains(QStringLiteral("Firefox"), Qt::CaseInsensitive));
+    QVERIFY(claudeCompletionArgs.at(1).toString().contains(QStringLiteral("claude.ai"), Qt::CaseInsensitive));
 
     const QList<QVariant> claudeDiagnosticArgs = claudeDiagnosticSpy.takeFirst();
     QCOMPARE(claudeDiagnosticArgs.at(0).toString(), QStringLiteral("Claude Code"));
-    QCOMPARE(claudeDiagnosticArgs.at(1).toString(), QStringLiteral("unsupported_browser"));
+    QCOMPARE(claudeDiagnosticArgs.at(1).toString(), QStringLiteral("not_logged_in"));
 
     CodexCliMonitor codex;
     QSignalSpy codexCompletedSpy(&codex, &SubscriptionToolBackend::syncCompleted);
     QSignalSpy codexDiagnosticSpy(&codex, &SubscriptionToolBackend::syncDiagnostic);
 
-    codex.syncFromBrowser(QStringLiteral("__Secure-next-auth.session-token=test"), 1);
+    codex.syncFromBrowser(QString(), 1);
 
     QCOMPARE(codexCompletedSpy.count(), 1);
     QCOMPARE(codexDiagnosticSpy.count(), 1);
-    QCOMPARE(codex.syncStatus(), QStringLiteral("Browser unsupported"));
+    QCOMPARE(codex.syncStatus(), QStringLiteral("Not logged in"));
 
     const QList<QVariant> codexCompletionArgs = codexCompletedSpy.takeFirst();
     QCOMPARE(codexCompletionArgs.at(0).toBool(), false);
-    QVERIFY(codexCompletionArgs.at(1).toString().contains(QStringLiteral("Firefox"), Qt::CaseInsensitive));
+    QVERIFY(codexCompletionArgs.at(1).toString().contains(QStringLiteral("chatgpt.com"), Qt::CaseInsensitive));
 
     const QList<QVariant> codexDiagnosticArgs = codexDiagnosticSpy.takeFirst();
     QCOMPARE(codexDiagnosticArgs.at(0).toString(), QStringLiteral("Codex CLI"));
-    QCOMPARE(codexDiagnosticArgs.at(1).toString(), QStringLiteral("unsupported_browser"));
+    QCOMPARE(codexDiagnosticArgs.at(1).toString(), QStringLiteral("not_logged_in"));
 }
 
 QTEST_MAIN(SubscriptionToolsTest)

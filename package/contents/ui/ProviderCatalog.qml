@@ -183,6 +183,19 @@ QtObject {
             notificationsConfigKey: "azureNotificationsEnabled",
             dailyBudgetConfigKey: "azureDailyBudget",
             monthlyBudgetConfigKey: "azureMonthlyBudget"
+        },
+        {
+            name: "AWS Bedrock",
+            label: i18n("AWS Bedrock"),
+            dbName: "AWS Bedrock",
+            configKey: "bedrock",
+            color: "#ff9900",
+            requiresApiKey: true,
+            supportsBudget: true,
+            refreshConfigKey: "bedrockRefreshInterval",
+            notificationsConfigKey: "bedrockNotificationsEnabled",
+            dailyBudgetConfigKey: "bedrockDailyBudget",
+            monthlyBudgetConfigKey: "bedrockMonthlyBudget"
         }
     ]
 

@@ -81,7 +81,8 @@ public:
         Together,
         Cohere,
         GoogleVeo,
-        AzureOpenAI
+        AzureOpenAI,
+        Bedrock
     };
     Q_ENUM(ProviderId)
 

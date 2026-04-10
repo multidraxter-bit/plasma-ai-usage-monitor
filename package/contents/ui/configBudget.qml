@@ -34,6 +34,8 @@ KCM.SimpleKCM {
     property int cfg_cohereMonthlyBudget
     property int cfg_azureDailyBudget
     property int cfg_azureMonthlyBudget
+    property int cfg_bedrockDailyBudget
+    property int cfg_bedrockMonthlyBudget
     property int cfg_googleveoDailyBudget
     property int cfg_googleveoMonthlyBudget
     property alias cfg_budgetWarningPercent: warningPercentSlider.value

@@ -1,5 +1,5 @@
 Name:           plasma-ai-usage-monitor
-Version:        5.2.0
+Version:        5.3.0
 Release:        1%{?dist}
 Summary:        KDE Plasma 6 widget to monitor AI API token usage, rate limits, and costs
 License:        GPL-3.0-or-later
@@ -68,6 +68,13 @@ appstream-util validate-relax --nonet %{buildroot}%{_datadir}/metainfo/com.githu
 %{_datadir}/metainfo/com.github.loofi.aiusagemonitor.metainfo.xml
 
 %changelog
+* Fri Apr 10 2026 Loofi <loofi@github.com> - 5.3.0-1
+- Add Cursor, Windsurf, and JetBrains AI local quota monitors
+- Add AWS Bedrock provider scaffolding and AWS SigV4 signing support
+- Add Linux Chrome and Chromium browser sync support
+- Add local Prometheus metrics export, webhook notifications, and scheduled JSON/CSV export
+- Refresh roadmap, AppStream metadata, and release documentation for Vanguard
+
 * Thu Apr 09 2026 Loofi <loofi@github.com> - 5.2.0-1
 - Add reusable OpenAI-compatible provider settings sections for shared KCM provider forms
 - Add attention-first popup summaries with remembered provider and tool card expansion state

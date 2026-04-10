@@ -16,7 +16,7 @@
     <p>
       It supports multiple hosted AI providers, local history, compare analytics,
       export options, notification controls, and subscription-tool monitoring for
-      Claude Code, Codex CLI, and GitHub Copilot.
+      Claude Code, Codex CLI, GitHub Copilot, Cursor, Windsurf, and JetBrains AI.
     </p>
   </description>
 
@@ -41,7 +41,7 @@
   </screenshots>
 
   <releases>
-    <release version="5.2.0" date="2026-04-09"/>
+    <release version="5.3.0" date="2026-04-10"/>
   </releases>
 
   <categories>

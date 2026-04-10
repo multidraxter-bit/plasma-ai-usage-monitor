@@ -71,6 +71,10 @@ ProviderBackend::ProviderId ProviderBackend::providerIdFromKey(const QString &pr
         || normalized == QLatin1String("azure_openai")) {
         return ProviderId::AzureOpenAI;
     }
+    if (normalized == QLatin1String("bedrock") || normalized == QLatin1String("aws-bedrock")
+        || normalized == QLatin1String("aws_bedrock")) {
+        return ProviderId::Bedrock;
+    }
 
     return ProviderId::Unknown;
 }
@@ -91,6 +95,7 @@ QString ProviderBackend::providerKeyFromId(ProviderId providerId)
     case ProviderId::Cohere: return QStringLiteral("cohere");
     case ProviderId::GoogleVeo: return QStringLiteral("google-veo");
     case ProviderId::AzureOpenAI: return QStringLiteral("azure-openai");
+    case ProviderId::Bedrock: return QStringLiteral("bedrock");
     case ProviderId::Unknown:
     default:
         return QStringLiteral("unknown");
@@ -142,6 +147,7 @@ ProviderBackend::NormalizedUsageCost ProviderBackend::normalizeUsageCost(Provide
     case ProviderId::Cohere:
     case ProviderId::GoogleVeo:
     case ProviderId::AzureOpenAI:
+    case ProviderId::Bedrock:
         return normalizeOpenAiLikeUsage(payload);
     case ProviderId::Anthropic:
     case ProviderId::Google:

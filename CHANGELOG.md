@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.3.0] — 2026-04-10
+
+### Added
+
+- Add local filesystem-backed subscription monitors for Cursor, Windsurf, and JetBrains AI
+- Add reusable local activity monitor infrastructure with install detection, watched-path debounce, and self-tracked increments
+- Add AWS Bedrock provider scaffolding with AWS Signature Version 4 request signing support
+- Add Linux Chrome/Chromium browser profile discovery and cookie sync support for experimental browser sync
+- Add local Prometheus metrics export, Slack/Discord webhook alert delivery, and scheduled JSON/CSV history export
+- Add GitHub Actions CI validation for Flatpak scaffold checks, version consistency, build, and tests
+
+### Changed
+
+- Replace the roadmap with the revised Vanguard, Link, and Nexus (Light) release plan
+- Extend browser sync messaging and configuration to cover Firefox, Chrome, and Chromium on Linux
+- Update release-facing README, AppStream, and configuration surfaces for the expanded provider, tool, export, and notification support
+- Refactor Claude Code and Codex CLI monitoring onto shared local activity infrastructure
+- Keep the project on the desktop-widget architecture without introducing PostgreSQL, multi-user storage, or a separate team backend
+
 ## [5.2.0] — 2026-04-09
 
 ### Added
@@ -503,7 +522,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - KWallet integration for secure API key storage
 - KDE notifications for rate limit warnings
 
-[Unreleased]: https://github.com/multidraxter-bit/plasma-ai-usage-monitor/compare/v5.2.0...HEAD
+[Unreleased]: https://github.com/multidraxter-bit/plasma-ai-usage-monitor/compare/v5.3.0...HEAD
+[5.3.0]: https://github.com/multidraxter-bit/plasma-ai-usage-monitor/compare/v5.2.0...v5.3.0
 [5.2.0]: https://github.com/multidraxter-bit/plasma-ai-usage-monitor/compare/v5.1.4...v5.2.0
 [5.1.4]: https://github.com/multidraxter-bit/plasma-ai-usage-monitor/compare/v5.1.3...v5.1.4
 [5.1.3]: https://github.com/multidraxter-bit/plasma-ai-usage-monitor/compare/v5.1.2...v5.1.3

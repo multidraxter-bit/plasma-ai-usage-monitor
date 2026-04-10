@@ -1,0 +1,51 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+
+jobs:
+  build-and-validate:
+    runs-on: ubuntu-latest
+    container:
+      image: fedora:43
+
+    steps:
+      - name: Install git
+        run: dnf install -y git
+
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install build dependencies
+        run: |
+          dnf install -y \
+            cmake \
+            ninja-build \
+            gcc-c++ \
+            extra-cmake-modules \
+            qt6-qtbase \
+            qt6-qtbase-devel \
+            qt6-qtdeclarative-devel \
+            libplasma-devel \
+            kf6-kwallet-devel \
+            kf6-ki18n-devel \
+            kf6-knotifications-devel \
+            kf6-kcoreaddons-devel \
+            openssl-devel
+
+      - name: Validate release consistency
+        run: |
+          bash scripts/check_version_consistency.sh
+          bash scripts/check_no_hardcoded_versions.sh
+          bash scripts/check_flatpak_scaffold.sh
+
+      - name: Configure
+        run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTING=ON
+
+      - name: Build
+        run: cmake --build build
+
+      - name: Test
+        run: ctest --test-dir build --output-on-failure

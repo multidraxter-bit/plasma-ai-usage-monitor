@@ -179,6 +179,14 @@ public:
                                     const QDateTime &to) const;
 
     /**
+     * Export all stored provider and subscription-tool history to timestamped
+     * files in the target directory. Supported formats: "json", "csv".
+     * Returns absolute paths written successfully.
+     */
+    Q_INVOKABLE QStringList exportAllToDirectory(const QString &dirPath,
+                                                 const QStringList &formats) const;
+
+    /**
      * Remove data older than retentionDays.
      */
     Q_INVOKABLE void pruneOldData();

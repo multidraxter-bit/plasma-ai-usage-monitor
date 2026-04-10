@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
-project(plasma-ai-usage-monitor VERSION 5.2.0)
+project(plasma-ai-usage-monitor VERSION 5.3.0)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -15,6 +15,7 @@ include(KDECMakeSettings)
 include(KDECompilerSettings NO_POLICY_SCOPE)
 
 find_package(Qt6 REQUIRED COMPONENTS Core Qml Quick Network Sql)
+find_package(OpenSSL REQUIRED)
 find_package(Plasma REQUIRED)
 find_package(KF6Wallet REQUIRED)
 find_package(KF6Notifications REQUIRED)

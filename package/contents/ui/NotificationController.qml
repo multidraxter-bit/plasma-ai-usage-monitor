@@ -11,6 +11,7 @@ Item {
     required property var configuration
     required property var registry
     required property var usageDatabase
+    required property var webhookNotifier
 
     property var lastNotificationTimes: ({})
 
@@ -99,6 +100,7 @@ Item {
         errorNotification.title = title;
         errorNotification.text = message;
         errorNotification.sendEvent();
+        webhookNotifier.sendAlert("error_" + title, title, message, true);
     }
 
     function sendUpdateAvailable(latestVersion, releaseUrl) {
@@ -126,10 +128,18 @@ Item {
             warningNotification.text = i18n("%1: CRITICAL - %2% of rate limit used!", provider, percentUsed);
             warningNotification.urgency = Notification.CriticalUrgency;
             warningNotification.sendEvent();
+            webhookNotifier.sendAlert("quota_" + provider,
+                                      i18n("%1 rate limit critical", provider),
+                                      warningNotification.text,
+                                      true);
         } else if (percentUsed >= configuration.warningThreshold) {
             warningNotification.text = i18n("%1: Warning - %2% of rate limit used", provider, percentUsed);
             warningNotification.urgency = Notification.NormalUrgency;
             warningNotification.sendEvent();
+            webhookNotifier.sendAlert("quota_" + provider,
+                                      i18n("%1 rate limit warning", provider),
+                                      warningNotification.text,
+                                      false);
         }
     }
 
@@ -149,6 +159,10 @@ Item {
                                        budget.toFixed(2));
         budgetNotification.urgency = Notification.NormalUrgency;
         budgetNotification.sendEvent();
+        webhookNotifier.sendAlert("budgetwarn_" + provider + "_" + period,
+                                  i18n("%1 %2 budget warning", provider, period),
+                                  budgetNotification.text,
+                                  false);
     }
 
     function handleBudgetExceeded(provider, period, spent, budget) {
@@ -163,6 +177,10 @@ Item {
                                        provider, period, spent.toFixed(2), budget.toFixed(2));
         budgetNotification.urgency = Notification.CriticalUrgency;
         budgetNotification.sendEvent();
+        webhookNotifier.sendAlert("budget_" + provider + "_" + period,
+                                  i18n("%1 %2 budget exceeded", provider, period),
+                                  budgetNotification.text,
+                                  true);
     }
 
     function handleProviderDisconnected(provider) {
@@ -177,6 +195,10 @@ Item {
         connectionNotification.text = i18n("%1 has disconnected", provider);
         connectionNotification.urgency = Notification.NormalUrgency;
         connectionNotification.sendEvent();
+        webhookNotifier.sendAlert("disconnect_" + provider,
+                                  i18n("%1 disconnected", provider),
+                                  connectionNotification.text,
+                                  true);
     }
 
     function handleProviderReconnected(provider) {
@@ -191,6 +213,10 @@ Item {
         connectionNotification.text = i18n("%1 has reconnected", provider);
         connectionNotification.urgency = Notification.LowUrgency;
         connectionNotification.sendEvent();
+        webhookNotifier.sendAlert("reconnect_" + provider,
+                                  i18n("%1 reconnected", provider),
+                                  connectionNotification.text,
+                                  false);
     }
 
     function handleToolLimitWarning(toolName, percentUsed) {
@@ -206,6 +232,10 @@ Item {
             ? Notification.CriticalUrgency
             : Notification.NormalUrgency;
         subscriptionNotification.sendEvent();
+        webhookNotifier.sendAlert("tool_warning_" + toolName,
+                                  i18n("%1 usage warning", toolName),
+                                  subscriptionNotification.text,
+                                  percentUsed >= 95);
     }
 
     function handleToolLimitReached(toolName) {
@@ -218,6 +248,10 @@ Item {
         subscriptionNotification.text = i18n("%1: Usage limit reached!", toolName);
         subscriptionNotification.urgency = Notification.CriticalUrgency;
         subscriptionNotification.sendEvent();
+        webhookNotifier.sendAlert("tool_limit_" + toolName,
+                                  i18n("%1 usage limit reached", toolName),
+                                  subscriptionNotification.text,
+                                  true);
     }
 
     function handleToolSyncDiagnostic(toolName, code, message) {
@@ -239,5 +273,9 @@ Item {
         subscriptionNotification.text = i18n("%1 sync: %2", toolName, message);
         subscriptionNotification.urgency = severity;
         subscriptionNotification.sendEvent();
+        webhookNotifier.sendAlert("tool_sync_" + toolName + "_" + code,
+                                  i18n("%1 sync diagnostic", toolName),
+                                  subscriptionNotification.text,
+                                  severity === Notification.CriticalUrgency);
     }
 }

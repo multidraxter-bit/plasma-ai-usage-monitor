@@ -22,8 +22,14 @@
 #include "claudecodemonitor.h"
 #include "codexclimonitor.h"
 #include "copilotmonitor.h"
+#include "cursormonitor.h"
+#include "windsurfmonitor.h"
+#include "jetbrainsaimonitor.h"
 #include "browsercookieextractor.h"
 #include "loofiserverprovider.h"
+#include "bedrockprovider.h"
+#include "localmetricsserver.h"
+#include "webhooknotifier.h"
 
 #include <QQmlEngine>
 #include <QJSEngine>
@@ -60,12 +66,18 @@ void AiUsagePlugin::registerTypes(const char *uri)
     qmlRegisterType<ClaudeCodeMonitor>(uri, 1, 0, "ClaudeCodeMonitor");
     qmlRegisterType<CodexCliMonitor>(uri, 1, 0, "CodexCliMonitor");
     qmlRegisterType<CopilotMonitor>(uri, 1, 0, "CopilotMonitor");
+    qmlRegisterType<CursorMonitor>(uri, 1, 0, "CursorMonitor");
+    qmlRegisterType<WindsurfMonitor>(uri, 1, 0, "WindsurfMonitor");
+    qmlRegisterType<JetBrainsAiMonitor>(uri, 1, 0, "JetBrainsAiMonitor");
 
     // Browser cookie extraction for sync
     qmlRegisterType<BrowserCookieExtractor>(uri, 1, 0, "BrowserCookieExtractor");
 
     // Self-hosted Loofi AI server
     qmlRegisterType<LoofiServerProvider>(uri, 1, 0, "LoofiServerProvider");
+    qmlRegisterType<BedrockProvider>(uri, 1, 0, "BedrockProvider");
+    qmlRegisterType<LocalMetricsServer>(uri, 1, 0, "LocalMetricsServer");
+    qmlRegisterType<WebhookNotifier>(uri, 1, 0, "WebhookNotifier");
 
     // Register abstract base classes as uncreatable (for type info in QML)
     qmlRegisterUncreatableType<ProviderBackend>(uri, 1, 0, "ProviderBackend",

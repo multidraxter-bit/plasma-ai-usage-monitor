@@ -1,9 +1,7 @@
 #ifndef CODEXCLIMONITOR_H
 #define CODEXCLIMONITOR_H
 
-#include "subscriptiontoolbackend.h"
-#include <QFileSystemWatcher>
-#include <QDir>
+#include "localactivitymonitorbase.h"
 
 /**
  * Monitor for OpenAI Codex CLI usage.
@@ -31,7 +29,7 @@
  * - Code review (tertiary)
  * - Remaining credits
  */
-class CodexCliMonitor : public SubscriptionToolBackend
+class CodexCliMonitor : public LocalActivityMonitorBase
 {
     Q_OBJECT
 
@@ -50,10 +48,6 @@ public:
     Q_INVOKABLE QStringList availablePlans() const override;
     Q_INVOKABLE int defaultLimitForPlan(const QString &plan) const override;
     Q_INVOKABLE int defaultSecondaryLimitForPlan(const QString &plan) const override;
-
-    // Tool detection
-    Q_INVOKABLE void checkToolInstalled() override;
-    Q_INVOKABLE void detectActivity() override;
 
     // Browser sync
     Q_INVOKABLE void syncFromBrowser(const QString &cookieHeader, int browserType) override;
@@ -74,22 +68,12 @@ protected:
     UsagePeriod primaryPeriodType() const override { return FiveHour; }
     UsagePeriod secondaryPeriodType() const override { return Weekly; }
 
-private Q_SLOTS:
-    void onDirectoryChanged(const QString &path);
-
 private:
-    void setupWatcher();
     QString codexConfigDir() const;
     void fetchAccountCheck(const QString &cookieHeader);
 
-    QFileSystemWatcher *m_watcher;
-    QDateTime m_lastKnownModification;
     bool m_hasTertiary = false;
     bool m_hasCreditsData = false;
-
-    // Debounce timer to avoid counting rapid filesystem events as separate messages
-    QTimer *m_debounceTimer;
-    bool m_pendingIncrement = false;
 };
 
 #endif // CODEXCLIMONITOR_H

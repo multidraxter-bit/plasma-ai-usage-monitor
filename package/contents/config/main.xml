@@ -63,6 +63,9 @@
         <entry name="azureRefreshInterval" type="Int">
             <default>0</default>
         </entry>
+        <entry name="bedrockRefreshInterval" type="Int">
+            <default>0</default>
+        </entry>
         <entry name="loofiRefreshInterval" type="Int">
             <default>0</default>
         </entry>
@@ -102,6 +105,20 @@
             <default></default>
         </entry>
         <entry name="azureCustomBaseUrl" type="String">
+            <default></default>
+        </entry>
+
+        <!-- AWS Bedrock -->
+        <entry name="bedrockEnabled" type="Bool">
+            <default>false</default>
+        </entry>
+        <entry name="bedrockRegion" type="String">
+            <default>us-east-1</default>
+        </entry>
+        <entry name="bedrockModel" type="String">
+            <default>anthropic.claude-3-5-sonnet-20240620-v1:0</default>
+        </entry>
+        <entry name="bedrockCustomBaseUrl" type="String">
             <default></default>
         </entry>
 
@@ -310,6 +327,9 @@
         <entry name="azureNotificationsEnabled" type="Bool">
             <default>true</default>
         </entry>
+        <entry name="bedrockNotificationsEnabled" type="Bool">
+            <default>true</default>
+        </entry>
         <entry name="loofiNotificationsEnabled" type="Bool">
             <default>true</default>
         </entry>
@@ -322,6 +342,15 @@
         <entry name="updateCheckInterval" type="Int">
             <default>12</default>
             <label>Hours between update checks</label>
+        </entry>
+        <entry name="slackWebhookEnabled" type="Bool">
+            <default>false</default>
+        </entry>
+        <entry name="discordWebhookEnabled" type="Bool">
+            <default>false</default>
+        </entry>
+        <entry name="webhookCooldownMinutes" type="Int">
+            <default>15</default>
         </entry>
     </group>
 
@@ -406,6 +435,12 @@
         <entry name="azureMonthlyBudget" type="Int">
             <default>0</default>
         </entry>
+        <entry name="bedrockDailyBudget" type="Int">
+            <default>0</default>
+        </entry>
+        <entry name="bedrockMonthlyBudget" type="Int">
+            <default>0</default>
+        </entry>
         <entry name="budgetWarningPercent" type="Int">
             <default>80</default>
             <label>Percentage of budget to trigger a warning</label>
@@ -428,6 +463,24 @@
             <default>true</default>
             <label>Enable outlier normalization for heatmap</label>
         </entry>
+        <entry name="prometheusEnabled" type="Bool">
+            <default>false</default>
+        </entry>
+        <entry name="prometheusPort" type="Int">
+            <default>9464</default>
+        </entry>
+        <entry name="autoExportEnabled" type="Bool">
+            <default>false</default>
+        </entry>
+        <entry name="autoExportDirectory" type="String">
+            <default></default>
+        </entry>
+        <entry name="autoExportIntervalMinutes" type="Int">
+            <default>60</default>
+        </entry>
+        <entry name="autoExportFormat" type="String">
+            <default>both</default>
+        </entry>
     </group>
 
     <group name="Subscriptions">
@@ -438,11 +491,11 @@
         </entry>
         <entry name="browserSyncBrowser" type="Int">
             <default>0</default>
-            <label>Browser type: 0=Firefox (supported). Legacy non-zero values are treated as Firefox.</label>
+            <label>Browser type: 0=Firefox, 1=Chrome, 2=Chromium.</label>
         </entry>
         <entry name="browserSyncProfile" type="String">
             <default></default>
-            <label>Firefox profile name to use for browser sync (empty = auto/default)</label>
+            <label>Browser profile name to use for browser sync (empty = auto/default)</label>
         </entry>
         <entry name="browserSyncInterval" type="Int">
             <default>300</default>
@@ -499,6 +552,48 @@
         <entry name="copilotOrgName" type="String">
             <default></default>
             <label>GitHub organization name for Copilot billing API</label>
+        </entry>
+
+        <!-- Cursor -->
+        <entry name="cursorEnabled" type="Bool">
+            <default>false</default>
+        </entry>
+        <entry name="cursorPlan" type="Int">
+            <default>0</default>
+        </entry>
+        <entry name="cursorCustomLimit" type="Int">
+            <default>0</default>
+        </entry>
+        <entry name="cursorNotifications" type="Bool">
+            <default>true</default>
+        </entry>
+
+        <!-- Windsurf -->
+        <entry name="windsurfEnabled" type="Bool">
+            <default>false</default>
+        </entry>
+        <entry name="windsurfPlan" type="Int">
+            <default>0</default>
+        </entry>
+        <entry name="windsurfCustomLimit" type="Int">
+            <default>0</default>
+        </entry>
+        <entry name="windsurfNotifications" type="Bool">
+            <default>true</default>
+        </entry>
+
+        <!-- JetBrains AI -->
+        <entry name="jetbrainsAiEnabled" type="Bool">
+            <default>false</default>
+        </entry>
+        <entry name="jetbrainsAiPlan" type="Int">
+            <default>0</default>
+        </entry>
+        <entry name="jetbrainsAiCustomLimit" type="Int">
+            <default>0</default>
+        </entry>
+        <entry name="jetbrainsAiNotifications" type="Bool">
+            <default>true</default>
         </entry>
     </group>
 </kcfg>

@@ -22,7 +22,7 @@
 
 A native KDE Plasma 6 plasmoid that monitors AI API token usage, rate limits, and costs across multiple providers. Sits in your panel as a compact icon with a colored status badge and expands into a detailed popup with per-provider stats, usage history charts, and budget tracking. Also tracks subscription-based AI coding tool usage limits for Claude Code, Codex CLI, and GitHub Copilot.
 
-> **Current release:** `v5.2.0 "Lighthouse — Operator Clarity"` adds an attention-first Live popup, shared OpenAI-compatible provider settings sections across the KCM, and a cleaner runtime split for notifications, scheduling, and startup wiring.
+> **Current release:** `v5.3.0 "Vanguard"` expands local subscription-tool monitoring with Cursor, Windsurf, and JetBrains AI, finalizes the Flatpak/CI distribution path, and adds local export, metrics, and webhook integration groundwork while keeping the widget architecture intact.
 
 ## Quick Links
 
@@ -34,14 +34,14 @@ A native KDE Plasma 6 plasmoid that monitors AI API token usage, rate limits, an
 > **VS Code note:** use **Remote - SSH** for the real Fedora 43 KDE VM workflow, or **Dev Containers** for a headless Fedora 43 build/test environment. The container is great for build/test/mock-server work, but real Plasma UI validation still requires a Linux desktop session.
 > **Demo Mode:** Contributors can run the widget in a deterministic offline mode for testing and screenshots. In the Fedora KDE guest, run `bash scripts/demo/setup_fedora43_kde_test_env.sh --install-missing`, then start `python scripts/demo/mock_ai_usage_server.py` and reload Plasma with `PLASMA_AI_MONITOR_DEMO=1 plasmashell --replace &`.
 
-**Supported providers:** Loofi Server, OpenAI, Azure OpenAI, Anthropic (Claude), Google Gemini, Mistral AI, DeepSeek, Groq, xAI (Grok), Ollama Cloud, OpenRouter, Together AI, Cohere, Google Veo
+**Supported providers:** Loofi Server, OpenAI, Azure OpenAI, AWS Bedrock, Anthropic (Claude), Google Gemini, Mistral AI, DeepSeek, Groq, xAI (Grok), Ollama Cloud, OpenRouter, Together AI, Cohere, Google Veo
 
-**Supported subscription tools:** Claude Code, OpenAI Codex CLI, GitHub Copilot
+**Supported subscription tools:** Claude Code, OpenAI Codex CLI, GitHub Copilot, Cursor, Windsurf, JetBrains AI
 
 ## Features
 
 - **Real-time monitoring** — Periodic background polling with configurable per-provider refresh intervals (default 5 min) and manual refresh
-- **14 AI providers** — Loofi Server, OpenAI, Azure OpenAI, Anthropic, Google Gemini, Mistral AI, DeepSeek, Groq, xAI/Grok, Ollama Cloud, OpenRouter, Together AI, Cohere, Google Veo
+- **15 AI providers** — Loofi Server, OpenAI, Azure OpenAI, AWS Bedrock, Anthropic, Google Gemini, Mistral AI, DeepSeek, Groq, xAI/Grok, Ollama Cloud, OpenRouter, Together AI, Cohere, Google Veo
 - **Token usage tracking** — Input/output tokens used, requests made, quota/tier limits
 - **Cost tracking** — Dollar spending with daily and monthly cost breakdowns; automatic token-based cost estimation for providers without billing APIs (~30 models with pricing tables)
 - **Budget management** — Per-provider daily/monthly budgets with configurable warning thresholds and notifications when budgets are exceeded
@@ -55,11 +55,13 @@ A native KDE Plasma 6 plasmoid that monitors AI API token usage, rate limits, an
 - **Rate limit visualization** — Progress bars with color-coded thresholds (green/yellow/red)
 - **Collapsible provider cards** — Click to collapse/expand; collapsed cards show a compact cost summary
 - **KDE notifications** — Desktop alerts for rate limit warnings, API errors, budget exceeded, provider disconnect/reconnect
+- **Webhook alerts** — Optional Slack and Discord incoming webhooks driven by the same local alert pipeline
 - **Notification controls** — Per-provider toggles, cooldown period, Do Not Disturb schedule
 - **Secure key storage** — API keys stored in KWallet, never written to config files on disk
 - **Panel display modes** — Compact icon shows green/yellow/red status badge, or current cost, or active provider count
 - **Proxy support** — Custom base URLs per provider for API proxies/gateways, with inline HTTPS security warnings
-- **Data export** — CSV and JSON export of usage history (copies to clipboard)
+- **Data export** — Clipboard export plus scheduled JSON/CSV file export from local SQLite history
+- **Prometheus endpoint** — Optional loopback-only `/metrics` export for Grafana/Prometheus pipelines
 - **Accessibility** — Screen reader annotations on provider cards, cost summary, and panel icon
 - **Per-provider configuration** — Enable/disable providers independently, select models, set refresh intervals, configure budgets
 
@@ -85,21 +87,27 @@ In addition to API providers, the widget tracks usage limits for subscription-ba
 - Plans: **Free** (50/mo), **Pro** (300/mo), **Pro+** (1500/mo), **Business** (300/mo), **Enterprise** (1000/mo)
 - Optional GitHub API integration for organization-level seat metrics (requires PAT with `manage_billing:copilot` scope)
 
+### Cursor / Windsurf / JetBrains AI
+
+- Track local activity from tool-specific config/state directories
+- Self-tracked monthly usage against configurable plan defaults or custom limits
+- Designed for local monitoring first; no vendor cloud API dependency is required
+
 **Note:** None of these tools expose public APIs for individual quota checking. Usage is self-tracked locally via filesystem monitoring and manual counting, with limits auto-populated from plan presets.
 
 ### Browser Sync (Experimental)
 
-Optionally sync real-time usage data by reading session cookies from your Firefox browser:
+Optionally sync real-time usage data by reading session cookies from your browser:
 
 - **Claude Code** — Syncs session usage %, weekly limits, and extra usage spending from claude.ai internal API
 - **Codex CLI** — Syncs 5-hour usage, weekly limits, code review quotas, and remaining credits from chatgpt.com internal API
 
-**How it works:** The widget reads cookies from Firefox's `cookies.sqlite` database (read-only) and makes authenticated requests to the same internal APIs that the web dashboards use. Your cookie data never leaves your machine — all requests go directly to the official services.
+**How it works:** The widget reads cookies from the selected browser profile's cookie database (read-only) and makes authenticated requests to the same internal APIs that the web dashboards use. Your cookie data never leaves your machine — all requests go directly to the official services.
 
 **Enable:** Settings → Subscriptions → Browser Sync → Enable sync
 
-**Requirements:** Firefox with an active session on claude.ai and/or chatgpt.com. Chrome/Chromium is not currently supported (encrypted cookies).
-If you have multiple Firefox profiles, you can choose a specific profile in
+**Requirements:** Firefox, Chrome, or Chromium on Linux with an active session on claude.ai and/or chatgpt.com. Chrome/Chromium sync depends on Linux-safe-storage access to the browser's cookie encryption secret.
+If you have multiple browser profiles, you can choose a specific profile in
 Settings → Subscriptions → Browser Sync.
 
 > **Warning:** This feature uses internal, undocumented APIs. It may stop working if services change their API structure. Use at your own risk.
@@ -437,7 +445,8 @@ Each provider has:
 
 - **Claude Code** — Enable/disable, plan tier (Pro/Max 5x/Max 20x), custom usage limit, notifications
 - **Codex CLI** — Enable/disable, plan tier (Plus/Pro/Business), custom usage limit, notifications
-- **Browser Sync profile** — Select a Firefox profile explicitly or use auto/default detection
+- **Cursor / Windsurf / JetBrains AI** — Enable/disable, plan tier, custom local usage limit, notifications
+- **Browser Sync profile** — Select a browser profile explicitly or use auto/default detection
 - **GitHub Copilot** — Enable/disable, plan tier (Free/Pro/Pro+/Business/Enterprise), custom limit, notifications
 - **GitHub API (optional)** — Personal access token and organization name for Copilot seat metrics
 - **Auto-detect** — Each tool shows a detection badge (detected/not found) based on installed binaries and config directories
@@ -446,6 +455,8 @@ Each provider has:
 
 - **Enable/disable** usage history recording
 - **Retention period** — How long to keep data (7-365 days, default 90)
+- **Prometheus endpoint** — Optional local `/metrics` server bound to `127.0.0.1`
+- **Auto export** — Scheduled JSON/CSV writes to a user-selected directory
 - **Detail mode** — Single-provider trends (cost/tokens/requests/rate limit) with trend summary
 - **Compare mode** — Multi-series comparison across providers or subscription tools with metric selector and ranking
 - **Responsive controls** — History controls are horizontally scrollable on narrow popups/mobile widths

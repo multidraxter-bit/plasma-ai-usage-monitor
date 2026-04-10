@@ -10,6 +10,13 @@
 #include <QStandardPaths>
 #include <QTemporaryFile>
 #include <QUuid>
+#include <QProcess>
+#include <memory>
+
+#include <KWallet>
+
+#include <openssl/evp.h>
+#include <openssl/sha.h>
 
 BrowserCookieExtractor::BrowserCookieExtractor(QObject *parent)
     : QObject(parent)
@@ -46,6 +53,19 @@ void BrowserCookieExtractor::setSelectedFirefoxProfile(const QString &profile)
 bool BrowserCookieExtractor::hasFirefoxProfile() const
 {
     return !firefoxProfilePath().isEmpty();
+}
+
+bool BrowserCookieExtractor::hasCurrentBrowserProfile() const
+{
+    switch (m_browserType) {
+    case Firefox:
+        return !firefoxProfilePath().isEmpty();
+    case Chrome:
+        return !chromeProfilePath().isEmpty();
+    case Chromium:
+        return !chromiumProfilePath().isEmpty();
+    }
+    return false;
 }
 
 QString BrowserCookieExtractor::cookieDbPath() const
@@ -190,14 +210,85 @@ QStringList BrowserCookieExtractor::firefoxProfiles() const
     return profiles;
 }
 
+QStringList BrowserCookieExtractor::browserProfiles() const
+{
+    if (m_browserType == Firefox) {
+        return firefoxProfiles();
+    }
+
+    QStringList profiles;
+    const QString rootPath = (m_browserType == Chrome) ? chromeProfileRoot() : chromiumProfileRoot();
+    QDir root(rootPath);
+    if (!root.exists()) {
+        return profiles;
+    }
+
+    if (QFileInfo::exists(root.filePath(QStringLiteral("Default/Cookies")))) {
+        profiles.append(QStringLiteral("Default"));
+    }
+
+    const auto entries = root.entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot);
+    for (const QFileInfo &entry : entries) {
+        if ((entry.fileName().startsWith(QStringLiteral("Profile"))
+             || entry.fileName() == QStringLiteral("Guest Profile"))
+            && QFileInfo::exists(entry.absoluteFilePath() + QStringLiteral("/Cookies"))
+            && !profiles.contains(entry.fileName())) {
+            profiles.append(entry.fileName());
+        }
+    }
+
+    return profiles;
+}
+
 QString BrowserCookieExtractor::chromeProfilePath() const
 {
-    return QDir::homePath() + QStringLiteral("/.config/google-chrome/Default");
+    return chromiumSelectedProfilePath(chromeProfileRoot());
 }
 
 QString BrowserCookieExtractor::chromiumProfilePath() const
 {
-    return QDir::homePath() + QStringLiteral("/.config/chromium/Default");
+    return chromiumSelectedProfilePath(chromiumProfileRoot());
+}
+
+QString BrowserCookieExtractor::chromeProfileRoot() const
+{
+    return QDir::homePath() + QStringLiteral("/.config/google-chrome");
+}
+
+QString BrowserCookieExtractor::chromiumProfileRoot() const
+{
+    return QDir::homePath() + QStringLiteral("/.config/chromium");
+}
+
+QString BrowserCookieExtractor::chromiumSelectedProfilePath(const QString &rootPath) const
+{
+    QDir root(rootPath);
+    if (!root.exists()) {
+        return QString();
+    }
+
+    if (!m_selectedFirefoxProfile.trimmed().isEmpty()) {
+        const QString selectedPath = root.filePath(m_selectedFirefoxProfile.trimmed());
+        if (QFileInfo::exists(selectedPath + QStringLiteral("/Cookies"))) {
+            return selectedPath;
+        }
+    }
+
+    const QString defaultPath = root.filePath(QStringLiteral("Default"));
+    if (QFileInfo::exists(defaultPath + QStringLiteral("/Cookies"))) {
+        return defaultPath;
+    }
+
+    const auto entries = root.entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot);
+    for (const QFileInfo &entry : entries) {
+        if ((entry.fileName().startsWith(QStringLiteral("Profile"))
+             || entry.fileName() == QStringLiteral("Guest Profile"))
+            && QFileInfo::exists(entry.absoluteFilePath() + QStringLiteral("/Cookies"))) {
+            return entry.absoluteFilePath();
+        }
+    }
+
+    return QString();
 }
 
 // --- Cookie Reading (Firefox) ---
@@ -290,30 +381,227 @@ QMap<QString, QString> BrowserCookieExtractor::readFirefoxCookies(const QString 
     return cookies;
 }
 
-QString BrowserCookieExtractor::getCookie(const QString &domain, const QString &name) const
+QMap<QString, QString> BrowserCookieExtractor::readChromiumCookies(const QString &domain) const
 {
-    if (m_browserType != Firefox) {
-        // Chrome/Chromium cookies are encrypted — not supported yet
-        qWarning() << "BrowserCookieExtractor: Only Firefox is currently supported for cookie extraction";
+    qint64 now = QDateTime::currentMSecsSinceEpoch();
+    if (domain == m_cachedDomain && (now - m_cacheTimestamp) < CACHE_TTL_MS) {
+        return m_cachedCookies;
+    }
+
+    QMap<QString, QString> cookies;
+    const QString dbPath = cookieDbPath();
+    if (dbPath.isEmpty() || !QFileInfo::exists(dbPath)) {
+        return cookies;
+    }
+
+    const QString connName = QStringLiteral("chromium_cookies_")
+        + QUuid::createUuid().toString(QUuid::WithoutBraces);
+
+    QTemporaryFile tmpFile;
+    tmpFile.setAutoRemove(true);
+    if (!tmpFile.open()) {
+        return cookies;
+    }
+    tmpFile.setPermissions(QFile::ReadOwner | QFile::WriteOwner);
+    QString tmpPath = tmpFile.fileName();
+    tmpFile.close();
+
+    if (!QFile::copy(dbPath, tmpPath)) {
+        QFile::remove(tmpPath);
+        if (!QFile::copy(dbPath, tmpPath)) {
+            return cookies;
+        }
+    }
+
+    {
+        QSqlDatabase db = QSqlDatabase::addDatabase(QStringLiteral("QSQLITE"), connName);
+        db.setDatabaseName(tmpPath);
+        if (!db.open()) {
+            QSqlDatabase::removeDatabase(connName);
+            return cookies;
+        }
+
+        QSqlQuery query(db);
+        query.prepare(QStringLiteral(
+            "SELECT name, value, encrypted_value FROM cookies "
+            "WHERE (host_key = :domain1 OR host_key = :domain2) "
+            "AND (expires_utc = 0 OR expires_utc > :now)"
+        ));
+        query.bindValue(QStringLiteral(":domain1"), domain);
+        const QString altDomain = domain.startsWith(QLatin1Char('.'))
+            ? domain.mid(1) : (QStringLiteral(".") + domain);
+        query.bindValue(QStringLiteral(":domain2"), altDomain);
+        query.bindValue(QStringLiteral(":now"),
+                        (QDateTime::currentMSecsSinceEpoch() + 11644473600000LL) * 10);
+
+        if (query.exec()) {
+            while (query.next()) {
+                const QString name = query.value(0).toString();
+                QString value = query.value(1).toString();
+                if (value.isEmpty()) {
+                    value = decryptChromiumCookieValue(query.value(2).toByteArray());
+                }
+                if (!value.isEmpty()) {
+                    cookies.insert(name, value);
+                }
+            }
+        }
+
+        db.close();
+    }
+
+    QSqlDatabase::removeDatabase(connName);
+    QFile::remove(tmpPath);
+
+    m_cachedDomain = domain;
+    m_cachedCookies = cookies;
+    m_cacheTimestamp = QDateTime::currentMSecsSinceEpoch();
+
+    return cookies;
+}
+
+QString BrowserCookieExtractor::chromiumSafeStoragePassword() const
+{
+    const QString envName = (m_browserType == Chrome)
+        ? QStringLiteral("PLASMA_AI_MONITOR_CHROME_SAFE_STORAGE")
+        : QStringLiteral("PLASMA_AI_MONITOR_CHROMIUM_SAFE_STORAGE");
+    const QString envValue = QString::fromLocal8Bit(qgetenv(envName.toUtf8().constData())).trimmed();
+    if (!envValue.isEmpty()) {
+        return envValue;
+    }
+
+    QProcess process;
+    process.start(QStringLiteral("secret-tool"),
+                  {QStringLiteral("lookup"),
+                   QStringLiteral("application"),
+                   m_browserType == Chrome ? QStringLiteral("Chrome Safe Storage")
+                                           : QStringLiteral("Chromium Safe Storage")});
+    if (process.waitForFinished(1500) && process.exitStatus() == QProcess::NormalExit
+        && process.exitCode() == 0) {
+        const QString password = QString::fromUtf8(process.readAllStandardOutput()).trimmed();
+        if (!password.isEmpty()) {
+            return password;
+        }
+    }
+
+    return chromiumSafeStoragePasswordFromKWallet();
+}
+
+QString BrowserCookieExtractor::chromiumSafeStoragePasswordFromKWallet() const
+{
+    std::unique_ptr<KWallet::Wallet> wallet(
+        KWallet::Wallet::openWallet(KWallet::Wallet::LocalWallet(), 0, KWallet::Wallet::Synchronous));
+    if (!wallet) {
         return QString();
     }
 
-    QMap<QString, QString> cookies = readFirefoxCookies(domain);
+    const QStringList folders = {
+        QStringLiteral("Chrome Keys"),
+        QStringLiteral("Chromium Keys"),
+        QStringLiteral("Passwords"),
+        QStringLiteral("Network Wallet")
+    };
+    const QStringList entries = {
+        m_browserType == Chrome ? QStringLiteral("Chrome Safe Storage")
+                                : QStringLiteral("Chromium Safe Storage"),
+        m_browserType == Chrome ? QStringLiteral("chrome_safe_storage")
+                                : QStringLiteral("chromium_safe_storage")
+    };
+
+    for (const QString &folder : folders) {
+        if (!wallet->hasFolder(folder)) {
+            continue;
+        }
+        wallet->setFolder(folder);
+        for (const QString &entry : entries) {
+            QString password;
+            if (wallet->readPassword(entry, password) == 0 && !password.isEmpty()) {
+                return password;
+            }
+        }
+    }
+
+    return QString();
+}
+
+QString BrowserCookieExtractor::decryptChromiumCookieValue(const QByteArray &encryptedValue) const
+{
+    if (encryptedValue.isEmpty()) {
+        return QString();
+    }
+
+    if (!encryptedValue.startsWith("v10") && !encryptedValue.startsWith("v11")) {
+        return QString::fromUtf8(encryptedValue);
+    }
+
+    const QString safeStoragePassword = chromiumSafeStoragePassword();
+    if (safeStoragePassword.isEmpty()) {
+        return QString();
+    }
+
+    unsigned char key[16] = {};
+    if (PKCS5_PBKDF2_HMAC_SHA1(safeStoragePassword.toUtf8().constData(),
+                               safeStoragePassword.toUtf8().size(),
+                               reinterpret_cast<const unsigned char *>("saltysalt"),
+                               9,
+                               1,
+                               sizeof(key),
+                               key) != 1) {
+        return QString();
+    }
+
+    const QByteArray cipherText = encryptedValue.mid(3);
+    QByteArray plainText(cipherText.size() + EVP_MAX_BLOCK_LENGTH, Qt::Uninitialized);
+    int outLen1 = 0;
+    int outLen2 = 0;
+    const unsigned char iv[16] = {' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+                                  ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '};
+
+    EVP_CIPHER_CTX *ctx = EVP_CIPHER_CTX_new();
+    if (ctx == nullptr) {
+        return QString();
+    }
+
+    const bool ok =
+        EVP_DecryptInit_ex(ctx, EVP_aes_128_cbc(), nullptr, key, iv) == 1
+        && EVP_DecryptUpdate(ctx,
+                             reinterpret_cast<unsigned char *>(plainText.data()), &outLen1,
+                             reinterpret_cast<const unsigned char *>(cipherText.constData()),
+                             cipherText.size()) == 1
+        && EVP_DecryptFinal_ex(ctx,
+                               reinterpret_cast<unsigned char *>(plainText.data()) + outLen1,
+                               &outLen2) == 1;
+    EVP_CIPHER_CTX_free(ctx);
+
+    if (!ok) {
+        return QString();
+    }
+
+    plainText.truncate(outLen1 + outLen2);
+    return QString::fromUtf8(plainText);
+}
+
+QString BrowserCookieExtractor::getCookie(const QString &domain, const QString &name) const
+{
+    const QMap<QString, QString> cookies = (m_browserType == Firefox)
+        ? readFirefoxCookies(domain)
+        : readChromiumCookies(domain);
     return cookies.value(name);
 }
 
 bool BrowserCookieExtractor::hasCookiesFor(const QString &domain) const
 {
-    if (m_browserType != Firefox) return false;
-    QMap<QString, QString> cookies = readFirefoxCookies(domain);
+    const QMap<QString, QString> cookies = (m_browserType == Firefox)
+        ? readFirefoxCookies(domain)
+        : readChromiumCookies(domain);
     return !cookies.isEmpty();
 }
 
 QString BrowserCookieExtractor::getCookieHeader(const QString &domain) const
 {
-    if (m_browserType != Firefox) return QString();
-
-    QMap<QString, QString> cookies = readFirefoxCookies(domain);
+    const QMap<QString, QString> cookies = (m_browserType == Firefox)
+        ? readFirefoxCookies(domain)
+        : readChromiumCookies(domain);
     QStringList parts;
     for (auto it = cookies.constBegin(); it != cookies.constEnd(); ++it) {
         parts.append(it.key() + QStringLiteral("=") + it.value());
@@ -325,10 +613,6 @@ QString BrowserCookieExtractor::testConnection(const QString &service) const
 {
     QString domain;
     QStringList sessionCookieNames;
-
-    if (m_browserType != Firefox) {
-        return QStringLiteral("unsupported_browser");
-    }
 
     if (service == QStringLiteral("claude")) {
         domain = QStringLiteral("claude.ai");
@@ -354,7 +638,7 @@ QString BrowserCookieExtractor::testConnection(const QString &service) const
         return QStringLiteral("unknown_service");
     }
 
-    if (firefoxProfilePath().isEmpty()) {
+    if (!hasCurrentBrowserProfile()) {
         return QStringLiteral("profile_missing");
     }
 
@@ -368,7 +652,9 @@ QString BrowserCookieExtractor::testConnection(const QString &service) const
     }
 
     // Has cookies — check for actual session cookies (not just CF bot management etc.)
-    QMap<QString, QString> cookies = readFirefoxCookies(domain);
+    QMap<QString, QString> cookies = (m_browserType == Firefox)
+        ? readFirefoxCookies(domain)
+        : readChromiumCookies(domain);
 
     for (const QString &name : sessionCookieNames) {
         if (cookies.contains(name) && !cookies.value(name).isEmpty()) {
@@ -395,10 +681,10 @@ QString BrowserCookieExtractor::connectionMessage(const QString &service, const 
         return QStringLiteral("Connected");
     }
     if (normalizedCode == QStringLiteral("profile_missing")) {
-        return QStringLiteral("No Firefox profile detected on this system.");
+        return QStringLiteral("No browser profile detected on this system.");
     }
     if (normalizedCode == QStringLiteral("cookie_db_missing")) {
-        return QStringLiteral("Firefox profile found, but cookies.sqlite is missing or unreadable.");
+        return QStringLiteral("Browser profile found, but the cookie database is missing or unreadable.");
     }
     if (normalizedCode == QStringLiteral("cookies_not_found")) {
         return QStringLiteral("No cookies found for this service.");
@@ -407,7 +693,7 @@ QString BrowserCookieExtractor::connectionMessage(const QString &service, const 
         return QStringLiteral("Session cookies missing or expired. Sign in again.");
     }
     if (normalizedCode == QStringLiteral("unsupported_browser")) {
-        return QStringLiteral("Browser Sync currently supports Firefox only.");
+        return QStringLiteral("The selected browser is not supported for Browser Sync.");
     }
     if (normalizedCode == QStringLiteral("unknown_service")) {
         return QStringLiteral("Unknown service.");

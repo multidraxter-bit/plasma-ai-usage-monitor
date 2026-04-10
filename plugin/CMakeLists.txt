@@ -20,11 +20,19 @@ set(aiusagemonitor_SRCS
     usagedatabase.cpp
     updatechecker.cpp
     subscriptiontoolbackend.cpp
+    localactivitymonitorbase.cpp
     claudecodemonitor.cpp
     codexclimonitor.cpp
     copilotmonitor.cpp
+    cursormonitor.cpp
+    windsurfmonitor.cpp
+    jetbrainsaimonitor.cpp
     browsercookieextractor.cpp
     loofiserverprovider.cpp
+    awssigv4signer.cpp
+    bedrockprovider.cpp
+    localmetricsserver.cpp
+    webhooknotifier.cpp
 )
 
 set(aiusagemonitor_HDRS
@@ -50,11 +58,19 @@ set(aiusagemonitor_HDRS
     clipboardhelper.h
     updatechecker.h
     subscriptiontoolbackend.h
+    localactivitymonitorbase.h
     claudecodemonitor.h
     codexclimonitor.h
     copilotmonitor.h
+    cursormonitor.h
+    windsurfmonitor.h
+    jetbrainsaimonitor.h
     browsercookieextractor.h
     loofiserverprovider.h
+    awssigv4signer.h
+    bedrockprovider.h
+    localmetricsserver.h
+    webhooknotifier.h
 )
 
 add_library(aiusagemonitorplugin SHARED ${aiusagemonitor_SRCS} ${aiusagemonitor_HDRS})
@@ -69,6 +85,7 @@ target_link_libraries(aiusagemonitorplugin
     Qt6::Quick
     Qt6::Network
     Qt6::Sql
+    OpenSSL::Crypto
     KF6::Wallet
     KF6::Notifications
     KF6::I18n

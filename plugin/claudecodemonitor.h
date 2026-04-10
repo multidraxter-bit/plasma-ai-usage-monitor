@@ -1,9 +1,7 @@
 #ifndef CLAUDECODEMONITOR_H
 #define CLAUDECODEMONITOR_H
 
-#include "subscriptiontoolbackend.h"
-#include <QFileSystemWatcher>
-#include <QDir>
+#include "localactivitymonitorbase.h"
 
 /**
  * Monitor for Claude Code CLI usage.
@@ -23,7 +21,7 @@
  * - Max 5x ($100/mo): ~225 messages/5h session, ~1125/week
  * - Max 20x ($200/mo): ~900 messages/5h session, ~4500/week
  */
-class ClaudeCodeMonitor : public SubscriptionToolBackend
+class ClaudeCodeMonitor : public LocalActivityMonitorBase
 {
     Q_OBJECT
 
@@ -50,10 +48,6 @@ public:
     Q_INVOKABLE int defaultSecondaryLimitForPlan(const QString &plan) const override;
     Q_INVOKABLE double defaultCostForPlan(const QString &plan) const override;
 
-    // Tool detection
-    Q_INVOKABLE void checkToolInstalled() override;
-    Q_INVOKABLE void detectActivity() override;
-
     // Browser sync
     Q_INVOKABLE void syncFromBrowser(const QString &cookieHeader, int browserType) override;
 
@@ -61,23 +55,12 @@ protected:
     UsagePeriod primaryPeriodType() const override { return FiveHour; }
     UsagePeriod secondaryPeriodType() const override { return Weekly; }
 
-private Q_SLOTS:
-    void onDirectoryChanged(const QString &path);
-    void onFileChanged(const QString &path);
-
 private:
-    void setupWatcher();
     QString claudeConfigDir() const;
     void fetchAccountInfo(const QString &cookieHeader);
     void fetchUsageData(const QString &orgUuid, const QString &cookieHeader);
 
-    QFileSystemWatcher *m_watcher;
-    QDateTime m_lastKnownModification;
     QString m_orgUuid;
-
-    // Debounce timer to avoid counting rapid filesystem events as separate messages
-    QTimer *m_debounceTimer;
-    bool m_pendingIncrement = false;
 };
 
 #endif // CLAUDECODEMONITOR_H

@@ -7,6 +7,7 @@
 #include <QJsonArray>
 #include <QJsonObject>
 #include <QFileInfo>
+#include <QSaveFile>
 #include <QDebug>
 #include <QMap>
 #include <QTimeZone>
@@ -857,6 +858,130 @@ QString UsageDatabase::exportJson(const QString &provider,
     root[QStringLiteral("snapshots")] = arr;
 
     return QString::fromUtf8(QJsonDocument(root).toJson(QJsonDocument::Indented));
+}
+
+QStringList UsageDatabase::exportAllToDirectory(const QString &dirPath,
+                                                const QStringList &formats) const
+{
+    QStringList writtenFiles;
+
+    if (!m_initialized || dirPath.trimmed().isEmpty()) {
+        return writtenFiles;
+    }
+
+    QDir dir(dirPath);
+    if (!dir.exists() && !dir.mkpath(QStringLiteral("."))) {
+        qWarning() << "UsageDatabase: Failed to create export directory:" << dirPath;
+        return writtenFiles;
+    }
+
+    const QString timestamp = QDateTime::currentDateTimeUtc().toString(QStringLiteral("yyyyMMdd-HHmmss"));
+    const QDateTime from(QDate(2000, 1, 1), QTime(0, 0), QTimeZone::utc());
+    const QDateTime to = QDateTime::currentDateTimeUtc();
+    const QStringList requestedFormats = formats.isEmpty()
+        ? QStringList{QStringLiteral("json"), QStringLiteral("csv")}
+        : formats;
+
+    if (requestedFormats.contains(QStringLiteral("json"))) {
+        QJsonObject root;
+        root.insert(QStringLiteral("exportedAt"), QDateTime::currentDateTimeUtc().toString(Qt::ISODate));
+
+        QJsonArray providersArray;
+        for (const QString &provider : getProviders()) {
+            QJsonObject providerEntry;
+            providerEntry.insert(QStringLiteral("provider"), provider);
+            providerEntry.insert(QStringLiteral("snapshots"),
+                                 QJsonArray::fromVariantList(getSnapshots(provider, from, to)));
+            providersArray.append(providerEntry);
+        }
+        root.insert(QStringLiteral("providers"), providersArray);
+
+        QJsonArray toolsArray;
+        for (const QString &tool : getToolNames()) {
+            QJsonObject toolEntry;
+            toolEntry.insert(QStringLiteral("tool"), tool);
+            toolEntry.insert(QStringLiteral("snapshots"),
+                             QJsonArray::fromVariantList(getToolSnapshots(tool, from, to)));
+            toolsArray.append(toolEntry);
+        }
+        root.insert(QStringLiteral("tools"), toolsArray);
+
+        const QString jsonPath = dir.filePath(QStringLiteral("ai-usage-export-%1.json").arg(timestamp));
+        QSaveFile jsonFile(jsonPath);
+        if (jsonFile.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
+            jsonFile.write(QJsonDocument(root).toJson(QJsonDocument::Indented));
+            if (jsonFile.commit()) {
+                writtenFiles.append(jsonPath);
+            }
+        }
+    }
+
+    if (requestedFormats.contains(QStringLiteral("csv"))) {
+        QString providerCsv = QStringLiteral(
+            "provider,timestamp,model,input_tokens,output_tokens,request_count,cost,is_estimated_cost,"
+            "daily_cost,monthly_cost,rl_requests,rl_requests_remaining,rl_tokens,rl_tokens_remaining\n");
+
+        for (const QString &provider : getProviders()) {
+            const QVariantList snapshots = getSnapshots(provider, from, to);
+            for (const QVariant &snap : snapshots) {
+                const QVariantMap row = snap.toMap();
+                providerCsv += QStringLiteral("%1,%2,%3,%4,%5,%6,%7,%8,%9,%10,%11,%12,%13,%14\n")
+                    .arg(provider,
+                         row.value(QStringLiteral("timestamp")).toString(),
+                         row.value(QStringLiteral("model")).toString().replace(',', ' '),
+                         row.value(QStringLiteral("inputTokens")).toString(),
+                         row.value(QStringLiteral("outputTokens")).toString(),
+                         row.value(QStringLiteral("requestCount")).toString(),
+                         row.value(QStringLiteral("cost")).toString(),
+                         row.value(QStringLiteral("isEstimatedCost")).toBool() ? QStringLiteral("1") : QStringLiteral("0"),
+                         row.value(QStringLiteral("dailyCost")).toString(),
+                         row.value(QStringLiteral("monthlyCost")).toString(),
+                         row.value(QStringLiteral("rlRequests")).toString(),
+                         row.value(QStringLiteral("rlRequestsRemaining")).toString(),
+                         row.value(QStringLiteral("rlTokens")).toString(),
+                         row.value(QStringLiteral("rlTokensRemaining")).toString());
+            }
+        }
+
+        const QString providerCsvPath = dir.filePath(QStringLiteral("ai-usage-providers-%1.csv").arg(timestamp));
+        QSaveFile providerFile(providerCsvPath);
+        if (providerFile.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
+            providerFile.write(providerCsv.toUtf8());
+            if (providerFile.commit()) {
+                writtenFiles.append(providerCsvPath);
+            }
+        }
+
+        QString toolCsv = QStringLiteral(
+            "tool,timestamp,usage_count,usage_limit,period_type,plan_tier,limit_reached,percent_used\n");
+
+        for (const QString &tool : getToolNames()) {
+            const QVariantList snapshots = getToolSnapshots(tool, from, to);
+            for (const QVariant &snap : snapshots) {
+                const QVariantMap row = snap.toMap();
+                toolCsv += QStringLiteral("%1,%2,%3,%4,%5,%6,%7,%8\n")
+                    .arg(tool,
+                         row.value(QStringLiteral("timestamp")).toString(),
+                         row.value(QStringLiteral("usageCount")).toString(),
+                         row.value(QStringLiteral("usageLimit")).toString(),
+                         row.value(QStringLiteral("periodType")).toString(),
+                         row.value(QStringLiteral("planTier")).toString().replace(',', ' '),
+                         row.value(QStringLiteral("limitReached")).toBool() ? QStringLiteral("1") : QStringLiteral("0"),
+                         row.value(QStringLiteral("percentUsed")).toString());
+            }
+        }
+
+        const QString toolCsvPath = dir.filePath(QStringLiteral("ai-usage-tools-%1.csv").arg(timestamp));
+        QSaveFile toolFile(toolCsvPath);
+        if (toolFile.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
+            toolFile.write(toolCsv.toUtf8());
+            if (toolFile.commit()) {
+                writtenFiles.append(toolCsvPath);
+            }
+        }
+    }
+
+    return writtenFiles;
 }
 
 void UsageDatabase::init()

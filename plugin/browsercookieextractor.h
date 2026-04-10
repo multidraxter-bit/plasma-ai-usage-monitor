@@ -29,6 +29,7 @@ class BrowserCookieExtractor : public QObject
 
     Q_PROPERTY(int browserType READ browserType WRITE setBrowserType NOTIFY browserTypeChanged)
     Q_PROPERTY(bool hasFirefoxProfile READ hasFirefoxProfile NOTIFY profilesChanged)
+    Q_PROPERTY(bool hasCurrentBrowserProfile READ hasCurrentBrowserProfile NOTIFY profilesChanged)
     Q_PROPERTY(QString selectedFirefoxProfile READ selectedFirefoxProfile WRITE setSelectedFirefoxProfile NOTIFY selectedFirefoxProfileChanged)
 
 public:
@@ -91,6 +92,7 @@ public:
      * Detect available Firefox profiles.
      */
     Q_INVOKABLE QStringList firefoxProfiles() const;
+    Q_INVOKABLE QStringList browserProfiles() const;
 
 Q_SIGNALS:
     void browserTypeChanged();
@@ -102,9 +104,17 @@ private:
     QString firefoxProfilePathByName(const QString &profileName) const;
     QString chromeProfilePath() const;
     QString chromiumProfilePath() const;
+    QString chromeProfileRoot() const;
+    QString chromiumProfileRoot() const;
 
     // Read cookies from Firefox SQLite database (unencrypted)
     QMap<QString, QString> readFirefoxCookies(const QString &domain) const;
+    QMap<QString, QString> readChromiumCookies(const QString &domain) const;
+    QString chromiumSelectedProfilePath(const QString &rootPath) const;
+    QString chromiumSafeStoragePassword() const;
+    QString chromiumSafeStoragePasswordFromKWallet() const;
+    QString decryptChromiumCookieValue(const QByteArray &encryptedValue) const;
+    bool hasCurrentBrowserProfile() const;
 
     int m_browserType = Firefox;
 

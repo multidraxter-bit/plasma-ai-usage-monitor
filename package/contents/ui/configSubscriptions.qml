@@ -33,6 +33,24 @@ KCM.SimpleKCM {
     property alias cfg_copilotNotifications: copilotNotifySwitch.checked
     property alias cfg_copilotOrgName: copilotOrgField.text
 
+    // ── Cursor ──
+    property alias cfg_cursorEnabled: cursorSwitch.checked
+    property alias cfg_cursorPlan: cursorPlanCombo.currentIndex
+    property alias cfg_cursorCustomLimit: cursorLimitSpin.value
+    property alias cfg_cursorNotifications: cursorNotifySwitch.checked
+
+    // ── Windsurf ──
+    property alias cfg_windsurfEnabled: windsurfSwitch.checked
+    property alias cfg_windsurfPlan: windsurfPlanCombo.currentIndex
+    property alias cfg_windsurfCustomLimit: windsurfLimitSpin.value
+    property alias cfg_windsurfNotifications: windsurfNotifySwitch.checked
+
+    // ── JetBrains AI ──
+    property alias cfg_jetbrainsAiEnabled: jetbrainsAiSwitch.checked
+    property alias cfg_jetbrainsAiPlan: jetbrainsAiPlanCombo.currentIndex
+    property alias cfg_jetbrainsAiCustomLimit: jetbrainsAiLimitSpin.value
+    property alias cfg_jetbrainsAiNotifications: jetbrainsAiNotifySwitch.checked
+
     // Track key dirtiness for Copilot PAT
     property bool copilotTokenDirty: false
 
@@ -56,12 +74,12 @@ KCM.SimpleKCM {
         if (normalized === "cookie_db_missing") return i18n("Open Firefox once, sign in to %1, then retry so the cookie database exists.", serviceLabel);
         if (normalized === "cookies_not_found") return i18n("Open %1 in Firefox and sign in at least once.", serviceLabel);
         if (normalized === "session_missing_or_expired") return i18n("Log in to %1 again in Firefox, then retry.", serviceLabel);
-        if (normalized === "unsupported_browser") return i18n("Only Firefox is supported currently.");
+        if (normalized === "unsupported_browser") return i18n("The selected browser profile is not supported for sync.");
         return i18n("Check your browser session and retry.");
     }
 
-    function reloadFirefoxProfiles() {
-        var profiles = syncDetector.firefoxProfiles();
+    function reloadBrowserProfiles() {
+        var profiles = syncDetector.browserProfiles();
         var entries = [i18n("Auto (Default Profile)")];
         for (var i = 0; i < profiles.length; i++) {
             entries.push(profiles[i]);
@@ -99,6 +117,21 @@ KCM.SimpleKCM {
 
     CopilotMonitor {
         id: copilotDetector
+        Component.onCompleted: checkToolInstalled()
+    }
+
+    CursorMonitor {
+        id: cursorDetector
+        Component.onCompleted: checkToolInstalled()
+    }
+
+    WindsurfMonitor {
+        id: windsurfDetector
+        Component.onCompleted: checkToolInstalled()
+    }
+
+    JetBrainsAiMonitor {
+        id: jetbrainsAiDetector
         Component.onCompleted: checkToolInstalled()
     }
 
@@ -142,7 +175,7 @@ KCM.SimpleKCM {
         if (secrets.walletOpen) {
             loadCopilotToken();
         }
-        reloadFirefoxProfiles();
+        reloadBrowserProfiles();
     }
 
     Component.onDestruction: {
@@ -495,6 +528,165 @@ KCM.SimpleKCM {
         }
 
         // ══════════════════════════════════════════════
+        // ── Cursor ──
+        // ══════════════════════════════════════════════
+
+        Kirigami.Separator {
+            Kirigami.FormData.isSection: true
+            Kirigami.FormData.label: i18n("Cursor")
+        }
+
+        RowLayout {
+            Kirigami.FormData.label: i18n("Enable:")
+            spacing: Kirigami.Units.largeSpacing
+
+            QQC2.Switch {
+                id: cursorSwitch
+                checked: plasmoid.configuration.cursorEnabled
+            }
+
+            QQC2.Label {
+                Layout.fillWidth: true
+                elide: Text.ElideRight
+                text: cursorDetector.installed ? "✓ " + i18n("Detected") : "✗ " + i18n("Not found")
+                color: cursorDetector.installed ? Kirigami.Theme.positiveTextColor : Kirigami.Theme.disabledTextColor
+                font.pointSize: Kirigami.Theme.smallFont.pointSize
+            }
+        }
+
+        QQC2.ComboBox {
+            id: cursorPlanCombo
+            Kirigami.FormData.label: i18n("Plan:")
+            enabled: cursorSwitch.checked
+            Layout.fillWidth: true
+            model: cursorDetector.availablePlans()
+            currentIndex: plasmoid.configuration.cursorPlan
+        }
+
+        QQC2.SpinBox {
+            id: cursorLimitSpin
+            Kirigami.FormData.label: i18n("Usage limit:")
+            enabled: cursorSwitch.checked
+            from: 0
+            to: 99999
+            value: plasmoid.configuration.cursorCustomLimit || cursorDetector.defaultLimitForPlan(cursorDetector.availablePlans()[cursorPlanCombo.currentIndex] || "Pro")
+            editable: true
+        }
+
+        QQC2.Switch {
+            id: cursorNotifySwitch
+            Kirigami.FormData.label: i18n("Notifications:")
+            enabled: cursorSwitch.checked
+            checked: plasmoid.configuration.cursorNotifications
+        }
+
+        // ══════════════════════════════════════════════
+        // ── Windsurf ──
+        // ══════════════════════════════════════════════
+
+        Kirigami.Separator {
+            Kirigami.FormData.isSection: true
+            Kirigami.FormData.label: i18n("Windsurf")
+        }
+
+        RowLayout {
+            Kirigami.FormData.label: i18n("Enable:")
+            spacing: Kirigami.Units.largeSpacing
+
+            QQC2.Switch {
+                id: windsurfSwitch
+                checked: plasmoid.configuration.windsurfEnabled
+            }
+
+            QQC2.Label {
+                Layout.fillWidth: true
+                elide: Text.ElideRight
+                text: windsurfDetector.installed ? "✓ " + i18n("Detected") : "✗ " + i18n("Not found")
+                color: windsurfDetector.installed ? Kirigami.Theme.positiveTextColor : Kirigami.Theme.disabledTextColor
+                font.pointSize: Kirigami.Theme.smallFont.pointSize
+            }
+        }
+
+        QQC2.ComboBox {
+            id: windsurfPlanCombo
+            Kirigami.FormData.label: i18n("Plan:")
+            enabled: windsurfSwitch.checked
+            Layout.fillWidth: true
+            model: windsurfDetector.availablePlans()
+            currentIndex: plasmoid.configuration.windsurfPlan
+        }
+
+        QQC2.SpinBox {
+            id: windsurfLimitSpin
+            Kirigami.FormData.label: i18n("Usage limit:")
+            enabled: windsurfSwitch.checked
+            from: 0
+            to: 99999
+            value: plasmoid.configuration.windsurfCustomLimit || windsurfDetector.defaultLimitForPlan(windsurfDetector.availablePlans()[windsurfPlanCombo.currentIndex] || "Pro")
+            editable: true
+        }
+
+        QQC2.Switch {
+            id: windsurfNotifySwitch
+            Kirigami.FormData.label: i18n("Notifications:")
+            enabled: windsurfSwitch.checked
+            checked: plasmoid.configuration.windsurfNotifications
+        }
+
+        // ══════════════════════════════════════════════
+        // ── JetBrains AI ──
+        // ══════════════════════════════════════════════
+
+        Kirigami.Separator {
+            Kirigami.FormData.isSection: true
+            Kirigami.FormData.label: i18n("JetBrains AI")
+        }
+
+        RowLayout {
+            Kirigami.FormData.label: i18n("Enable:")
+            spacing: Kirigami.Units.largeSpacing
+
+            QQC2.Switch {
+                id: jetbrainsAiSwitch
+                checked: plasmoid.configuration.jetbrainsAiEnabled
+            }
+
+            QQC2.Label {
+                Layout.fillWidth: true
+                elide: Text.ElideRight
+                text: jetbrainsAiDetector.installed ? "✓ " + i18n("Detected") : "✗ " + i18n("Not found")
+                color: jetbrainsAiDetector.installed ? Kirigami.Theme.positiveTextColor : Kirigami.Theme.disabledTextColor
+                font.pointSize: Kirigami.Theme.smallFont.pointSize
+            }
+        }
+
+        QQC2.ComboBox {
+            id: jetbrainsAiPlanCombo
+            Kirigami.FormData.label: i18n("Plan:")
+            enabled: jetbrainsAiSwitch.checked
+            Layout.fillWidth: true
+            model: jetbrainsAiDetector.availablePlans()
+            currentIndex: plasmoid.configuration.jetbrainsAiPlan
+        }
+
+        QQC2.SpinBox {
+            id: jetbrainsAiLimitSpin
+            Kirigami.FormData.label: i18n("Usage limit:")
+            enabled: jetbrainsAiSwitch.checked
+            from: 0
+            to: 99999
+            value: plasmoid.configuration.jetbrainsAiCustomLimit || jetbrainsAiDetector.defaultLimitForPlan(jetbrainsAiDetector.availablePlans()[jetbrainsAiPlanCombo.currentIndex] || "AI Free")
+            editable: true
+        }
+
+        QQC2.Switch {
+            id: jetbrainsAiNotifySwitch
+            Kirigami.FormData.label: i18n("Notifications:")
+            enabled: jetbrainsAiSwitch.checked
+            checked: plasmoid.configuration.jetbrainsAiNotifications
+        }
+
+        // ══════════════════════════════════════════════
         // ── Browser Sync (Experimental) ──
         // ══════════════════════════════════════════════
 
@@ -508,7 +700,7 @@ KCM.SimpleKCM {
             wrapMode: Text.WordWrap
             text: i18n("Sync real-time usage data by reading session cookies from your browser. "
                      + "This reads cookies from your browser's cookie database (read-only) to "
-                     + "fetch usage data from Claude.ai and ChatGPT. Firefox only for now.")
+                     + "fetch usage data from Claude.ai and ChatGPT.")
             font.pointSize: Kirigami.Theme.smallFont.pointSize
             opacity: 0.7
         }
@@ -545,13 +737,13 @@ KCM.SimpleKCM {
                 checked: plasmoid.configuration.browserSyncEnabled
             }
 
-            QQC2.Label {
-                Layout.fillWidth: true
-                elide: Text.ElideRight
-                text: syncDetector.hasFirefoxProfile
-                    ? "✓ " + i18n("Firefox profile found")
-                    : "✗ " + i18n("No Firefox profile")
-                color: syncDetector.hasFirefoxProfile
+        QQC2.Label {
+            Layout.fillWidth: true
+            elide: Text.ElideRight
+            text: syncDetector.hasCurrentBrowserProfile
+                ? "✓ " + i18n("Browser profile found")
+                : "✗ " + i18n("No browser profile")
+            color: syncDetector.hasCurrentBrowserProfile
                     ? Kirigami.Theme.positiveTextColor
                     : Kirigami.Theme.disabledTextColor
                 font.pointSize: Kirigami.Theme.smallFont.pointSize
@@ -563,19 +755,23 @@ KCM.SimpleKCM {
             Kirigami.FormData.label: i18n("Browser:")
             enabled: browserSyncSwitch.checked
             Layout.fillWidth: true
-            model: [i18n("Firefox (supported)")]
-            currentIndex: 0
+            model: [
+                i18n("Firefox"),
+                i18n("Chrome"),
+                i18n("Chromium")
+            ]
+            currentIndex: plasmoid.configuration.browserSyncBrowser
 
-            Component.onCompleted: {
-                if (plasmoid.configuration.browserSyncBrowser !== 0) {
-                    cfg_browserSyncBrowser = 0;
-                }
+            onActivated: {
+                cfg_browserSyncBrowser = currentIndex;
+                syncDetector.browserType = currentIndex;
+                reloadBrowserProfiles();
             }
         }
 
         QQC2.Label {
             visible: browserSyncSwitch.checked
-            text: i18n("Browser Sync currently supports Firefox only. Chrome/Chromium are not available in this release.")
+            text: i18n("Browser Sync supports Firefox plus Linux Chrome/Chromium profiles when readable cookies and safe-storage secrets are available.")
             font.pointSize: Kirigami.Theme.smallFont.pointSize
             opacity: 0.65
             wrapMode: Text.WordWrap
@@ -583,9 +779,9 @@ KCM.SimpleKCM {
         }
 
         RowLayout {
-            Kirigami.FormData.label: i18n("Firefox profile:")
-            visible: browserSyncSwitch.checked && browserSyncBrowserCombo.currentIndex === 0
-            enabled: browserSyncSwitch.checked && browserSyncBrowserCombo.currentIndex === 0
+            Kirigami.FormData.label: i18n("Browser profile:")
+            visible: browserSyncSwitch.checked
+            enabled: browserSyncSwitch.checked
             spacing: Kirigami.Units.smallSpacing
 
             QQC2.ComboBox {
@@ -606,9 +802,9 @@ KCM.SimpleKCM {
             QQC2.ToolButton {
                 icon.name: "view-refresh"
                 display: QQC2.AbstractButton.IconOnly
-                QQC2.ToolTip.text: i18n("Reload Firefox profiles")
+                QQC2.ToolTip.text: i18n("Reload browser profiles")
                 QQC2.ToolTip.visible: hovered
-                onClicked: reloadFirefoxProfiles()
+                onClicked: reloadBrowserProfiles()
             }
         }
 
@@ -729,6 +925,7 @@ KCM.SimpleKCM {
     // ── BrowserCookieExtractor for config page ──
     BrowserCookieExtractor {
         id: syncDetector
+        browserType: subscriptionsPage.cfg_browserSyncBrowser
         selectedFirefoxProfile: subscriptionsPage.cfg_browserSyncProfile
     }
 }

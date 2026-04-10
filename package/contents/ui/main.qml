@@ -50,12 +50,16 @@ PlasmoidItem {
     property alias cohere: cohereBackend
     property alias googleveo: googleveoBackend
     property alias azure: azureBackend
+    property alias bedrock: bedrockBackend
     property alias loofi: loofiBackend
     property alias usageDb: usageDatabase
 
     property alias claudeCode: claudeCodeMonitor
     property alias codexCli: codexCliMonitor
     property alias copilot: copilotMonitor
+    property alias cursor: cursorMonitor
+    property alias windsurf: windsurfMonitor
+    property alias jetbrainsAi: jetbrainsAiMonitor
     property alias intelligenceEngine: analystIntelligence
 
     readonly property var allProviders: providerRegistry.allProviders
@@ -115,6 +119,16 @@ PlasmoidItem {
         customBaseUrl: plasmoid.configuration.azureCustomBaseUrl
         dailyBudget: plasmoid.configuration.azureDailyBudget / 100.0
         monthlyBudget: plasmoid.configuration.azureMonthlyBudget / 100.0
+        budgetWarningPercent: plasmoid.configuration.budgetWarningPercent
+    }
+
+    BedrockProvider {
+        id: bedrockBackend
+        region: plasmoid.configuration.bedrockRegion
+        model: plasmoid.configuration.bedrockModel
+        customBaseUrl: plasmoid.configuration.bedrockCustomBaseUrl
+        dailyBudget: plasmoid.configuration.bedrockDailyBudget / 100.0
+        monthlyBudget: plasmoid.configuration.bedrockMonthlyBudget / 100.0
         budgetWarningPercent: plasmoid.configuration.budgetWarningPercent
     }
 
@@ -297,6 +311,73 @@ PlasmoidItem {
         }
     }
 
+    CursorMonitor {
+        id: cursorMonitor
+        enabled: plasmoid.configuration.cursorEnabled
+        usageLimit: plasmoid.configuration.cursorCustomLimit
+
+        Component.onCompleted: {
+            checkToolInstalled();
+            var plans = availablePlans();
+            var idx = plasmoid.configuration.cursorPlan;
+            if (idx >= 0 && idx < plans.length) {
+                planTier = plans[idx];
+                if (usageLimit === 0) {
+                    usageLimit = defaultLimitForPlan(plans[idx]);
+                }
+            }
+        }
+    }
+
+    WindsurfMonitor {
+        id: windsurfMonitor
+        enabled: plasmoid.configuration.windsurfEnabled
+        usageLimit: plasmoid.configuration.windsurfCustomLimit
+
+        Component.onCompleted: {
+            checkToolInstalled();
+            var plans = availablePlans();
+            var idx = plasmoid.configuration.windsurfPlan;
+            if (idx >= 0 && idx < plans.length) {
+                planTier = plans[idx];
+                if (usageLimit === 0) {
+                    usageLimit = defaultLimitForPlan(plans[idx]);
+                }
+            }
+        }
+    }
+
+    JetBrainsAiMonitor {
+        id: jetbrainsAiMonitor
+        enabled: plasmoid.configuration.jetbrainsAiEnabled
+        usageLimit: plasmoid.configuration.jetbrainsAiCustomLimit
+
+        Component.onCompleted: {
+            checkToolInstalled();
+            var plans = availablePlans();
+            var idx = plasmoid.configuration.jetbrainsAiPlan;
+            if (idx >= 0 && idx < plans.length) {
+                planTier = plans[idx];
+                if (usageLimit === 0) {
+                    usageLimit = defaultLimitForPlan(plans[idx]);
+                }
+            }
+        }
+    }
+
+    LocalMetricsServer {
+        id: metricsServer
+        enabled: plasmoid.configuration.prometheusEnabled
+        port: plasmoid.configuration.prometheusPort
+    }
+
+    WebhookNotifier {
+        id: webhookNotifier
+        slackEnabled: plasmoid.configuration.slackWebhookEnabled
+        discordEnabled: plasmoid.configuration.discordWebhookEnabled
+        cooldownMinutes: plasmoid.configuration.webhookCooldownMinutes
+    }
+
     ProviderRegistry {
         id: providerRegistry
         configuration: plasmoid.configuration
@@ -314,11 +395,15 @@ PlasmoidItem {
         cohereBackend: cohereBackend
         googleveoBackend: googleveoBackend
         azureBackend: azureBackend
+        bedrockBackend: bedrockBackend
         loofiBackend: loofiBackend
 
         claudeCodeMonitor: claudeCodeMonitor
         codexCliMonitor: codexCliMonitor
         copilotMonitor: copilotMonitor
+        cursorMonitor: cursorMonitor
+        windsurfMonitor: windsurfMonitor
+        jetbrainsAiMonitor: jetbrainsAiMonitor
     }
 
     NotificationController {
@@ -326,6 +411,7 @@ PlasmoidItem {
         configuration: plasmoid.configuration
         registry: providerRegistry
         usageDatabase: usageDatabase
+        webhookNotifier: webhookNotifier
     }
 
     RefreshScheduler {
@@ -347,9 +433,14 @@ PlasmoidItem {
         usageDatabase: usageDatabase
         notificationController: notificationController
         scheduler: refreshScheduler
+        metricsServer: metricsServer
+        webhookNotifier: webhookNotifier
         claudeCodeMonitor: claudeCodeMonitor
         codexCliMonitor: codexCliMonitor
         copilotMonitor: copilotMonitor
+        cursorMonitor: cursorMonitor
+        windsurfMonitor: windsurfMonitor
+        jetbrainsAiMonitor: jetbrainsAiMonitor
     }
 
     UpdateChecker {

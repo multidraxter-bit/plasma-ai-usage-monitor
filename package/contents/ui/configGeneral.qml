@@ -26,6 +26,7 @@ KCM.SimpleKCM {
     property int cfg_cohereRefreshInterval: plasmoid.configuration.cohereRefreshInterval
     property int cfg_googleveoRefreshInterval: plasmoid.configuration.googleveoRefreshInterval
     property int cfg_azureRefreshInterval: plasmoid.configuration.azureRefreshInterval
+    property int cfg_bedrockRefreshInterval: plasmoid.configuration.bedrockRefreshInterval
     property int cfg_loofiRefreshInterval: plasmoid.configuration.loofiRefreshInterval
 
     property ProviderCatalog providerCatalog: ProviderCatalog {}

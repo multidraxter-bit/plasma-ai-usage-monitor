@@ -5,6 +5,7 @@ import QtQuick.Layouts
 import QtQuick.Controls as QQC2
 import org.kde.kirigami as Kirigami
 import org.kde.kcmutils as KCM
+import com.github.loofi.aiusagemonitor 1.0
 
 KCM.SimpleKCM {
     id: alertsPage
@@ -33,7 +34,14 @@ KCM.SimpleKCM {
     property bool cfg_cohereNotificationsEnabled: plasmoid.configuration.cohereNotificationsEnabled
     property bool cfg_googleveoNotificationsEnabled: plasmoid.configuration.googleveoNotificationsEnabled
     property bool cfg_azureNotificationsEnabled: plasmoid.configuration.azureNotificationsEnabled
+    property bool cfg_bedrockNotificationsEnabled: plasmoid.configuration.bedrockNotificationsEnabled
     property bool cfg_loofiNotificationsEnabled: plasmoid.configuration.loofiNotificationsEnabled
+    property alias cfg_slackWebhookEnabled: slackWebhookSwitch.checked
+    property alias cfg_discordWebhookEnabled: discordWebhookSwitch.checked
+    property alias cfg_webhookCooldownMinutes: webhookCooldownSlider.value
+
+    property bool slackWebhookDirty: false
+    property bool discordWebhookDirty: false
 
     // DND hours: config stores -1 (disabled) or 0-23 (hour).
     // ComboBox index: 0 = "Disabled", 1-24 = hours 0-23.
@@ -41,6 +49,44 @@ KCM.SimpleKCM {
     property int cfg_dndEndHour: plasmoid.configuration.dndEndHour
 
     property ProviderCatalog providerCatalog: ProviderCatalog {}
+
+    SecretsManager {
+        id: alertSecrets
+
+        onWalletOpenChanged: {
+            if (walletOpen) {
+                alertsPage.loadWebhookSecrets();
+            }
+        }
+    }
+
+    function loadWebhookSecrets() {
+        if (alertSecrets.hasKey("slack_webhook_url")) {
+            slackWebhookField.text = "********";
+            slackWebhookDirty = false;
+        }
+        if (alertSecrets.hasKey("discord_webhook_url")) {
+            discordWebhookField.text = "********";
+            discordWebhookDirty = false;
+        }
+    }
+
+    function saveWebhookSecrets() {
+        if (slackWebhookDirty) {
+            if (slackWebhookField.text.length > 0 && slackWebhookField.text !== "********") {
+                alertSecrets.storeKey("slack_webhook_url", slackWebhookField.text);
+            } else if (slackWebhookField.text.length === 0) {
+                alertSecrets.removeKey("slack_webhook_url");
+            }
+        }
+        if (discordWebhookDirty) {
+            if (discordWebhookField.text.length > 0 && discordWebhookField.text !== "********") {
+                alertSecrets.storeKey("discord_webhook_url", discordWebhookField.text);
+            } else if (discordWebhookField.text.length === 0) {
+                alertSecrets.removeKey("discord_webhook_url");
+            }
+        }
+    }
 
     function notificationEnabled(notificationsConfigKey) {
         return alertsPage["cfg_" + notificationsConfigKey];
@@ -57,6 +103,14 @@ KCM.SimpleKCM {
         }
         return items;
     }
+
+    Component.onCompleted: {
+        if (alertSecrets.walletOpen) {
+            loadWebhookSecrets();
+        }
+    }
+
+    Component.onDestruction: saveWebhookSecrets()
 
     Kirigami.FormLayout {
         anchors.fill: parent
@@ -237,6 +291,66 @@ KCM.SimpleKCM {
             wrapMode: Text.WordWrap
             Layout.fillWidth: true
             enabled: alertsSwitch.checked
+        }
+
+        Kirigami.Separator {
+            Kirigami.FormData.isSection: true
+            Kirigami.FormData.label: i18n("Webhooks")
+        }
+
+        QQC2.Switch {
+            id: slackWebhookSwitch
+            Kirigami.FormData.label: i18n("Slack:")
+            enabled: alertsSwitch.checked
+            checked: plasmoid.configuration.slackWebhookEnabled
+        }
+
+        QQC2.TextField {
+            id: slackWebhookField
+            Kirigami.FormData.label: i18n("Slack URL:")
+            enabled: alertsSwitch.checked && slackWebhookSwitch.checked
+            echoMode: TextInput.Password
+            placeholderText: i18n("Stored in KWallet")
+            Layout.fillWidth: true
+            onTextEdited: alertsPage.slackWebhookDirty = true
+        }
+
+        QQC2.Switch {
+            id: discordWebhookSwitch
+            Kirigami.FormData.label: i18n("Discord:")
+            enabled: alertsSwitch.checked
+            checked: plasmoid.configuration.discordWebhookEnabled
+        }
+
+        QQC2.TextField {
+            id: discordWebhookField
+            Kirigami.FormData.label: i18n("Discord URL:")
+            enabled: alertsSwitch.checked && discordWebhookSwitch.checked
+            echoMode: TextInput.Password
+            placeholderText: i18n("Stored in KWallet")
+            Layout.fillWidth: true
+            onTextEdited: alertsPage.discordWebhookDirty = true
+        }
+
+        ColumnLayout {
+            Kirigami.FormData.label: i18n("Webhook cooldown:")
+            enabled: alertsSwitch.checked && (slackWebhookSwitch.checked || discordWebhookSwitch.checked)
+            spacing: Kirigami.Units.smallSpacing
+
+            QQC2.Slider {
+                id: webhookCooldownSlider
+                Layout.fillWidth: true
+                from: 1
+                to: 60
+                stepSize: 1
+                value: plasmoid.configuration.webhookCooldownMinutes
+            }
+
+            QQC2.Label {
+                text: i18n("%1 minutes", webhookCooldownSlider.value)
+                opacity: 0.7
+                Layout.alignment: Qt.AlignHCenter
+            }
         }
 
         Kirigami.Separator {
