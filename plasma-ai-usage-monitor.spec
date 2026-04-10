@@ -17,6 +17,7 @@ BuildRequires:  kf6-ki18n-devel
 BuildRequires:  kf6-knotifications-devel
 BuildRequires:  kf6-kcoreaddons-devel
 BuildRequires:  libappstream-glib
+BuildRequires:  openssl-devel
 BuildRequires:  qt6-qtbase-private-devel
 
 Requires:       plasma-workspace >= 6.0
