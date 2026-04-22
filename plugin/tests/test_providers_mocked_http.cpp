@@ -1000,7 +1000,7 @@ void ProvidersMockedHttpTest::azureProviderSuccess()
     AzureOpenAIProvider provider;
     provider.setApiKey(QStringLiteral("test-key"));
     provider.setDeploymentId(QStringLiteral("my-deployment"));
-    provider.setModel(QStringLiteral("gpt-4o"));
+    provider.setModel(QStringLiteral("gpt-5.4-pro"));
     provider.setCustomBaseUrl(server.baseUrl());
 
     QSignalSpy dataSpy(&provider, &ProviderBackend::dataUpdated);
@@ -1052,7 +1052,7 @@ void ProvidersMockedHttpTest::azureProviderMeteredCostPreferred()
     AzureOpenAIProvider provider;
     provider.setApiKey(QStringLiteral("test-key"));
     provider.setDeploymentId(QStringLiteral("my-deployment"));
-    provider.setModel(QStringLiteral("gpt-4o"));
+    provider.setModel(QStringLiteral("gpt-5.4-pro"));
     provider.setCustomBaseUrl(server.baseUrl());
 
     QSignalSpy dataSpy(&provider, &ProviderBackend::dataUpdated);

@@ -10,35 +10,33 @@
 #include <QDebug>
 
 CopilotMonitor::CopilotMonitor(QObject *parent)
-    : SubscriptionToolBackend(parent)
+    : LocalActivityMonitorBase(parent)
 {
+    setInstallExecutableNames({QStringLiteral("gh")});
+    setIgnoredPathSuffixes({QStringLiteral(".log"), QStringLiteral(".json")});
+    setDebounceIntervalMs(250);
 }
 
 void CopilotMonitor::checkToolInstalled()
 {
-    bool found = false;
+    // Use base class logic for executables
+    LocalActivityMonitorBase::checkToolInstalled();
+    if (isInstalled()) return;
 
-    // Check for GitHub CLI with Copilot extension
-    QString ghPath = QStandardPaths::findExecutable(QStringLiteral("gh"));
-    if (!ghPath.isEmpty()) {
-        // gh CLI is available; Copilot extension may be installed
-        found = true;
-    }
-
-    // Check for VS Code Copilot extension directory
+    // Check for VS Code Copilot extension directory (specific for Copilot)
     QString vscodeExtDir = QDir::homePath() + QStringLiteral("/.vscode/extensions");
     QDir extDir(vscodeExtDir);
     if (extDir.exists()) {
         const auto entries = extDir.entryList(QDir::Dirs | QDir::NoDotAndDotDot);
         for (const auto &entry : entries) {
             if (entry.startsWith(QStringLiteral("github.copilot"))) {
-                found = true;
-                break;
+                setInstalled(true);
+                return;
             }
         }
     }
 
-    // Check for Neovim Copilot plugin (specific plugin directories, not just nvim)
+    // Check for Neovim Copilot plugin
     QString nvimDataDir = QDir::homePath() + QStringLiteral("/.local/share/nvim");
     QStringList copilotPluginPaths = {
         nvimDataDir + QStringLiteral("/plugged/copilot.vim"),
@@ -49,91 +47,33 @@ void CopilotMonitor::checkToolInstalled()
     };
     for (const auto &pluginPath : copilotPluginPaths) {
         if (QDir(pluginPath).exists()) {
-            found = true;
-            break;
+            setInstalled(true);
+            return;
         }
     }
-
-    setInstalled(found);
 }
 
 void CopilotMonitor::detectActivity()
 {
-    const QString home = QDir::homePath();
-    const QStringList candidatePaths = {
-        home + QStringLiteral("/.config/Code/User/globalStorage/github.copilot"),
-        home + QStringLiteral("/.config/Code/User/globalStorage/github.copilot-chat"),
-        home + QStringLiteral("/.config/Code/User/workspaceStorage"),
-        home + QStringLiteral("/.config/Code/logs"),
-        home + QStringLiteral("/.config/VSCodium/User/globalStorage/github.copilot"),
-        home + QStringLiteral("/.config/VSCodium/User/globalStorage/github.copilot-chat"),
-        home + QStringLiteral("/.config/VSCodium/User/workspaceStorage"),
-        home + QStringLiteral("/.config/VSCodium/logs"),
-        home + QStringLiteral("/.config/Code - OSS/User/globalStorage/github.copilot"),
-        home + QStringLiteral("/.config/Code - OSS/User/globalStorage/github.copilot-chat"),
-        home + QStringLiteral("/.config/Code - OSS/User/workspaceStorage"),
-        home + QStringLiteral("/.config/Code - OSS/logs")
-    };
-
-    QDateTime newestTimestamp;
-    QString newestPath;
-
-    for (const QString &path : candidatePaths) {
-        const QDateTime modified = latestModification(path);
-        if (modified.isValid() && (!newestTimestamp.isValid() || modified > newestTimestamp)) {
-            newestTimestamp = modified;
-            newestPath = path;
-        }
+    if (watchedPaths().isEmpty()) {
+        const QString home = QDir::homePath();
+        setWatchedPaths({
+            home + QStringLiteral("/.config/Code/User/globalStorage/github.copilot"),
+            home + QStringLiteral("/.config/Code/User/globalStorage/github.copilot-chat"),
+            home + QStringLiteral("/.config/Code/User/workspaceStorage"),
+            home + QStringLiteral("/.config/Code/logs"),
+            home + QStringLiteral("/.config/VSCodium/User/globalStorage/github.copilot"),
+            home + QStringLiteral("/.config/VSCodium/User/globalStorage/github.copilot-chat"),
+            home + QStringLiteral("/.config/VSCodium/User/workspaceStorage"),
+            home + QStringLiteral("/.config/VSCodium/logs"),
+            home + QStringLiteral("/.config/Code - OSS/User/globalStorage/github.copilot"),
+            home + QStringLiteral("/.config/Code - OSS/User/globalStorage/github.copilot-chat"),
+            home + QStringLiteral("/.config/Code - OSS/User/workspaceStorage"),
+            home + QStringLiteral("/.config/Code - OSS/logs")
+        });
     }
 
-    if (!newestTimestamp.isValid()) {
-        if (!m_loggedDetectionFallback) {
-            m_loggedDetectionFallback = true;
-            qInfo() << "CopilotMonitor: detectActivity fallback active; no Copilot state/log paths found."
-                    << "Manual tracking and org metrics remain available.";
-        }
-        return;
-    }
-
-    if (!m_lastDetectedActivity.isValid()) {
-        m_lastDetectedActivity = newestTimestamp;
-        qInfo() << "CopilotMonitor: detectActivity baseline initialized at" << newestTimestamp
-                << "from" << newestPath;
-        return;
-    }
-
-    if (newestTimestamp > m_lastDetectedActivity) {
-        m_lastDetectedActivity = newestTimestamp;
-        qInfo() << "CopilotMonitor: activity detected from" << newestPath
-                << "at" << newestTimestamp;
-        incrementUsage();
-    }
-}
-
-QDateTime CopilotMonitor::latestModification(const QString &path, int maxEntries) const
-{
-    QFileInfo info(path);
-    if (!info.exists()) {
-        return QDateTime();
-    }
-
-    if (info.isFile()) {
-        return info.lastModified();
-    }
-
-    QDateTime newest = info.lastModified();
-    QDirIterator it(path, QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot, QDirIterator::Subdirectories);
-    int scanned = 0;
-    while (it.hasNext() && scanned < maxEntries) {
-        it.next();
-        const QFileInfo entry = it.fileInfo();
-        if (entry.lastModified().isValid() && entry.lastModified() > newest) {
-            newest = entry.lastModified();
-        }
-        scanned++;
-    }
-
-    return newest;
+    LocalActivityMonitorBase::detectActivity();
 }
 
 // --- GitHub API ---

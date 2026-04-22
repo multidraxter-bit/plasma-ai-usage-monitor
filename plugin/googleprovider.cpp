@@ -9,6 +9,9 @@ GoogleProvider::GoogleProvider(QObject *parent)
 {
     // Register model pricing ($ per 1M tokens) — Google Gemini pricing as of 2026
     // Free tier models are $0; paid tier prices listed here
+    registerModelPricing(QStringLiteral("gemini-3.1-flash-live"), 0.15, 0.60);
+    registerModelPricing(QStringLiteral("gemini-3.1-flash-tts"), 0.15, 0.60);
+    registerModelPricing(QStringLiteral("deep-research-preview-04-2026"), 2.00, 8.00);
     registerModelPricing(QStringLiteral("gemini-2.5-pro"), 1.25, 10.0);
     registerModelPricing(QStringLiteral("gemini-2.5-flash"), 0.15, 0.60);
     registerModelPricing(QStringLiteral("gemini-2.0-flash"), 0.10, 0.40);

@@ -22,7 +22,7 @@ QString BedrockProvider::region() const
 
 void BedrockProvider::setRegion(const QString &region)
 {
-    const QString normalized = region.trimmed();
+    const QString normalized = region.trimmed().toLower();
     if (m_region != normalized && !normalized.isEmpty()) {
         m_region = normalized;
         Q_EMIT regionChanged();
@@ -81,6 +81,12 @@ void BedrockProvider::setSessionToken(const QString &token)
 
 void BedrockProvider::refresh()
 {
+    if (m_region.isEmpty()) {
+        setError(i18n("AWS region missing (e.g., us-east-1)"));
+        setConnected(false);
+        return;
+    }
+
     if (!hasApiKey() || m_secretAccessKey.isEmpty()) {
         setError(i18n("AWS access key ID or secret access key missing"));
         setConnected(false);
@@ -91,7 +97,8 @@ void BedrockProvider::refresh()
     setLoading(true);
     clearError();
 
-    QUrl url(QStringLiteral("%1/foundation-models").arg(endpointBase()));
+    const QString endpoint = endpointBase();
+    QUrl url(QStringLiteral("%1/foundation-models").arg(endpoint));
     QUrlQuery query;
     query.addQueryItem(QStringLiteral("byOutputModality"), QStringLiteral("TEXT"));
     url.setQuery(query);
@@ -134,7 +141,7 @@ void BedrockProvider::refresh()
         const int httpStatus = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
         if (reply->error() != QNetworkReply::NoError) {
             if (httpStatus == 401 || httpStatus == 403) {
-                setError(i18n("AWS credentials rejected"));
+                setError(i18n("AWS credentials rejected or missing IAM permissions for Bedrock foundation-models:List. Check region %1.", m_region));
             } else {
                 setError(i18n("Bedrock API error: %1 (HTTP %2)",
                               reply->errorString(),

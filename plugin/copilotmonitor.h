@@ -1,7 +1,7 @@
 #ifndef COPILOTMONITOR_H
 #define COPILOTMONITOR_H
 
-#include "subscriptiontoolbackend.h"
+#include "localactivitymonitorbase.h"
 #include <QNetworkReply>
 #include <QDateTime>
 
@@ -22,7 +22,7 @@
  * - Business ($19/user/mo): 300 premium requests/user/month
  * - Enterprise ($39/user/mo): 1000 premium requests/user/month
  */
-class CopilotMonitor : public SubscriptionToolBackend
+class CopilotMonitor : public LocalActivityMonitorBase
 {
     Q_OBJECT
 
@@ -79,11 +79,8 @@ private Q_SLOTS:
     void onBillingReply(QNetworkReply *reply);
 
 private:
-    QDateTime latestModification(const QString &path, int maxEntries = 4000) const;
-
     QString m_githubToken;
     QString m_orgName;
-    QDateTime m_lastDetectedActivity;
     bool m_loggedDetectionFallback = false;
 
     bool m_hasOrgMetrics = false;

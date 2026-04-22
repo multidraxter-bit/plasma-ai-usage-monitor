@@ -88,11 +88,28 @@ QString BrowserCookieExtractor::cookieDbPath() const
 
 // --- Firefox Profile Detection ---
 
+QString BrowserCookieExtractor::firefoxRoot() const
+{
+    const QStringList candidates = {
+        QDir::homePath() + QStringLiteral("/.mozilla/firefox"),
+        QDir::homePath() + QStringLiteral("/.var/app/org.mozilla.firefox/.mozilla/firefox"),
+        QDir::homePath() + QStringLiteral("/snap/firefox/common/.mozilla/firefox"),
+    };
+
+    for (const QString &path : candidates) {
+        if (QDir(path).exists()) {
+            return path;
+        }
+    }
+    return candidates.first();
+}
+
 QString BrowserCookieExtractor::firefoxProfilePath() const
 {
-    QString mozDir = QDir::homePath() + QStringLiteral("/.mozilla/firefox");
+    const QString mozDir = firefoxRoot();
+    if (!QDir(mozDir).exists()) return QString();
+
     QDir dir(mozDir);
-    if (!dir.exists()) return QString();
 
     // If user selected a specific profile, try it first.
     if (!m_selectedFirefoxProfile.trimmed().isEmpty()) {
@@ -161,7 +178,7 @@ QString BrowserCookieExtractor::firefoxProfilePathByName(const QString &profileN
         return QString();
     }
 
-    const QString mozDir = QDir::homePath() + QStringLiteral("/.mozilla/firefox");
+    const QString mozDir = firefoxRoot();
     const QString profilesIni = mozDir + QStringLiteral("/profiles.ini");
     if (!QFileInfo::exists(profilesIni)) {
         return QString();
@@ -191,7 +208,7 @@ QString BrowserCookieExtractor::firefoxProfilePathByName(const QString &profileN
 QStringList BrowserCookieExtractor::firefoxProfiles() const
 {
     QStringList profiles;
-    QString mozDir = QDir::homePath() + QStringLiteral("/.mozilla/firefox");
+    const QString mozDir = firefoxRoot();
     QDir dir(mozDir);
     if (!dir.exists()) return profiles;
 
@@ -252,12 +269,28 @@ QString BrowserCookieExtractor::chromiumProfilePath() const
 
 QString BrowserCookieExtractor::chromeProfileRoot() const
 {
-    return QDir::homePath() + QStringLiteral("/.config/google-chrome");
+    const QStringList candidates = {
+        QDir::homePath() + QStringLiteral("/.config/google-chrome"),
+        QDir::homePath() + QStringLiteral("/.var/app/com.google.Chrome/config/google-chrome"),
+    };
+    for (const QString &path : candidates) {
+        if (QDir(path).exists()) return path;
+    }
+    return candidates.first();
 }
 
 QString BrowserCookieExtractor::chromiumProfileRoot() const
 {
-    return QDir::homePath() + QStringLiteral("/.config/chromium");
+    const QStringList candidates = {
+        QDir::homePath() + QStringLiteral("/.config/chromium"),
+        QDir::homePath() + QStringLiteral("/.var/app/org.chromium.Chromium/config/chromium"),
+        QDir::homePath() + QStringLiteral("/.config/BraveSoftware/Brave-Browser"),
+        QDir::homePath() + QStringLiteral("/.var/app/com.brave.Browser/config/BraveSoftware/Brave-Browser"),
+    };
+    for (const QString &path : candidates) {
+        if (QDir(path).exists()) return path;
+    }
+    return candidates.first();
 }
 
 QString BrowserCookieExtractor::chromiumSelectedProfilePath(const QString &rootPath) const

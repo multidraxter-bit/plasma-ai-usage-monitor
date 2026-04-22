@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.4.0] — 2026-04-22
+
+### Added
+- Add support for April 2026 models including OpenAI GPT-5.4 series (gpt-5.4-pro, gpt-5.4-thinking, gpt-5.4-mini, gpt-5.4-cyber), Anthropic Claude 4.7/4.8, Google Gemini 3.1 & Deep Research, and Gemma 4 31b.
+- Add deep environment preflight checks in `install_doctor.sh` covering dependencies, SQLite driver, KWallet health, compiled plugin integrity (`ldd`), and Flatpak/Snap browser profile discovery.
+- Add AWS Bedrock region validation and improved 403 error reporting for missing IAM permissions.
+
+### Changed
+- Update default OpenAI and Azure OpenAI models from `gpt-4o` to `gpt-5.4-pro` across the UI, config schema, OpenRouter integration, and test suite.
+- Improve Browser Sync by expanding profile discovery to support Flatpak/Snap installations of Firefox, Chrome, Chromium, and Brave.
+- Optimize LocalActivityMonitorBase to reduce CPU overhead on large watched directories by checking top-level folder timestamps before deep scanning.
+- Refactor `CopilotMonitor` to utilize the improved `LocalActivityMonitorBase` for consistent activity tracking and debouncing.
+- Prevent duplicate counting in local subscription monitors by implementing a 1.5s logical grouping window for rapid filesystem events (like "Save All").
+
 ## [5.3.0] — 2026-04-10
 
 ### Added

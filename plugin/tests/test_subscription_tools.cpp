@@ -136,6 +136,9 @@ void SubscriptionToolsTest::copilotDetectActivityIncrementsUsage()
 
     CopilotMonitor copilot;
     copilot.setUsageLimit(10);
+    copilot.setEnabled(true);
+    copilot.checkToolInstalled();
+    QVERIFY(copilot.isInstalled());
 
     QSignalSpy activitySpy(&copilot, &SubscriptionToolBackend::activityDetected);
     QSignalSpy usageSpy(&copilot, &SubscriptionToolBackend::usageUpdated);
@@ -144,12 +147,15 @@ void SubscriptionToolsTest::copilotDetectActivityIncrementsUsage()
     copilot.detectActivity();
     QCOMPARE(copilot.usageCount(), 0);
 
-    QTest::qWait(1100);
+    QTest::qWait(2100);
     QVERIFY(stateFile.open(QIODevice::WriteOnly | QIODevice::Text | QIODevice::Truncate));
     stateFile.write("{\"status\":\"active\"}\n");
     stateFile.close();
 
     copilot.detectActivity();
+
+    // Wait for debounce timer (250ms + buffer)
+    QTest::qWait(500);
 
     QCOMPARE(copilot.usageCount(), 1);
     QCOMPARE(activitySpy.count(), 1);

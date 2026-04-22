@@ -53,7 +53,7 @@ private:
     void checkAllDone();
 
     QString m_projectId;
-    QString m_model = QStringLiteral("gpt-4o");
+    QString m_model = QStringLiteral("gpt-5.4-pro");
     int m_pendingRequests = 0;
 
     static constexpr const char *BASE_URL = "https://api.openai.com/v1";

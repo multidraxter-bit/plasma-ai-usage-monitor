@@ -99,7 +99,7 @@ void ProviderBackendTest::testProviderKeyEnumConversionAzure()
     const ProviderBackend::ProviderConfig azureConfig = ProviderBackend::makeProviderConfig(
         QStringLiteral("azure-openai"),
         QStringLiteral("https://example.openai.azure.com"),
-        QStringLiteral("gpt-4o"),
+        QStringLiteral("gpt-5.4-pro"),
         QStringLiteral("my-deployment"),
         QStringLiteral("secret"));
 

@@ -85,7 +85,7 @@
             <default>false</default>
         </entry>
         <entry name="openaiModel" type="String">
-            <default>gpt-4o</default>
+            <default>gpt-5.4-pro</default>
         </entry>
         <entry name="openaiProjectId" type="String">
             <default></default>
@@ -99,7 +99,7 @@
             <default>false</default>
         </entry>
         <entry name="azureModel" type="String">
-            <default>gpt-4o</default>
+            <default>gpt-5.4-pro</default>
         </entry>
         <entry name="azureDeploymentId" type="String">
             <default></default>
@@ -207,7 +207,7 @@
             <default>false</default>
         </entry>
         <entry name="openrouterModel" type="String">
-            <default>openai/gpt-4o</default>
+            <default>openai/gpt-5.4-pro</default>
         </entry>
         <entry name="openrouterCustomBaseUrl" type="String">
             <default></default>

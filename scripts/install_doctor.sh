@@ -58,7 +58,7 @@ check_cmd() {
 }
 
 required_cmds=(cmake g++ kpackagetool6)
-warning_cmds=(plasmashell plasmawindowed qmllint)
+warning_cmds=(plasmashell plasmawindowed qmllint kwallet-query secret-tool aws)
 
 missing_required=()
 missing_warning=()
@@ -85,6 +85,8 @@ fedora_packages=(
   kf6-ki18n-devel
   kf6-knotifications-devel
   kf6-kcoreaddons-devel
+  openssl-devel
+  libsecret-devel
 )
 
 missing_fedora_packages=()
@@ -97,7 +99,7 @@ if [[ "$OS_ID" == "fedora" ]] && command -v rpm >/dev/null 2>&1; then
 fi
 
 sqlite_driver_ok=false
-if [[ -f /usr/lib64/qt6/plugins/sqldrivers/libqsqlite.so ]] || [[ -f /usr/lib/qt6/plugins/sqldrivers/libqsqlite.so ]]; then
+if [[ -f /usr/lib64/qt6/plugins/sqldrivers/libqsqlite.so ]] || [[ -f /usr/lib/qt6/plugins/sqldrivers/libqsqlite.so ]] || [[ -f /usr/lib/x86_64-linux-gnu/qt6/plugins/sqldrivers/libqsqlite.so ]]; then
   sqlite_driver_ok=true
 fi
 
@@ -162,11 +164,60 @@ qml_module_dir="$(find_qml_module_dir || true)"
 qml_import_ready=false
 compiled_plugin_ok=false
 compiled_plugin_path=""
+plugin_ldd_ok=true
+plugin_missing_libs=()
 if [[ -n "$qml_module_dir" ]]; then
   qml_import_ready=true
   compiled_plugin_path="$(find_plugin_library "$qml_module_dir" || true)"
   if [[ -n "$compiled_plugin_path" ]]; then
     compiled_plugin_ok=true
+    # Check for missing shared libraries
+    if command -v ldd >/dev/null 2>&1; then
+      if ldd "$compiled_plugin_path" | grep -q "not found"; then
+        plugin_ldd_ok=false
+        while read -r line; do
+          plugin_missing_libs+=("$(echo "$line" | awk '{print $1}')")
+        done < <(ldd "$compiled_plugin_path" | grep "not found")
+      fi
+    fi
+  fi
+fi
+
+# Browser Profile Detection
+browser_profiles_found=()
+browser_paths=(
+  "Firefox:~/.mozilla/firefox"
+  "Firefox (Flatpak):~/.var/app/org.mozilla.firefox/.mozilla/firefox"
+  "Chrome:~/.config/google-chrome"
+  "Chromium:~/.config/chromium"
+  "Chromium (Flatpak):~/.var/app/org.chromium.Chromium/config/chromium"
+  "Brave:~/.config/BraveSoftware/Brave-Browser"
+)
+
+for pair in "${browser_paths[@]}"; do
+  name="${pair%%:*}"
+  path="${pair#*:}"
+  eval path="$path"
+  if [[ -d "$path" ]]; then
+    browser_profiles_found+=("$name")
+  fi
+done
+
+# AWS / Bedrock checks
+aws_env_ok=false
+if [[ -n "${AWS_ACCESS_KEY_ID:-}" && -n "${AWS_SECRET_ACCESS_KEY:-}" ]]; then
+  aws_env_ok=true
+fi
+aws_config_present=false
+if [[ -f "${HOME}/.aws/credentials" || -f "${HOME}/.aws/config" ]]; then
+  aws_config_present=true
+fi
+
+# KWallet check
+kwallet_usable=false
+if command -v kwallet-query >/dev/null 2>&1; then
+  if timeout 2s kwallet-query -l kdewallet >/dev/null 2>&1 || timeout 2s kwallet-query -l LocalWallet >/dev/null 2>&1; then
+    kwallet_usable=true
   fi
 fi
 
@@ -206,6 +257,23 @@ echo "Plasmoid package (user-local): $([[ "$user_plasmoid_present" == true ]] &&
 echo "Plasmoid package (system): $([[ "$system_plasmoid_present" == true ]] && echo "present" || echo "not found")"
 echo "QML import readiness: $([[ "$qml_import_ready" == true ]] && echo "ok (${qml_module_dir}/qmldir)" || echo "warning: qmldir not found")"
 echo "Compiled plugin: $([[ "$compiled_plugin_ok" == true ]] && echo "ok (${compiled_plugin_path})" || echo "warning: shared library not found")"
+if [[ "$compiled_plugin_ok" == true && "$plugin_ldd_ok" == false ]]; then
+  echo "  ! WARNING: Plugin has missing shared library dependencies: ${plugin_missing_libs[*]}"
+fi
+
+echo
+echo "Browser Sync Readiness:"
+if [[ ${#browser_profiles_found[@]} -gt 0 ]]; then
+  echo "  - Profiles found: ${browser_profiles_found[*]}"
+else
+  echo "  - warning: No browser profiles detected in standard paths."
+fi
+echo "  - KWallet usability: $([[ "$kwallet_usable" == true ]] && echo "ok" || echo "warning: KWallet not responsive or no wallet found")"
+
+echo
+echo "AWS Bedrock Readiness:"
+echo "  - Environment vars: $([[ "$aws_env_ok" == true ]] && echo "present" || echo "missing")"
+echo "  - AWS Config file:  $([[ "$aws_config_present" == true ]] && echo "found" || echo "not found")"
 
 do_install=false
 if [[ "$AUTO_INSTALL" == true ]] && [[ "$OS_ID" == "fedora" ]]; then
@@ -238,25 +306,36 @@ if [[ "$OS_ID" == "fedora" ]] && [[ ${#missing_fedora_packages[@]} -gt 0 ]] && [
 fi
 
 if [[ "$sqlite_driver_ok" != true ]]; then
-  echo "Warning: Qt SQLite driver not detected. History charts may not work until Qt SQL driver is available."
+  echo "Warning: Qt SQLite driver not detected. History charts may not work."
+  if [[ "$OS_ID" == "fedora" ]]; then
+    echo "    Fix: sudo dnf install qt6-qtbase-sqlite"
+  fi
 fi
 
 if [[ "$user_plasmoid_present" == true && "$system_plasmoid_present" == true ]]; then
-  echo "Warning: both user-local and system plasmoid packages are installed. The user-local package usually shadows the system install."
+  echo "Warning: both user-local and system plasmoid packages are installed. User-local shadows system."
+  echo "    Fix: kpackagetool6 --type Plasma/Applet --remove com.github.loofi.aiusagemonitor"
 fi
 
 if [[ "$user_plasmoid_present" == true && "$compiled_plugin_ok" != true ]]; then
-  echo "Warning: a user-local plasmoid package was found, but the compiled plugin was not. QML edits may load while C++ changes remain stale."
+  echo "Warning: user-local plasmoid found, but compiled plugin NOT found in Qt import paths."
+  echo "    This usually means the C++ plugin was never installed or is in a non-standard path."
 fi
 
 if [[ "$qml_import_ready" != true ]]; then
   echo "Warning: the installed QML module qmldir was not found in common Qt6 import paths."
+  echo "    Check if QML2_IMPORT_PATH or QML_IMPORT_PATH needs to include your install prefix."
 fi
 
 if [[ ${#missing_warning[@]} -gt 0 ]]; then
   echo "Warnings:"
   for item in "${missing_warning[@]}"; do
     echo "  - Missing runtime command: $item"
+    if [[ "$item" == "kwallet-query" && "$OS_ID" == "fedora" ]]; then
+       echo "    Fix: sudo dnf install kwallet-query"
+    elif [[ "$item" == "secret-tool" && "$OS_ID" == "fedora" ]]; then
+       echo "    Fix: sudo dnf install libsecret"
+    fi
   done
 fi
 

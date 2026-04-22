@@ -52,7 +52,7 @@ private:
     QString endpointBaseUrl() const;
     QUrl completionUrl() const;
 
-    QString m_model = QStringLiteral("gpt-4o");
+    QString m_model = QStringLiteral("gpt-5.4-pro");
     QString m_deploymentId;
     QString m_apiVersion = QStringLiteral("2024-10-21");
     QByteArray m_lastRequestBody;

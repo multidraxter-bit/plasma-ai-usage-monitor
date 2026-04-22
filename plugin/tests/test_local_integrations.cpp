@@ -48,7 +48,7 @@ void LocalIntegrationsTest::usageDatabaseExportsFiles()
 {
     UsageDatabase db;
     db.init();
-    db.recordSnapshot(QStringLiteral("OpenAI"), 10, 5, 1, 0.25, 0.25, 0.25, 100, 99, 1000, 985, QStringLiteral("gpt-4o"), false);
+    db.recordSnapshot(QStringLiteral("OpenAI"), 10, 5, 1, 0.25, 0.25, 0.25, 100, 99, 1000, 985, QStringLiteral("gpt-5.4-pro"), false);
     db.recordToolSnapshot(QStringLiteral("Cursor"), 3, 500, QStringLiteral("Monthly"), QStringLiteral("Pro"), false);
 
     QTemporaryDir dir;

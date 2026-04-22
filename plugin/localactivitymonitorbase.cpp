@@ -5,6 +5,8 @@
 #include <QFileInfo>
 #include <QStandardPaths>
 
+#include <iostream>
+
 LocalActivityMonitorBase::LocalActivityMonitorBase(QObject *parent)
     : SubscriptionToolBackend(parent)
     , m_watcher(new QFileSystemWatcher(this))
@@ -97,6 +99,10 @@ void LocalActivityMonitorBase::checkToolInstalled()
 
 void LocalActivityMonitorBase::detectActivity()
 {
+    if (!isEnabled() || !isInstalled()) {
+        return;
+    }
+
     QDateTime newestTimestamp;
 
     for (const QString &path : std::as_const(m_watchedPaths)) {
@@ -106,7 +112,9 @@ void LocalActivityMonitorBase::detectActivity()
         }
     }
 
-    scheduleIncrement(newestTimestamp);
+    if (newestTimestamp.isValid() && newestTimestamp > m_lastKnownModification) {
+        scheduleIncrement(newestTimestamp);
+    }
 }
 
 QDateTime LocalActivityMonitorBase::latestModification(const QString &path, int maxEntries)
@@ -205,7 +213,24 @@ void LocalActivityMonitorBase::setupWatcher()
 
 void LocalActivityMonitorBase::scheduleIncrement(const QDateTime &modified)
 {
-    if (!modified.isValid() || modified <= m_lastKnownModification) {
+    if (!modified.isValid()) {
+        return;
+    }
+
+    // Baseline initialization (don't increment on first detect)
+    if (!m_lastKnownModification.isValid()) {
+        m_lastKnownModification = modified;
+        return;
+    }
+
+    if (modified <= m_lastKnownModification) {
+        return;
+    }
+
+    // Logical grouping: if modification is within 1.5 seconds of the last one,
+    // we consider it part of the same action (e.g. multiple files saved at once).
+    if (modified.toMSecsSinceEpoch() <= m_lastKnownModification.toMSecsSinceEpoch() + 1500) {
+        m_lastKnownModification = modified;
         return;
     }
 

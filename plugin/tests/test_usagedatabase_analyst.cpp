@@ -182,7 +182,7 @@ void UsageDatabaseAnalystTest::testAnalystOverview()
                           80,
                           1000,
                           700,
-                          QStringLiteral("gpt-4o"),
+                          QStringLiteral("gpt-5.4-pro"),
                           false);
         QVERIFY(updateSnapshotData(QStringLiteral("OpenAI"),
                                    openAiDaily,
@@ -227,7 +227,7 @@ void UsageDatabaseAnalystTest::testAnalystOverview()
 
     const QVariantList models = overview.value(QStringLiteral("topModels")).toList();
     QVERIFY(!models.isEmpty());
-    QCOMPARE(models.first().toMap().value(QStringLiteral("model")).toString(), QStringLiteral("gpt-4o"));
+    QCOMPARE(models.first().toMap().value(QStringLiteral("model")).toString(), QStringLiteral("gpt-5.4-pro"));
 }
 
 QTEST_MAIN(UsageDatabaseAnalystTest)

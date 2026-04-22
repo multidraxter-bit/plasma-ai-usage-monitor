@@ -312,7 +312,7 @@ KCM.SimpleKCM {
             Kirigami.FormData.label: i18n("Model filter:")
             enabled: openaiSwitch.checked
             text: plasmoid.configuration.openaiModel
-            placeholderText: "gpt-4o"
+            placeholderText: "gpt-5.4-pro"
             Layout.fillWidth: true
             QQC2.ToolTip.text: i18n("Only show usage for this model. Leave empty to show all models.")
             QQC2.ToolTip.visible: hovered
@@ -417,7 +417,7 @@ KCM.SimpleKCM {
             Kirigami.FormData.label: i18n("Model filter:")
             enabled: azureSwitch.checked
             text: plasmoid.configuration.azureModel
-            placeholderText: "gpt-4o"
+            placeholderText: "gpt-5.4-pro"
             Layout.fillWidth: true
         }
 
@@ -626,12 +626,13 @@ KCM.SimpleKCM {
             editable: true
             editText: plasmoid.configuration.anthropicModel
             model: [
+                "claude-opus-4.7",
+                "claude-sonnet-4.8",
+                "claude-mythos-preview",
                 "claude-sonnet-4-20250514",
                 "claude-opus-4-20250514",
                 "claude-haiku-4-20250514",
-                "claude-3-7-sonnet-20250219",
-                "claude-3-5-sonnet-20241022",
-                "claude-3-5-haiku-20241022"
+                "claude-3-7-sonnet-20250219"
             ]
             onEditTextChanged: plasmoid.configuration.anthropicModel = editText
             property alias text: anthropicModelField.editText
@@ -728,12 +729,13 @@ KCM.SimpleKCM {
             editable: true
             editText: plasmoid.configuration.googleModel
             model: [
+                "deep-research-preview-04-2026",
+                "gemini-3.1-flash-live",
+                "gemini-3.1-flash-tts",
                 "gemini-2.5-pro",
                 "gemini-2.5-flash",
                 "gemini-2.0-flash",
-                "gemini-2.0-flash-lite",
-                "gemini-1.5-pro",
-                "gemini-1.5-flash"
+                "gemini-1.5-pro"
             ]
             onEditTextChanged: plasmoid.configuration.googleModel = editText
             property alias text: googleModelField.editText
@@ -888,14 +890,19 @@ KCM.SimpleKCM {
             description: i18n("Unified gateway to 600+ models. Shows credits balance and usage.")
             keyPlaceholder: i18n("sk-or-...")
             modelOptions: [
-                "openai/gpt-4o",
-                "openai/gpt-4o-mini",
-                "openai/gpt-4.1",
-                "openai/gpt-4.1-mini",
+                "openai/gpt-5.4-pro",
+                "openai/gpt-5.4-thinking",
+                "openai/gpt-5.4-mini",
+                "openai/gpt-5.4-cyber",
                 "openai/o3",
                 "openai/o4-mini",
-                "anthropic/claude-sonnet-4",
-                "anthropic/claude-opus-4",
+                "anthropic/claude-opus-4.7",
+                "anthropic/claude-sonnet-4.8",
+                "anthropic/claude-mythos-preview",
+                "anthropic/claude-sonnet-4-20250514",
+                "google/gemini-3.1-flash-live",
+                "google/gemini-3.1-flash-tts",
+                "google/deep-research-preview-04-2026",
                 "google/gemini-2.5-pro",
                 "google/gemini-2.5-flash",
                 "meta-llama/llama-3.3-70b-instruct",

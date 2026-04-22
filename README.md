@@ -104,9 +104,15 @@ Optionally sync real-time usage data by reading session cookies from your browse
 
 **How it works:** The widget reads cookies from the selected browser profile's cookie database (read-only) and makes authenticated requests to the same internal APIs that the web dashboards use. Your cookie data never leaves your machine — all requests go directly to the official services.
 
+**Supported Browsers:**
+- **Firefox** (System, Flatpak, Snap)
+- **Chrome** (System, Flatpak)
+- **Chromium** (System, Flatpak)
+- **Brave** (System, Flatpak)
+
 **Enable:** Settings → Subscriptions → Browser Sync → Enable sync
 
-**Requirements:** Firefox, Chrome, or Chromium on Linux with an active session on claude.ai and/or chatgpt.com. Chrome/Chromium sync depends on Linux-safe-storage access to the browser's cookie encryption secret.
+**Requirements:** An active session on claude.ai and/or chatgpt.com. Chrome/Chromium/Brave sync depends on Linux-safe-storage access (KWallet or libsecret) to the browser's cookie encryption secret.
 If you have multiple browser profiles, you can choose a specific profile in
 Settings → Subscriptions → Browser Sync.
 
@@ -299,6 +305,13 @@ cd plasma-ai-usage-monitor
 ./scripts/install_bootstrap.sh
 ```
 
+**Preflight Checks (Doctor):**
+The `install_doctor.sh` script (also run via `just doctor`) performs deep checks on your environment:
+- **Dependencies:** C++, Qt6, KF6, OpenSSL, libsecret
+- **Runtime Tools:** KWallet, secret-tool, AWS CLI
+- **Browsers:** Detects Firefox, Chrome, Chromium, and Brave profiles (including Flatpaks)
+- **Plugin Integrity:** Checks for missing shared libraries in the compiled plugin
+
 Useful modes:
 
 ```bash
@@ -422,7 +435,7 @@ Each provider has:
 
 - **Enable/disable** toggle
 - **API key** field — Keys are stored in KWallet. Use the eye icon to show/hide, and the clear button to remove a key.
-- **Model selector** — Choose which model to query (e.g., `gpt-4o`, `claude-sonnet-4-20250514`, `gemini-2.0-flash`, `mistral-large-latest`, `deepseek-chat`, `llama-3.3-70b-versatile`, `grok-3`)
+- **Model selector** — Choose which model to query (e.g., `gpt-5.4-pro`, `claude-opus-4.7`, `gemini-3.1-flash-live`, `mistral-large-latest`, `deepseek-chat-v3`, `gemma-4-31b-it`, `grok-3`)
 - **Custom base URL** — Optional proxy/gateway URL override. Shows a security warning if you enter an `http://` (non-HTTPS) URL.
 - **Project ID** (OpenAI only) — Optional, to filter usage to a specific project
 

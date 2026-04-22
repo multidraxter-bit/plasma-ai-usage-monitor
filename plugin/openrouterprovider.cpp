@@ -7,21 +7,19 @@ OpenRouterProvider::OpenRouterProvider(QObject *parent)
     : OpenAICompatibleProvider(parent)
 {
     // Set default model (OpenRouter uses provider/model format)
-    setModel(QStringLiteral("openai/gpt-4o"));
+    setModel(QStringLiteral("openai/gpt-5.4-pro"));
 
     // Register model pricing ($ per 1M tokens) — OpenRouter pricing as of 2026
     // OpenRouter adds a small margin; these are approximate pass-through prices
-    registerModelPricing(QStringLiteral("openai/gpt-4o"), 2.50, 10.00);
-    registerModelPricing(QStringLiteral("openai/gpt-4o-mini"), 0.15, 0.60);
-    registerModelPricing(QStringLiteral("openai/gpt-4.1"), 2.00, 8.00);
-    registerModelPricing(QStringLiteral("openai/gpt-4.1-mini"), 0.40, 1.60);
-    registerModelPricing(QStringLiteral("openai/gpt-4.1-nano"), 0.10, 0.40);
+    registerModelPricing(QStringLiteral("openai/gpt-5.4-pro"), 3.00, 12.00);
+    registerModelPricing(QStringLiteral("openai/gpt-5.4-thinking"), 4.00, 16.00);
+    registerModelPricing(QStringLiteral("openai/gpt-5.4-mini"), 0.15, 0.60);
+    registerModelPricing(QStringLiteral("openai/gpt-5.4-cyber"), 5.00, 20.00);
     registerModelPricing(QStringLiteral("openai/o3"), 2.00, 8.00);
-    registerModelPricing(QStringLiteral("openai/o3-mini"), 1.10, 4.40);
     registerModelPricing(QStringLiteral("openai/o4-mini"), 1.10, 4.40);
-    registerModelPricing(QStringLiteral("anthropic/claude-sonnet-4"), 3.00, 15.00);
-    registerModelPricing(QStringLiteral("anthropic/claude-opus-4"), 15.00, 75.00);
-    registerModelPricing(QStringLiteral("anthropic/claude-3.5-haiku"), 0.80, 4.00);
+    registerModelPricing(QStringLiteral("anthropic/claude-opus-4.7"), 15.00, 75.00);
+    registerModelPricing(QStringLiteral("anthropic/claude-sonnet-4.8"), 3.00, 15.00);
+    registerModelPricing(QStringLiteral("anthropic/claude-mythos-preview"), 20.00, 100.00);
     registerModelPricing(QStringLiteral("google/gemini-2.5-pro"), 1.25, 10.00);
     registerModelPricing(QStringLiteral("google/gemini-2.5-flash"), 0.15, 0.60);
     registerModelPricing(QStringLiteral("google/gemini-2.0-flash"), 0.10, 0.40);

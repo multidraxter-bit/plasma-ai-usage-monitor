@@ -18,6 +18,11 @@ Makefile
 .demo-output/
 __pycache__/
 *.pyc
+.playwright-cli/
+*.log
+*.tmp
+*.bak
+*.swp   
 
 # Claude Code temp directories
 tmpclaude-*

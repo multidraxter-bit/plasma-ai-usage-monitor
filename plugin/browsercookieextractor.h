@@ -100,6 +100,7 @@ Q_SIGNALS:
     void selectedFirefoxProfileChanged();
 
 private:
+    QString firefoxRoot() const;
     QString firefoxProfilePath() const;
     QString firefoxProfilePathByName(const QString &profileName) const;
     QString chromeProfilePath() const;
