@@ -1,7 +1,7 @@
 # Roadmap — Plasma AI Usage Monitor
 
-> **Current version:** v5.3.0 (Vanguard)
-> **Last updated:** 2026-04-10
+> **Current version:** v5.4.1 (Link)
+> **Last updated:** 2026-04-22
 > **Direction:** Keep the widget desktop-native and local-first. Prefer export, notifications, and loopback integrations over backend/server expansion.
 
 ## Analyst's Note on Feasibility
@@ -19,9 +19,19 @@ Chrome/Chromium cookie decryption and AWS Bedrock support remain in scope, but b
 | Version | Codename | Theme | Status |
 | ------- | -------- | ----- | ------ |
 | v5.2.0 | **Lighthouse** | Operator clarity and runtime consolidation | Released |
-| v5.3.0 | **Vanguard** | Distribution and local tools | Active |
-| v5.4.0 | **Link** | Advanced sync and enterprise API | Planned |
+| v5.3.0 | **Vanguard** | Distribution and local tools | Released |
+| v5.4.1 | **Link** | Advanced sync and enterprise API | Released |
 | v6.0.0 | **Nexus (Light)** | Integration and standard export | Planned |
+
+## v5.4.1 — "Link"
+
+**Goal:** extend browser sync beyond Firefox on Linux and add AWS Bedrock without turning the widget into a cloud control plane. Includes 5.4.1 hotfix for COPR test environments.
+
+| Feature | Description | Technical Risk |
+| ------- | ----------- | -------------- |
+| **Chrome/Chromium sync** | Linux-only profile discovery plus cookie reads/decryption when safe-storage secrets are available via Secret Service or KWallet-compatible paths. | Medium |
+| **AWS Bedrock** | Add a Bedrock provider using AWS Signature Version 4 and region/model-aware connectivity checks, with estimated cost where direct spend data is unavailable. | Medium/High |
+| **JetBrains AI** | Track local JetBrains AI activity from `~/.config/JetBrains/`. | Low |
 
 ## v5.3.0 — "Vanguard"
 
@@ -33,16 +43,6 @@ Chrome/Chromium cookie decryption and AWS Bedrock support remain in scope, but b
 | **Cursor** | Track local activity and self-managed limits from `~/.cursor/`. | Low |
 | **Windsurf (Codeium)** | Track local activity and self-managed limits from `~/.codeium/`. | Low |
 | **Shared local monitor base** | Consolidate install detection, recursive watching, debounce, and self-tracked usage increments for local subscription tools. | Low |
-
-## v5.4.0 — "Link"
-
-**Goal:** extend browser sync beyond Firefox on Linux and add AWS Bedrock without turning the widget into a cloud control plane.
-
-| Feature | Description | Technical Risk |
-| ------- | ----------- | -------------- |
-| **Chrome/Chromium sync** | Linux-only profile discovery plus cookie reads/decryption when safe-storage secrets are available via Secret Service or KWallet-compatible paths. | Medium |
-| **AWS Bedrock** | Add a Bedrock provider using AWS Signature Version 4 and region/model-aware connectivity checks, with estimated cost where direct spend data is unavailable. | Medium/High |
-| **JetBrains AI** | Track local JetBrains AI activity from `~/.config/JetBrains/`. | Low |
 
 ## v6.0.0 — "Nexus (Light)"
 
