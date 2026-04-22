@@ -127,6 +127,7 @@ void SubscriptionToolsTest::copilotDetectActivityIncrementsUsage()
 
     const QString stateDir = tempHome.path() + QStringLiteral("/.config/Code/User/globalStorage/github.copilot-chat");
     QVERIFY(QDir().mkpath(stateDir));
+    QVERIFY(QDir().mkpath(tempHome.path() + QStringLiteral("/.vscode/extensions/github.copilot")));
     const QString stateFilePath = stateDir + QStringLiteral("/state.json");
 
     QFile stateFile(stateFilePath);
