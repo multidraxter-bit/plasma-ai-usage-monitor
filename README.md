@@ -22,7 +22,7 @@
 
 A native KDE Plasma 6 plasmoid that monitors AI API token usage, rate limits, and costs across multiple providers. Sits in your panel as a compact icon with a colored status badge and expands into a detailed popup with per-provider stats, usage history charts, and budget tracking. Also tracks subscription-based AI coding tool usage limits for Claude Code, Codex CLI, and GitHub Copilot.
 
-> **Current release:** `v5.3.0 "Vanguard"` expands local subscription-tool monitoring with Cursor, Windsurf, and JetBrains AI, finalizes the Flatpak/CI distribution path, and adds local export, metrics, and webhook integration groundwork while keeping the widget architecture intact.
+> **Current release:** `v5.4.0` expands support for April 2026 AI models (OpenAI GPT-5.4 series, Anthropic Claude 4.7/4.8, Google Gemini 3.1), adds deep environment preflight checks in the installation doctor, enhances Browser Sync with Flatpak/Snap profile support across major browsers, and hardens local subscription monitors against duplicate counting.
 
 ## Quick Links
 
@@ -689,31 +689,19 @@ Check that the History tab is enabled in configuration. Data is stored in `~/.lo
 
 ## Changelog
 
-### v3.4.0 — Subscription Cost + Copilot Detection
+### v5.4.0 — April 2026 Models & Environment Hardening
 
-- Add Copilot activity auto-detection from local IDE state/log paths
-- Include subscription tool costs in compact and full total-cost summaries
-- Add Firefox-only Browser Sync guidance and onboarding step improvements
-- Add test coverage for Copilot activity increment detection
+- Add support for April 2026 models including OpenAI GPT-5.4 series, Anthropic Claude 4.7/4.8, Google Gemini 3.1 & Deep Research, and Gemma 4 31b
+- Add deep environment preflight checks in `install_doctor.sh` covering dependencies, KWallet health, and compiled plugin integrity
+- Improve Browser Sync by expanding profile discovery to support Flatpak/Snap installations of Firefox, Chrome, Chromium, and Brave
+- Prevent duplicate counting in local subscription monitors with a logical grouping window for rapid filesystem events
 
-### v3.2.0 — AppStream & COPR Packaging
+### v5.3.0 — Vanguard: Distribution and Local Tools
 
-- Add AppStream metainfo for KDE Discover and AppStream catalogs
-- Add COPR build infrastructure for Fedora package distribution
-- Add `.plasmoid` archive as GitHub Release artifact
-- Add AppStream validation in CI and RPM spec
-
-### v3.1.0 — New Providers (OpenRouter, Together AI, Cohere)
-
-- Add OpenRouter provider with 22-model pricing and credits balance
-- Add Together AI provider with 12-model pricing
-- Add Cohere provider with 7-model pricing
-- Add unit tests for all 3 new providers
-
-### v3.0.0 — 2026 Pricing Update
-
-- Update model pricing tables for all providers to 2026 pricing
-- Add new models for Anthropic, Google, Mistral, Groq, and xAI
+- Add local filesystem-backed subscription monitors for Cursor, Windsurf, and JetBrains AI
+- Add reusable local activity monitor infrastructure with install detection and watched-path debounce
+- Add AWS Bedrock provider scaffolding with AWS Signature Version 4 request signing support
+- Replace roadmap with the revised Vanguard, Link, and Nexus release plan
 
 See [CHANGELOG.md](CHANGELOG.md) for the full version history.
 
