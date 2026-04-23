@@ -297,134 +297,72 @@ PlasmaExtras.Representation {
                             Layout.rightMargin: Kirigami.Units.smallSpacing
                             Layout.topMargin: Kirigami.Units.smallSpacing
                             radius: Kirigami.Units.cornerRadius
-                            color: Qt.alpha(Kirigami.Theme.highlightColor, 0.06)
+                            color: Kirigami.Theme.backgroundColor
                             border.width: 1
-                            border.color: Qt.alpha(Kirigami.Theme.highlightColor, 0.22)
+                            border.color: Qt.alpha(Kirigami.Theme.textColor, 0.1)
                             visible: hasAnyProvider()
+                            implicitHeight: summaryLayout.implicitHeight + Kirigami.Units.smallSpacing * 2
 
                             GridLayout {
+                                id: summaryLayout
                                 anchors.fill: parent
                                 anchors.margins: Kirigami.Units.smallSpacing
                                 columns: fullRoot.narrowPopup ? 2 : 4
-                                columnSpacing: Kirigami.Units.smallSpacing
+                                columnSpacing: Kirigami.Units.largeSpacing
                                 rowSpacing: Kirigami.Units.smallSpacing
 
-                                Rectangle {
-                                    Layout.fillWidth: true
-                                    radius: Kirigami.Units.smallSpacing
-                                    color: Qt.alpha(Kirigami.Theme.backgroundColor, 0.65)
-                                    border.width: 1
-                                    border.color: Qt.alpha(Kirigami.Theme.textColor, 0.08)
-                                    implicitHeight: summaryProvidersColumn.implicitHeight + Kirigami.Units.smallSpacing * 2
-
-                                    ColumnLayout {
-                                        id: summaryProvidersColumn
-                                        anchors.fill: parent
-                                        anchors.margins: Kirigami.Units.smallSpacing
-                                        spacing: 2
-
-                                        PlasmaComponents.Label {
-                                            text: i18n("Providers")
-                                            font.pointSize: Kirigami.Theme.smallFont.pointSize
-                                            opacity: 0.65
-                                            wrapMode: Text.WordWrap
-                                            maximumLineCount: 2
-                                        }
-
-                                        PlasmaComponents.Label {
-                                            text: i18n("%1 enabled", fullRoot.enabledProviderCount)
-                                            font.bold: true
-                                        }
+                                ColumnLayout {
+                                    spacing: 0
+                                    PlasmaComponents.Label {
+                                        text: i18n("Providers")
+                                        font.pointSize: Kirigami.Theme.smallFont.pointSize
+                                        opacity: 0.7
+                                    }
+                                    PlasmaComponents.Label {
+                                        text: i18n("%1 enabled", fullRoot.enabledProviderCount)
+                                        font.bold: true
                                     }
                                 }
 
-                                Rectangle {
-                                    Layout.fillWidth: true
-                                    radius: Kirigami.Units.smallSpacing
-                                    color: Qt.alpha(Kirigami.Theme.backgroundColor, 0.65)
-                                    border.width: 1
-                                    border.color: Qt.alpha(Kirigami.Theme.textColor, 0.08)
-                                    implicitHeight: summaryConnectedColumn.implicitHeight + Kirigami.Units.smallSpacing * 2
-
-                                    ColumnLayout {
-                                        id: summaryConnectedColumn
-                                        anchors.fill: parent
-                                        anchors.margins: Kirigami.Units.smallSpacing
-                                        spacing: 2
-
-                                        PlasmaComponents.Label {
-                                            text: i18n("Connected")
-                                            font.pointSize: Kirigami.Theme.smallFont.pointSize
-                                            opacity: 0.65
-                                            wrapMode: Text.WordWrap
-                                            maximumLineCount: 2
-                                        }
-
-                                        PlasmaComponents.Label {
-                                            text: i18n("%1 active", fullRoot.connectedProviderCount)
-                                            font.bold: true
-                                            color: fullRoot.hasAnyConnectedProvider
-                                                ? Kirigami.Theme.positiveTextColor
-                                                : Kirigami.Theme.disabledTextColor
-                                        }
+                                ColumnLayout {
+                                    spacing: 0
+                                    PlasmaComponents.Label {
+                                        text: i18n("Connected")
+                                        font.pointSize: Kirigami.Theme.smallFont.pointSize
+                                        opacity: 0.7
+                                    }
+                                    PlasmaComponents.Label {
+                                        text: i18n("%1 active", fullRoot.connectedProviderCount)
+                                        font.bold: true
+                                        color: fullRoot.hasAnyConnectedProvider
+                                            ? Kirigami.Theme.positiveTextColor
+                                            : Kirigami.Theme.disabledTextColor
                                     }
                                 }
 
-                                Rectangle {
-                                    Layout.fillWidth: true
-                                    radius: Kirigami.Units.smallSpacing
-                                    color: Qt.alpha(Kirigami.Theme.backgroundColor, 0.65)
-                                    border.width: 1
-                                    border.color: Qt.alpha(Kirigami.Theme.textColor, 0.08)
-                                    implicitHeight: summaryCostColumn.implicitHeight + Kirigami.Units.smallSpacing * 2
-
-                                    ColumnLayout {
-                                        id: summaryCostColumn
-                                        anchors.fill: parent
-                                        anchors.margins: Kirigami.Units.smallSpacing
-                                        spacing: 2
-
-                                        PlasmaComponents.Label {
-                                            text: i18n("Total Cost")
-                                            font.pointSize: Kirigami.Theme.smallFont.pointSize
-                                            opacity: 0.65
-                                            wrapMode: Text.WordWrap
-                                            maximumLineCount: 2
-                                        }
-
-                                        PlasmaComponents.Label {
-                                            text: "$" + (root.totalCost ?? 0).toFixed(2)
-                                            font.bold: true
-                                        }
+                                ColumnLayout {
+                                    spacing: 0
+                                    PlasmaComponents.Label {
+                                        text: i18n("Total Cost")
+                                        font.pointSize: Kirigami.Theme.smallFont.pointSize
+                                        opacity: 0.7
+                                    }
+                                    PlasmaComponents.Label {
+                                        text: "$" + (root.totalCost ?? 0).toFixed(2)
+                                        font.bold: true
                                     }
                                 }
 
-                                Rectangle {
-                                    Layout.fillWidth: true
-                                    radius: Kirigami.Units.smallSpacing
-                                    color: Qt.alpha(Kirigami.Theme.backgroundColor, 0.65)
-                                    border.width: 1
-                                    border.color: Qt.alpha(Kirigami.Theme.textColor, 0.08)
-                                    implicitHeight: summaryToolsColumn.implicitHeight + Kirigami.Units.smallSpacing * 2
-
-                                    ColumnLayout {
-                                        id: summaryToolsColumn
-                                        anchors.fill: parent
-                                        anchors.margins: Kirigami.Units.smallSpacing
-                                        spacing: 2
-
-                                        PlasmaComponents.Label {
-                                            text: i18n("Tool Monitors")
-                                            font.pointSize: Kirigami.Theme.smallFont.pointSize
-                                            opacity: 0.65
-                                            wrapMode: Text.WordWrap
-                                            maximumLineCount: 2
-                                        }
-
-                                        PlasmaComponents.Label {
-                                            text: i18n("%1 enabled", root.enabledToolCount ?? 0)
-                                            font.bold: true
-                                        }
+                                ColumnLayout {
+                                    spacing: 0
+                                    PlasmaComponents.Label {
+                                        text: i18n("Tool Monitors")
+                                        font.pointSize: Kirigami.Theme.smallFont.pointSize
+                                        opacity: 0.7
+                                    }
+                                    PlasmaComponents.Label {
+                                        text: i18n("%1 enabled", root.enabledToolCount ?? 0)
+                                        font.bold: true
                                     }
                                 }
                             }

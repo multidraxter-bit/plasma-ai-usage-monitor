@@ -12,7 +12,7 @@
         </entry>
         <entry name="compactDisplayMode" type="String">
             <default>icon</default>
-            <label>What to show in compact mode: icon, cost, count</label>
+            <label>What to show in compact mode: icon, cost, count, loofi, dailycost, requests, critical</label>
         </entry>
         <entry name="setupWizardCompleted" type="Bool">
             <default>false</default>
@@ -21,6 +21,10 @@
         <entry name="setupWizardDismissed" type="Bool">
             <default>false</default>
             <label>Whether the first-run setup wizard was dismissed</label>
+        </entry>
+        <entry name="advancedSettingsMode" type="Bool">
+            <default>false</default>
+            <label>Whether advanced settings mode is enabled in config</label>
         </entry>
 
         <!-- Per-provider refresh intervals (0 = use global default) -->

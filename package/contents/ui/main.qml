@@ -29,9 +29,32 @@ PlasmoidItem {
                     if (provider.backend.cost > 0) {
                         info += "$" + provider.backend.cost.toFixed(2) + " | ";
                     }
-                    info += provider.backend.rateLimitRequestsRemaining + " req left";
+                    if ((provider.backend.rateLimitRequestsRemaining || 0) > 0) {
+                        info += provider.backend.rateLimitRequestsRemaining + " req left";
+                    } else if ((provider.backend.rateLimitTokensRemaining || 0) > 0) {
+                        info += provider.backend.rateLimitTokensRemaining + " tokens left";
+                    } else {
+                        info += i18n("Healthy");
+                    }
                 }
                 lines.push(info);
+            } else if (provider.enabled && provider.backend && provider.backend.error) {
+                lines.push(provider.name + ": " + i18n("Error"));
+            }
+        }
+        var tools = root.allSubscriptionTools || [];
+        for (var j = 0; j < tools.length; j++) {
+            var tool = tools[j];
+            if (tool.enabled && tool.monitor && tool.monitor.installed) {
+                var toolInfo = tool.name + ": ";
+                if (tool.monitor.limitReached) {
+                    toolInfo += i18n("Limit Reached");
+                } else if ((tool.monitor.usageLimit || 0) > 0) {
+                    toolInfo += tool.monitor.usageCount + "/" + tool.monitor.usageLimit + " " + i18n("used");
+                } else {
+                    toolInfo += i18n("Active");
+                }
+                lines.push(toolInfo);
             }
         }
         return lines.length > 0 ? lines.join("\n") : i18n("Click to configure providers");
@@ -467,6 +490,21 @@ PlasmoidItem {
             text: i18n("Refresh All")
             icon.name: "view-refresh"
             onTriggered: root.refreshAll()
+        },
+        PlasmaCore.Action {
+            text: i18n("Configure Settings")
+            icon.name: "configure"
+            onTriggered: plasmoid.internalAction("configure").trigger()
+        },
+        PlasmaCore.Action {
+            text: i18n("Open Dashboard")
+            icon.name: "window-new"
+            onTriggered: plasmoid.expanded = true
+        },
+        PlasmaCore.Action {
+            text: plasmoid.configuration.alertsEnabled ? i18n("Mute Alerts") : i18n("Unmute Alerts")
+            icon.name: plasmoid.configuration.alertsEnabled ? "notifications-disabled" : "notifications"
+            onTriggered: plasmoid.configuration.alertsEnabled = !plasmoid.configuration.alertsEnabled
         }
     ]
 }

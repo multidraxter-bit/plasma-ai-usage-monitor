@@ -8,6 +8,12 @@ import com.github.loofi.aiusagemonitor 1.0
 KCM.SimpleKCM {
     id: providersPage
 
+    property bool advancedMode: plasmoid.configuration.advancedSettingsMode
+
+    onAdvancedModeChanged: {
+        plasmoid.configuration.advancedSettingsMode = advancedMode
+    }
+
     // URL validation helper
     function isInvalidUrl(url) {
         if (url.length === 0) return false;
@@ -187,8 +193,24 @@ KCM.SimpleKCM {
         saveKeys();
     }
 
+    
     Kirigami.FormLayout {
         anchors.fill: parent
+        
+        Kirigami.Separator {
+            Kirigami.FormData.isSection: true
+            Kirigami.FormData.label: i18n("Settings Mode")
+        }
+        
+        QQC2.Switch {
+            id: advancedModeSwitch
+            Kirigami.FormData.label: i18n("Advanced Mode:")
+            checked: providersPage.advancedMode
+            onCheckedChanged: providersPage.advancedMode = checked
+            QQC2.ToolTip.text: i18n("Show advanced configuration options like custom base URLs and specific tiers.")
+            QQC2.ToolTip.visible: hovered
+        }
+        
 
         // ══════════════════════════════════════════════
         // ── Loofi Server ──
@@ -209,7 +231,7 @@ KCM.SimpleKCM {
             visible: loofiSwitch.checked
             text: i18n("Connects to your self-hosted Loofi server and shows the active model, training stage, GPU usage, and 24-hour request volume.")
             font.pointSize: Kirigami.Theme.smallFont.pointSize
-            opacity: 0.6
+            color: Kirigami.Theme.disabledTextColor
             wrapMode: Text.WordWrap
             Layout.fillWidth: true
         }
@@ -248,7 +270,7 @@ KCM.SimpleKCM {
             visible: loofiSwitch.checked
             text: i18n("Authentication stays environment-based via LOOFI_SERVER_TOKEN when your server requires it.")
             font.pointSize: Kirigami.Theme.smallFont.pointSize
-            opacity: 0.5
+            color: Kirigami.Theme.disabledTextColor
             wrapMode: Text.WordWrap
             Layout.fillWidth: true
         }
@@ -304,7 +326,7 @@ KCM.SimpleKCM {
             visible: openaiSwitch.checked
             text: i18n("Requires an Admin API key for usage/costs endpoints")
             font.pointSize: Kirigami.Theme.smallFont.pointSize
-            opacity: 0.6; wrapMode: Text.WordWrap; Layout.fillWidth: true
+            color: Kirigami.Theme.disabledTextColor; wrapMode: Text.WordWrap; Layout.fillWidth: true
         }
 
         QQC2.TextField {
@@ -323,6 +345,7 @@ KCM.SimpleKCM {
             id: openaiProjectField
             Kirigami.FormData.label: i18n("Project ID (optional):")
             enabled: openaiSwitch.checked
+            visible: providersPage.advancedMode
             text: plasmoid.configuration.openaiProjectId
             placeholderText: "proj_..."
             Layout.fillWidth: true
@@ -332,6 +355,7 @@ KCM.SimpleKCM {
             id: openaiBaseUrlField
             Kirigami.FormData.label: i18n("Custom base URL:")
             enabled: openaiSwitch.checked
+            visible: providersPage.advancedMode
             text: plasmoid.configuration.openaiCustomBaseUrl
             placeholderText: i18n("Leave empty for default")
             Layout.fillWidth: true
@@ -409,7 +433,7 @@ KCM.SimpleKCM {
             visible: azureSwitch.checked
             text: i18n("Use your Azure OpenAI resource endpoint and deployment for monitoring")
             font.pointSize: Kirigami.Theme.smallFont.pointSize
-            opacity: 0.6; wrapMode: Text.WordWrap; Layout.fillWidth: true
+            color: Kirigami.Theme.disabledTextColor; wrapMode: Text.WordWrap; Layout.fillWidth: true
         }
 
         QQC2.TextField {
@@ -425,6 +449,7 @@ KCM.SimpleKCM {
             id: azureDeploymentField
             Kirigami.FormData.label: i18n("Deployment ID:")
             enabled: azureSwitch.checked
+            visible: providersPage.advancedMode
             text: plasmoid.configuration.azureDeploymentId
             placeholderText: i18n("my-deployment")
             Layout.fillWidth: true
@@ -434,6 +459,7 @@ KCM.SimpleKCM {
             id: azureBaseUrlField
             Kirigami.FormData.label: i18n("Endpoint base URL:")
             enabled: azureSwitch.checked
+            visible: providersPage.advancedMode
             text: plasmoid.configuration.azureCustomBaseUrl
             placeholderText: i18n("https://<resource>.openai.azure.com")
             Layout.fillWidth: true
@@ -533,6 +559,7 @@ KCM.SimpleKCM {
             id: bedrockRegionField
             Kirigami.FormData.label: i18n("Region:")
             enabled: bedrockSwitch.checked
+            visible: providersPage.advancedMode
             text: plasmoid.configuration.bedrockRegion
             placeholderText: "us-east-1"
             Layout.fillWidth: true
@@ -551,6 +578,7 @@ KCM.SimpleKCM {
             id: bedrockBaseUrlField
             Kirigami.FormData.label: i18n("Custom base URL:")
             enabled: bedrockSwitch.checked
+            visible: providersPage.advancedMode
             text: plasmoid.configuration.bedrockCustomBaseUrl
             placeholderText: i18n("Leave empty for AWS regional endpoint")
             Layout.fillWidth: true
@@ -560,7 +588,7 @@ KCM.SimpleKCM {
             visible: bedrockSwitch.checked
             text: i18n("Bedrock monitoring verifies AWS credentials and regional model availability. Cost remains estimated when AWS does not expose direct spend totals in-widget.")
             font.pointSize: Kirigami.Theme.smallFont.pointSize
-            opacity: 0.6
+            color: Kirigami.Theme.disabledTextColor
             wrapMode: Text.WordWrap
             Layout.fillWidth: true
         }
@@ -616,7 +644,7 @@ KCM.SimpleKCM {
             visible: anthropicSwitch.checked
             text: i18n("Shows rate limit status only (Anthropic has no usage API)")
             font.pointSize: Kirigami.Theme.smallFont.pointSize
-            opacity: 0.6; wrapMode: Text.WordWrap; Layout.fillWidth: true
+            color: Kirigami.Theme.disabledTextColor; wrapMode: Text.WordWrap; Layout.fillWidth: true
         }
 
         QQC2.ComboBox {
@@ -642,6 +670,7 @@ KCM.SimpleKCM {
             id: anthropicBaseUrlField
             Kirigami.FormData.label: i18n("Custom base URL:")
             enabled: anthropicSwitch.checked
+            visible: providersPage.advancedMode
             text: plasmoid.configuration.anthropicCustomBaseUrl
             placeholderText: i18n("Leave empty for default")
             Layout.fillWidth: true
@@ -719,7 +748,7 @@ KCM.SimpleKCM {
             visible: googleSwitch.checked
             text: i18n("Shows connectivity status and known tier limits")
             font.pointSize: Kirigami.Theme.smallFont.pointSize
-            opacity: 0.6; wrapMode: Text.WordWrap; Layout.fillWidth: true
+            color: Kirigami.Theme.disabledTextColor; wrapMode: Text.WordWrap; Layout.fillWidth: true
         }
 
         QQC2.ComboBox {
@@ -745,6 +774,7 @@ KCM.SimpleKCM {
             id: googleTierField
             Kirigami.FormData.label: i18n("Pricing tier:")
             enabled: googleSwitch.checked
+            visible: providersPage.advancedMode
             model: [
                 { text: i18n("Free"), value: "free" },
                 { text: i18n("Paid (Pay-as-you-go)"), value: "paid" }
@@ -759,13 +789,14 @@ KCM.SimpleKCM {
             visible: googleSwitch.checked && googleTierField.currentIndex === 0
             text: i18n("Free tier has lower rate limits. Select Paid if you have billing enabled.")
             font.pointSize: Kirigami.Theme.smallFont.pointSize
-            opacity: 0.6; wrapMode: Text.WordWrap; Layout.fillWidth: true
+            color: Kirigami.Theme.disabledTextColor; wrapMode: Text.WordWrap; Layout.fillWidth: true
         }
 
         QQC2.TextField {
             id: googleBaseUrlField
             Kirigami.FormData.label: i18n("Custom base URL:")
             enabled: googleSwitch.checked
+            visible: providersPage.advancedMode
             text: plasmoid.configuration.googleCustomBaseUrl
             placeholderText: i18n("Leave empty for default")
             Layout.fillWidth: true
@@ -1010,7 +1041,7 @@ KCM.SimpleKCM {
             visible: googleveoSwitch.checked
             text: i18n("Monitors Google Veo video generation API connectivity and tier limits")
             font.pointSize: Kirigami.Theme.smallFont.pointSize
-            opacity: 0.6; wrapMode: Text.WordWrap; Layout.fillWidth: true
+            color: Kirigami.Theme.disabledTextColor; wrapMode: Text.WordWrap; Layout.fillWidth: true
         }
 
         QQC2.ComboBox {
@@ -1031,6 +1062,7 @@ KCM.SimpleKCM {
             id: googleveoTierField
             Kirigami.FormData.label: i18n("Pricing tier:")
             enabled: googleveoSwitch.checked
+            visible: providersPage.advancedMode
             model: [
                 { text: i18n("Free"), value: "free" },
                 { text: i18n("Paid (Pay-as-you-go)"), value: "paid" }
@@ -1045,13 +1077,14 @@ KCM.SimpleKCM {
             visible: googleveoSwitch.checked && googleveoTierField.currentIndex === 0
             text: i18n("Free tier has very limited video generation quotas.")
             font.pointSize: Kirigami.Theme.smallFont.pointSize
-            opacity: 0.6; wrapMode: Text.WordWrap; Layout.fillWidth: true
+            color: Kirigami.Theme.disabledTextColor; wrapMode: Text.WordWrap; Layout.fillWidth: true
         }
 
         QQC2.TextField {
             id: googleveoBaseUrlField
             Kirigami.FormData.label: i18n("Custom base URL:")
             enabled: googleveoSwitch.checked
+            visible: providersPage.advancedMode
             text: plasmoid.configuration.googleveoCustomBaseUrl
             placeholderText: i18n("Leave empty for default")
             Layout.fillWidth: true

@@ -148,14 +148,14 @@ KCM.SimpleKCM {
 
             QQC2.Label {
                 text: i18n("%1% of rate limit used", warningSlider.value)
-                opacity: 0.7
+                color: Kirigami.Theme.disabledTextColor
                 Layout.alignment: Qt.AlignHCenter
             }
 
             QQC2.Label {
                 text: i18n("Shows yellow warning indicator and optional notification")
                 font.pointSize: Kirigami.Theme.smallFont.pointSize
-                opacity: 0.5
+                color: Kirigami.Theme.disabledTextColor
                 wrapMode: Text.WordWrap
                 Layout.fillWidth: true
             }
@@ -183,14 +183,14 @@ KCM.SimpleKCM {
 
             QQC2.Label {
                 text: i18n("%1% of rate limit used", criticalSlider.value)
-                opacity: 0.7
+                color: Kirigami.Theme.disabledTextColor
                 Layout.alignment: Qt.AlignHCenter
             }
 
             QQC2.Label {
                 text: i18n("Shows red critical indicator and urgent notification")
                 font.pointSize: Kirigami.Theme.smallFont.pointSize
-                opacity: 0.5
+                color: Kirigami.Theme.disabledTextColor
                 wrapMode: Text.WordWrap
                 Layout.fillWidth: true
             }
@@ -237,7 +237,7 @@ KCM.SimpleKCM {
         QQC2.Label {
             text: i18n("Disable notifications for specific providers. Global types above still apply.")
             font.pointSize: Kirigami.Theme.smallFont.pointSize
-            opacity: 0.6
+            color: Kirigami.Theme.disabledTextColor
             wrapMode: Text.WordWrap
             Layout.fillWidth: true
         }
@@ -280,14 +280,14 @@ KCM.SimpleKCM {
 
             QQC2.Label {
                 text: i18n("hours")
-                opacity: 0.7
+                color: Kirigami.Theme.disabledTextColor
             }
         }
 
         QQC2.Label {
             text: i18n("Checks GitHub for new releases and shows a KDE notification when an update is available.")
             font.pointSize: Kirigami.Theme.smallFont.pointSize
-            opacity: 0.5
+            color: Kirigami.Theme.disabledTextColor
             wrapMode: Text.WordWrap
             Layout.fillWidth: true
             enabled: alertsSwitch.checked
@@ -348,7 +348,7 @@ KCM.SimpleKCM {
 
             QQC2.Label {
                 text: i18n("%1 minutes", webhookCooldownSlider.value)
-                opacity: 0.7
+                color: Kirigami.Theme.disabledTextColor
                 Layout.alignment: Qt.AlignHCenter
             }
         }
@@ -376,7 +376,7 @@ KCM.SimpleKCM {
                 text: i18np("%1 minute between repeated notifications",
                             "%1 minutes between repeated notifications",
                             cooldownSlider.value)
-                opacity: 0.7
+                color: Kirigami.Theme.disabledTextColor
                 Layout.alignment: Qt.AlignHCenter
                 font.pointSize: Kirigami.Theme.smallFont.pointSize
             }
@@ -411,7 +411,7 @@ KCM.SimpleKCM {
             enabled: alertsSwitch.checked
             text: i18n("Suppress all notifications during this time window. Set start to 'Disabled' to turn off DND.")
             font.pointSize: Kirigami.Theme.smallFont.pointSize
-            opacity: 0.5
+            color: Kirigami.Theme.disabledTextColor
             wrapMode: Text.WordWrap
             Layout.fillWidth: true
         }

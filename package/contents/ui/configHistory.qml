@@ -37,7 +37,7 @@ KCM.SimpleKCM {
         QQC2.Label {
             text: i18n("When enabled, usage data is periodically saved to a local SQLite database for trend analysis and charts.")
             font.pointSize: Kirigami.Theme.smallFont.pointSize
-            opacity: 0.6
+            color: Kirigami.Theme.disabledTextColor
             wrapMode: Text.WordWrap
             Layout.fillWidth: true
         }
@@ -76,7 +76,7 @@ KCM.SimpleKCM {
                     }
                     return i18np("%1 day", "%1 days", days);
                 }
-                opacity: 0.7
+                color: Kirigami.Theme.disabledTextColor
                 Layout.alignment: Qt.AlignHCenter
             }
         }
@@ -85,7 +85,7 @@ KCM.SimpleKCM {
             enabled: historySwitch.checked
             text: i18n("Data older than this will be automatically pruned daily.")
             font.pointSize: Kirigami.Theme.smallFont.pointSize
-            opacity: 0.5
+            color: Kirigami.Theme.disabledTextColor
             wrapMode: Text.WordWrap
             Layout.fillWidth: true
         }
@@ -159,7 +159,7 @@ KCM.SimpleKCM {
 
             QQC2.Label {
                 text: i18n("Served locally on 127.0.0.1 only")
-                opacity: 0.6
+                color: Kirigami.Theme.disabledTextColor
                 Layout.fillWidth: true
             }
         }
@@ -198,7 +198,7 @@ KCM.SimpleKCM {
 
             QQC2.Label {
                 text: i18n("minutes")
-                opacity: 0.6
+                color: Kirigami.Theme.disabledTextColor
             }
         }
 

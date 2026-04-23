@@ -8,6 +8,12 @@ import com.github.loofi.aiusagemonitor 1.0
 KCM.SimpleKCM {
     id: subscriptionsPage
 
+    property bool advancedMode: plasmoid.configuration.advancedSettingsMode
+
+    onAdvancedModeChanged: {
+        plasmoid.configuration.advancedSettingsMode = advancedMode
+    }
+
     // ── Browser Sync ──
     property alias cfg_browserSyncEnabled: browserSyncSwitch.checked
     property alias cfg_browserSyncBrowser: browserSyncBrowserCombo.currentIndex
@@ -182,8 +188,24 @@ KCM.SimpleKCM {
         saveCopilotToken();
     }
 
+    
     Kirigami.FormLayout {
         anchors.fill: parent
+        
+        Kirigami.Separator {
+            Kirigami.FormData.isSection: true
+            Kirigami.FormData.label: i18n("Settings Mode")
+        }
+        
+        QQC2.Switch {
+            id: advancedModeSwitch
+            Kirigami.FormData.label: i18n("Advanced Mode:")
+            checked: subscriptionsPage.advancedMode
+            onCheckedChanged: subscriptionsPage.advancedMode = checked
+            QQC2.ToolTip.text: i18n("Show advanced configuration options like custom limits, notifications, and Labs features.")
+            QQC2.ToolTip.visible: hovered
+        }
+        
 
         // ── Description ──
         QQC2.Label {
@@ -193,7 +215,7 @@ KCM.SimpleKCM {
                      + "These tools don't expose public APIs for quota checking, so usage is "
                      + "tracked locally via filesystem monitoring and manual counting.")
             font.pointSize: Kirigami.Theme.smallFont.pointSize
-            opacity: 0.7
+            color: Kirigami.Theme.disabledTextColor
         }
 
         // ══════════════════════════════════════════════
@@ -232,6 +254,7 @@ KCM.SimpleKCM {
             id: claudeCodePlanCombo
             Kirigami.FormData.label: i18n("Plan:")
             enabled: claudeCodeSwitch.checked
+            visible: subscriptionsPage.advancedMode
             Layout.fillWidth: true
             model: claudeDetector.availablePlans()
             currentIndex: plasmoid.configuration.claudeCodePlan
@@ -250,6 +273,7 @@ KCM.SimpleKCM {
         RowLayout {
             Kirigami.FormData.label: i18n("Usage limit (per 5h):")
             spacing: Kirigami.Units.smallSpacing
+            visible: subscriptionsPage.advancedMode
 
             QQC2.SpinBox {
                 id: claudeCodeLimitSpin
@@ -283,7 +307,7 @@ KCM.SimpleKCM {
             text: i18n("Claude Code also has a weekly rolling limit. The secondary limit "
                      + "is automatically calculated from the plan tier.")
             font.pointSize: Kirigami.Theme.smallFont.pointSize
-            opacity: 0.6
+            color: Kirigami.Theme.disabledTextColor
             wrapMode: Text.WordWrap
             Layout.fillWidth: true
         }
@@ -292,6 +316,7 @@ KCM.SimpleKCM {
             id: claudeCodeNotifySwitch
             Kirigami.FormData.label: i18n("Notifications:")
             enabled: claudeCodeSwitch.checked
+            visible: subscriptionsPage.advancedMode
             checked: plasmoid.configuration.claudeCodeNotifications
         }
 
@@ -330,6 +355,7 @@ KCM.SimpleKCM {
             id: codexPlanCombo
             Kirigami.FormData.label: i18n("Plan:")
             enabled: codexSwitch.checked
+            visible: subscriptionsPage.advancedMode
             Layout.fillWidth: true
             model: codexDetector.availablePlans()
             currentIndex: plasmoid.configuration.codexPlan
@@ -347,6 +373,7 @@ KCM.SimpleKCM {
         RowLayout {
             Kirigami.FormData.label: i18n("Usage limit (per 5h):")
             spacing: Kirigami.Units.smallSpacing
+            visible: subscriptionsPage.advancedMode
 
             QQC2.SpinBox {
                 id: codexLimitSpin
@@ -378,6 +405,7 @@ KCM.SimpleKCM {
             id: codexNotifySwitch
             Kirigami.FormData.label: i18n("Notifications:")
             enabled: codexSwitch.checked
+            visible: subscriptionsPage.advancedMode
             checked: plasmoid.configuration.codexNotifications
         }
 
@@ -416,6 +444,7 @@ KCM.SimpleKCM {
             id: copilotPlanCombo
             Kirigami.FormData.label: i18n("Plan:")
             enabled: copilotSwitch.checked
+            visible: subscriptionsPage.advancedMode
             Layout.fillWidth: true
             model: copilotDetector.availablePlans()
             currentIndex: plasmoid.configuration.copilotPlan
@@ -433,6 +462,7 @@ KCM.SimpleKCM {
         RowLayout {
             Kirigami.FormData.label: i18n("Premium requests (monthly):")
             spacing: Kirigami.Units.smallSpacing
+            visible: subscriptionsPage.advancedMode
 
             QQC2.SpinBox {
                 id: copilotLimitSpin
@@ -464,6 +494,7 @@ KCM.SimpleKCM {
             id: copilotNotifySwitch
             Kirigami.FormData.label: i18n("Notifications:")
             enabled: copilotSwitch.checked
+            visible: subscriptionsPage.advancedMode
             checked: plasmoid.configuration.copilotNotifications
         }
 
@@ -479,7 +510,7 @@ KCM.SimpleKCM {
             text: i18n("Provide a GitHub Personal Access Token to fetch organization-level "
                      + "Copilot seat metrics. Requires 'manage_billing:copilot' scope.")
             font.pointSize: Kirigami.Theme.smallFont.pointSize
-            opacity: 0.6
+            color: Kirigami.Theme.disabledTextColor
             wrapMode: Text.WordWrap
             Layout.fillWidth: true
         }
@@ -558,6 +589,7 @@ KCM.SimpleKCM {
             id: cursorPlanCombo
             Kirigami.FormData.label: i18n("Plan:")
             enabled: cursorSwitch.checked
+            visible: subscriptionsPage.advancedMode
             Layout.fillWidth: true
             model: cursorDetector.availablePlans()
             currentIndex: plasmoid.configuration.cursorPlan
@@ -567,6 +599,7 @@ KCM.SimpleKCM {
             id: cursorLimitSpin
             Kirigami.FormData.label: i18n("Usage limit:")
             enabled: cursorSwitch.checked
+            visible: subscriptionsPage.advancedMode
             from: 0
             to: 99999
             value: plasmoid.configuration.cursorCustomLimit || cursorDetector.defaultLimitForPlan(cursorDetector.availablePlans()[cursorPlanCombo.currentIndex] || "Pro")
@@ -577,6 +610,7 @@ KCM.SimpleKCM {
             id: cursorNotifySwitch
             Kirigami.FormData.label: i18n("Notifications:")
             enabled: cursorSwitch.checked
+            visible: subscriptionsPage.advancedMode
             checked: plasmoid.configuration.cursorNotifications
         }
 
@@ -611,6 +645,7 @@ KCM.SimpleKCM {
             id: windsurfPlanCombo
             Kirigami.FormData.label: i18n("Plan:")
             enabled: windsurfSwitch.checked
+            visible: subscriptionsPage.advancedMode
             Layout.fillWidth: true
             model: windsurfDetector.availablePlans()
             currentIndex: plasmoid.configuration.windsurfPlan
@@ -620,6 +655,7 @@ KCM.SimpleKCM {
             id: windsurfLimitSpin
             Kirigami.FormData.label: i18n("Usage limit:")
             enabled: windsurfSwitch.checked
+            visible: subscriptionsPage.advancedMode
             from: 0
             to: 99999
             value: plasmoid.configuration.windsurfCustomLimit || windsurfDetector.defaultLimitForPlan(windsurfDetector.availablePlans()[windsurfPlanCombo.currentIndex] || "Pro")
@@ -630,6 +666,7 @@ KCM.SimpleKCM {
             id: windsurfNotifySwitch
             Kirigami.FormData.label: i18n("Notifications:")
             enabled: windsurfSwitch.checked
+            visible: subscriptionsPage.advancedMode
             checked: plasmoid.configuration.windsurfNotifications
         }
 
@@ -664,6 +701,7 @@ KCM.SimpleKCM {
             id: jetbrainsAiPlanCombo
             Kirigami.FormData.label: i18n("Plan:")
             enabled: jetbrainsAiSwitch.checked
+            visible: subscriptionsPage.advancedMode
             Layout.fillWidth: true
             model: jetbrainsAiDetector.availablePlans()
             currentIndex: plasmoid.configuration.jetbrainsAiPlan
@@ -673,6 +711,7 @@ KCM.SimpleKCM {
             id: jetbrainsAiLimitSpin
             Kirigami.FormData.label: i18n("Usage limit:")
             enabled: jetbrainsAiSwitch.checked
+            visible: subscriptionsPage.advancedMode
             from: 0
             to: 99999
             value: plasmoid.configuration.jetbrainsAiCustomLimit || jetbrainsAiDetector.defaultLimitForPlan(jetbrainsAiDetector.availablePlans()[jetbrainsAiPlanCombo.currentIndex] || "AI Free")
@@ -683,6 +722,7 @@ KCM.SimpleKCM {
             id: jetbrainsAiNotifySwitch
             Kirigami.FormData.label: i18n("Notifications:")
             enabled: jetbrainsAiSwitch.checked
+            visible: subscriptionsPage.advancedMode
             checked: plasmoid.configuration.jetbrainsAiNotifications
         }
 
@@ -692,7 +732,8 @@ KCM.SimpleKCM {
 
         Kirigami.Separator {
             Kirigami.FormData.isSection: true
-            Kirigami.FormData.label: i18n("Browser Sync (Experimental)")
+            Kirigami.FormData.label: i18n("Labs: Browser Sync (Experimental)")
+            visible: subscriptionsPage.advancedMode
         }
 
         QQC2.Label {
@@ -702,7 +743,7 @@ KCM.SimpleKCM {
                      + "This reads cookies from your browser's cookie database (read-only) to "
                      + "fetch usage data from Claude.ai and ChatGPT.")
             font.pointSize: Kirigami.Theme.smallFont.pointSize
-            opacity: 0.7
+            color: Kirigami.Theme.disabledTextColor
         }
 
         Rectangle {
@@ -773,7 +814,7 @@ KCM.SimpleKCM {
             visible: browserSyncSwitch.checked
             text: i18n("Browser Sync supports Firefox plus Linux Chrome/Chromium profiles when readable cookies and safe-storage secrets are available.")
             font.pointSize: Kirigami.Theme.smallFont.pointSize
-            opacity: 0.65
+            color: Kirigami.Theme.disabledTextColor5
             wrapMode: Text.WordWrap
             Layout.fillWidth: true
         }
@@ -832,7 +873,7 @@ KCM.SimpleKCM {
             QQC2.Label {
                 text: i18n("(minimum 60 seconds)")
                 font.pointSize: Kirigami.Theme.smallFont.pointSize
-                opacity: 0.5
+                color: Kirigami.Theme.disabledTextColor
                 elide: Text.ElideRight
                 Layout.fillWidth: true
             }
@@ -875,7 +916,7 @@ KCM.SimpleKCM {
                 visible: false
                 wrapMode: Text.WordWrap
                 font.pointSize: Kirigami.Theme.smallFont.pointSize
-                opacity: 0.75
+                color: Kirigami.Theme.disabledTextColor5
                 Layout.fillWidth: true
             }
         }
@@ -916,7 +957,7 @@ KCM.SimpleKCM {
                 visible: false
                 wrapMode: Text.WordWrap
                 font.pointSize: Kirigami.Theme.smallFont.pointSize
-                opacity: 0.75
+                color: Kirigami.Theme.disabledTextColor5
                 Layout.fillWidth: true
             }
         }

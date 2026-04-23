@@ -217,6 +217,80 @@ MouseArea {
         }
     }
 
+
+    readonly property double compactDailyCost: {
+        var total = 0;
+        for (var i = 0; i < providers.length; i++) {
+            var provider = providers[i];
+            if (provider && provider.enabled && provider.backend && provider.backend.connected)
+                total += provider.backend.dailyCost ?? 0;
+        }
+        return total;
+    }
+
+    readonly property int totalRequestsRemaining: {
+        var req = 0;
+        for (var i = 0; i < providers.length; i++) {
+            var p = providers[i];
+            if (p && p.enabled && p.backend && p.backend.connected && p.backend.rateLimitRequestsRemaining > 0)
+                req += p.backend.rateLimitRequestsRemaining;
+        }
+        return req;
+    }
+
+    readonly property string criticalProviderText: {
+        var worst = "";
+        var worstPercent = 0;
+        for (var i = 0; i < providers.length; i++) {
+            var p = providers[i];
+            if (p && p.enabled && p.backend && p.backend.connected && p.backend.rateLimitRequests > 0) {
+                var pct = ((p.backend.rateLimitRequests - p.backend.rateLimitRequestsRemaining) / p.backend.rateLimitRequests) * 100;
+                if (pct > worstPercent) {
+                    worstPercent = pct;
+                    worst = p.name;
+                }
+            }
+        }
+        return worst !== "" ? worst + " (" + Math.round(worstPercent) + "%)" : i18n("All healthy");
+    }
+
+    // Daily cost mode
+    PlasmaComponents.Label {
+        anchors.fill: parent
+        visible: compactRoot.displayMode === "dailycost"
+        text: "$" + compactRoot.compactDailyCost.toFixed(2)
+        horizontalAlignment: Text.AlignHCenter
+        verticalAlignment: Text.AlignVCenter
+        font.bold: true
+        font.pointSize: Math.max(Kirigami.Theme.smallFont.pointSize, height * 0.35)
+        fontSizeMode: Text.Fit
+    }
+
+    // Requests mode
+    PlasmaComponents.Label {
+        anchors.fill: parent
+        visible: compactRoot.displayMode === "requests"
+        text: compactRoot.totalRequestsRemaining + " req"
+        horizontalAlignment: Text.AlignHCenter
+        verticalAlignment: Text.AlignVCenter
+        font.bold: true
+        font.pointSize: Math.max(Kirigami.Theme.smallFont.pointSize, height * 0.35)
+        fontSizeMode: Text.Fit
+    }
+
+    // Critical mode
+    PlasmaComponents.Label {
+        anchors.fill: parent
+        visible: compactRoot.displayMode === "critical"
+        text: compactRoot.criticalProviderText
+        horizontalAlignment: Text.AlignHCenter
+        verticalAlignment: Text.AlignVCenter
+        font.bold: true
+        font.pointSize: Kirigami.Theme.smallFont.pointSize
+        fontSizeMode: Text.Fit
+        wrapMode: Text.WordWrap
+    }
+
     // Spinning indicator when loading (all modes)
     PlasmaComponents.BusyIndicator {
         anchors.fill: parent

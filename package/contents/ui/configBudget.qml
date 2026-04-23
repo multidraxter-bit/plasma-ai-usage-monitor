@@ -58,7 +58,7 @@ KCM.SimpleKCM {
         QQC2.Label {
             text: i18n("Set daily and monthly budget limits per provider. Set to $0.00 to disable budget tracking for that provider.")
             font.pointSize: Kirigami.Theme.smallFont.pointSize
-            opacity: 0.6
+            color: Kirigami.Theme.disabledTextColor
             wrapMode: Text.WordWrap
             Layout.fillWidth: true
         }
@@ -85,7 +85,7 @@ KCM.SimpleKCM {
 
             QQC2.Label {
                 text: i18n("%1% of budget", warningPercentSlider.value)
-                opacity: 0.7
+                color: Kirigami.Theme.disabledTextColor
                 Layout.alignment: Qt.AlignHCenter
             }
         }

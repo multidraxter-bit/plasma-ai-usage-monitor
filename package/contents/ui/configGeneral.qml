@@ -50,6 +50,71 @@ KCM.SimpleKCM {
     Kirigami.FormLayout {
         anchors.fill: parent
 
+        Kirigami.Separator {
+            Kirigami.FormData.isSection: true
+            Kirigami.FormData.label: i18n("Presets")
+        }
+        
+        RowLayout {
+            Kirigami.FormData.label: i18n("Apply preset:")
+            spacing: Kirigami.Units.smallSpacing
+
+            QQC2.ComboBox {
+                id: presetCombo
+                Layout.fillWidth: true
+                model: [
+                    { text: i18n("Select a preset..."), value: "none" },
+                    { text: i18n("Solo Developer"), value: "solo" },
+                    { text: i18n("Multi-Provider"), value: "multi" },
+                    { text: i18n("Local-First"), value: "local" },
+                    { text: i18n("Budget Watch"), value: "budget" },
+                    { text: i18n("Loofi Operator"), value: "loofi" }
+                ]
+                textRole: "text"
+                valueRole: "value"
+            }
+
+            QQC2.Button {
+                text: i18n("Apply")
+                enabled: presetCombo.currentIndex > 0
+                onClicked: {
+                    var preset = presetCombo.currentValue;
+                    if (preset === "solo") {
+                        generalPage.cfg_compactDisplayMode = "cost";
+                        plasmoid.configuration.advancedSettingsMode = false;
+                        plasmoid.configuration.alertsEnabled = true;
+                    } else if (preset === "multi") {
+                        generalPage.cfg_compactDisplayMode = "count";
+                        plasmoid.configuration.advancedSettingsMode = true;
+                    } else if (preset === "local") {
+                        generalPage.cfg_compactDisplayMode = "loofi";
+                        plasmoid.configuration.openaiEnabled = false;
+                        plasmoid.configuration.anthropicEnabled = false;
+                        plasmoid.configuration.googleEnabled = false;
+                        plasmoid.configuration.loofiEnabled = true;
+                        plasmoid.configuration.ollamaEnabled = true;
+                    } else if (preset === "budget") {
+                        generalPage.cfg_compactDisplayMode = "dailycost";
+                        plasmoid.configuration.budgetWarningPercent = 75;
+                        plasmoid.configuration.notifyOnBudgetWarning = true;
+                    } else if (preset === "loofi") {
+                        generalPage.cfg_compactDisplayMode = "loofi";
+                        plasmoid.configuration.loofiEnabled = true;
+                    }
+                    presetCombo.currentIndex = 0;
+                }
+            }
+        }
+        
+        QQC2.Label {
+            text: i18n("Applying a preset adjusts UI modes and alert defaults. It will not overwrite your API keys.")
+            font.pointSize: Kirigami.Theme.smallFont.pointSize
+            color: Kirigami.Theme.disabledTextColor
+            wrapMode: Text.WordWrap
+            Layout.fillWidth: true
+        }
+
+
         ColumnLayout {
             Kirigami.FormData.label: i18n("Default refresh interval:")
             spacing: Kirigami.Units.smallSpacing
@@ -68,7 +133,7 @@ KCM.SimpleKCM {
 
             QQC2.Label {
                 text: generalPage.formatInterval(refreshSlider.value)
-                opacity: 0.7
+                color: Kirigami.Theme.disabledTextColor
                 Layout.alignment: Qt.AlignHCenter
             }
         }
@@ -85,37 +150,34 @@ KCM.SimpleKCM {
                 i18n("Icon only"),
                 i18n("Total cost"),
                 i18n("Active providers count"),
-                i18n("Loofi server KPIs")
+                i18n("Loofi server KPIs"),
+                i18n("Daily cost"),
+                i18n("Remaining requests"),
+                i18n("Most critical provider")
             ]
             QQC2.ToolTip.text: i18n("Choose what to display next to the icon in the system panel")
             QQC2.ToolTip.visible: hovered
             QQC2.ToolTip.delay: 500
             currentIndex: {
                 switch (generalPage.cfg_compactDisplayMode) {
-                case "cost":
-                    return 1;
-                case "count":
-                    return 2;
-                case "loofi":
-                    return 3;
-                default:
-                    return 0;
+                case "cost": return 1;
+                case "count": return 2;
+                case "loofi": return 3;
+                case "dailycost": return 4;
+                case "requests": return 5;
+                case "critical": return 6;
+                default: return 0;
                 }
             }
             onCurrentIndexChanged: {
                 switch (currentIndex) {
-                case 1:
-                    generalPage.cfg_compactDisplayMode = "cost";
-                    break;
-                case 2:
-                    generalPage.cfg_compactDisplayMode = "count";
-                    break;
-                case 3:
-                    generalPage.cfg_compactDisplayMode = "loofi";
-                    break;
-                default:
-                    generalPage.cfg_compactDisplayMode = "icon";
-                    break;
+                case 1: generalPage.cfg_compactDisplayMode = "cost"; break;
+                case 2: generalPage.cfg_compactDisplayMode = "count"; break;
+                case 3: generalPage.cfg_compactDisplayMode = "loofi"; break;
+                case 4: generalPage.cfg_compactDisplayMode = "dailycost"; break;
+                case 5: generalPage.cfg_compactDisplayMode = "requests"; break;
+                case 6: generalPage.cfg_compactDisplayMode = "critical"; break;
+                default: generalPage.cfg_compactDisplayMode = "icon"; break;
                 }
             }
         }
@@ -128,7 +190,7 @@ KCM.SimpleKCM {
         QQC2.Label {
             text: i18n("Set to 0 to use the default interval above. Otherwise, each provider refreshes on its own schedule.")
             font.pointSize: Kirigami.Theme.smallFont.pointSize
-            opacity: 0.6
+            color: Kirigami.Theme.disabledTextColor
             wrapMode: Text.WordWrap
             Layout.fillWidth: true
         }
@@ -155,7 +217,7 @@ KCM.SimpleKCM {
                         ? i18n("Use default")
                         : generalPage.formatInterval(providerRefreshSlider.value)
                     font.pointSize: Kirigami.Theme.smallFont.pointSize
-                    opacity: 0.7
+                    color: Kirigami.Theme.disabledTextColor
                     Layout.alignment: Qt.AlignHCenter
                 }
             }

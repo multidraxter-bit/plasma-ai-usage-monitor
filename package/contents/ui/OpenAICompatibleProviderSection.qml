@@ -98,6 +98,7 @@ Kirigami.FormLayout {
         id: baseUrlField
         Kirigami.FormData.label: section.baseUrlLabel
         enabled: enabledSwitch.checked
+        visible: section.configPage.advancedMode
         text: section.configPage[section.baseUrlProp]
         placeholderText: section.baseUrlPlaceholder
         Layout.fillWidth: true
@@ -108,7 +109,7 @@ Kirigami.FormLayout {
     }
 
     QQC2.Label {
-        visible: section.configPage.isInvalidUrl(baseUrlField.text)
+        visible: section.configPage.advancedMode && section.configPage.isInvalidUrl(baseUrlField.text)
         text: i18n("URL must start with https:// or http://")
         color: Kirigami.Theme.negativeTextColor
         font.pointSize: Kirigami.Theme.smallFont.pointSize
@@ -117,7 +118,7 @@ Kirigami.FormLayout {
     }
 
     QQC2.Label {
-        visible: baseUrlField.text.toLowerCase().startsWith("http://")
+        visible: section.configPage.advancedMode && baseUrlField.text.toLowerCase().startsWith("http://")
         text: i18n("Using HTTP is insecure. API keys will be sent unencrypted.")
         color: Kirigami.Theme.negativeTextColor
         font.pointSize: Kirigami.Theme.smallFont.pointSize

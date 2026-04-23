@@ -43,13 +43,13 @@ Item {
                     model: visibleSeries()
 
                     Rectangle {
-                        radius: height / 2
-                        height: Kirigami.Units.gridUnit * 1.35
-                        width: Math.min(chipLabel.implicitWidth + Kirigami.Units.smallSpacing * 4,
+                        radius: Kirigami.Units.cornerRadius
+                        height: Kirigami.Units.gridUnit * 1.5
+                        width: Math.min(chipLabel.implicitWidth + Kirigami.Units.smallSpacing * 4 + 16,
                                         chartRoot.legendChipMaxWidth)
-                        color: Qt.alpha(modelData.color, 0.12)
+                        color: Qt.alpha(modelData.color, 0.10)
                         border.width: 1
-                        border.color: Qt.alpha(modelData.color, 0.45)
+                        border.color: Qt.alpha(modelData.color, 0.3)
 
                         Rectangle {
                             width: 8

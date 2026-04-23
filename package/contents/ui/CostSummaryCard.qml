@@ -4,9 +4,6 @@ import org.kde.plasma.components as PlasmaComponents
 import org.kde.plasma.extras as PlasmaExtras
 import org.kde.kirigami as Kirigami
 
-/**
- * Cost summary card showing aggregate cost across all enabled providers.
- */
 ColumnLayout {
     id: costCard
 
@@ -52,28 +49,34 @@ ColumnLayout {
     }
 
     spacing: 0
-
-    // View mode: 0=cumulative, 1=daily, 2=monthly
     property int costViewMode: 0
 
     Rectangle {
         Layout.fillWidth: true
         Layout.preferredHeight: costContent.implicitHeight + Kirigami.Units.largeSpacing * 2
         radius: Kirigami.Units.cornerRadius
-        color: Qt.alpha(Kirigami.Theme.highlightColor, 0.08)
+        color: Kirigami.Theme.backgroundColor
         border.width: 1
-        border.color: Qt.alpha(Kirigami.Theme.highlightColor, 0.2)
+        border.color: Qt.alpha(Kirigami.Theme.textColor, 0.15)
 
-        Accessible.role: Accessible.Grouping
-        Accessible.name: i18n("Total cost: $%1", costCard.totalCost.toFixed(4))
+        Rectangle {
+            anchors.left: parent.left
+            anchors.top: parent.top
+            anchors.bottom: parent.bottom
+            width: 4
+            radius: Kirigami.Units.cornerRadius
+            color: Kirigami.Theme.highlightColor
+            opacity: 0.6
+        }
 
         ColumnLayout {
             id: costContent
             anchors {
                 fill: parent
                 margins: Kirigami.Units.largeSpacing
+                leftMargin: Kirigami.Units.largeSpacing + 4
             }
-            spacing: Kirigami.Units.smallSpacing
+            spacing: Kirigami.Units.mediumSpacing
 
             ColumnLayout {
                 Layout.fillWidth: true
@@ -91,10 +94,8 @@ ColumnLayout {
                         Layout.fillWidth: true
                     }
 
-                    // View mode toggle buttons
                     Row {
                         spacing: 2
-
                         Repeater {
                             model: [
                                 { label: i18n("All"), mode: 0 },
@@ -122,7 +123,7 @@ ColumnLayout {
                         return "$" + val.toFixed(val < 1 ? 4 : 2);
                     }
                     font.bold: true
-                    font.pointSize: Kirigami.Theme.defaultFont.pointSize * 1.3
+                    font.pointSize: Kirigami.Theme.defaultFont.pointSize * 1.5
                     horizontalAlignment: costCard.narrowCard ? Text.AlignLeft : Text.AlignRight
                     color: {
                         var cost = costCard.costViewMode === 0 ? costCard.totalCost
@@ -135,10 +136,12 @@ ColumnLayout {
                 }
             }
 
-            // Per-provider cost breakdown
+            Kirigami.Separator {
+                Layout.fillWidth: true
+            }
+
             Repeater {
                 model: costCard.providers
-
                 RowLayout {
                     Layout.fillWidth: true
                     readonly property double providerCost: {
@@ -150,35 +153,24 @@ ColumnLayout {
                     visible: modelData.enabled && modelData.backend && modelData.backend.connected && providerCost > 0
                     spacing: Kirigami.Units.smallSpacing
 
-                    Rectangle {
-                        width: 8
-                        height: 8
-                        radius: 4
-                        color: modelData.color
-                    }
-
+                    Rectangle { width: 8; height: 8; radius: 4; color: modelData.color }
                     PlasmaComponents.Label {
                         Layout.fillWidth: true
                         elide: Text.ElideRight
-                        maximumLineCount: costCard.narrowCard ? 2 : 1
-                        wrapMode: costCard.narrowCard ? Text.WordWrap : Text.NoWrap
                         text: modelData.name
                         font.pointSize: Kirigami.Theme.smallFont.pointSize
-                        opacity: 0.7
+                        opacity: 0.8
                     }
-
-                    Item { Layout.fillWidth: true }
-
                     PlasmaComponents.Label {
                         text: "$" + parent.providerCost.toFixed(parent.providerCost < 1 ? 4 : 2)
                         font.pointSize: Kirigami.Theme.smallFont.pointSize
+                        font.bold: true
                     }
                 }
             }
 
             Repeater {
                 model: costCard.subscriptionTools
-
                 RowLayout {
                     Layout.fillWidth: true
                     readonly property double toolCost: {
@@ -188,28 +180,18 @@ ColumnLayout {
                     visible: costCard.costViewMode === 0 && modelData.enabled && toolCost > 0
                     spacing: Kirigami.Units.smallSpacing
 
-                    Rectangle {
-                        width: 8
-                        height: 8
-                        radius: 4
-                        color: modelData.monitor?.toolColor ?? Kirigami.Theme.highlightColor
-                    }
-
+                    Rectangle { width: 8; height: 8; radius: 4; color: modelData.monitor?.toolColor ?? Kirigami.Theme.highlightColor }
                     PlasmaComponents.Label {
                         Layout.fillWidth: true
                         elide: Text.ElideRight
-                        maximumLineCount: costCard.narrowCard ? 2 : 1
-                        wrapMode: costCard.narrowCard ? Text.WordWrap : Text.NoWrap
                         text: i18n("%1 (subscription)", modelData.name)
                         font.pointSize: Kirigami.Theme.smallFont.pointSize
-                        opacity: 0.7
+                        opacity: 0.8
                     }
-
-                    Item { Layout.fillWidth: true }
-
                     PlasmaComponents.Label {
                         text: "$" + parent.toolCost.toFixed(parent.toolCost < 1 ? 4 : 2)
                         font.pointSize: Kirigami.Theme.smallFont.pointSize
+                        font.bold: true
                     }
                 }
             }

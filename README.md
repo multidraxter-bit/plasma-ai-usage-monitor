@@ -22,7 +22,7 @@
 
 A native KDE Plasma 6 plasmoid that monitors AI API token usage, rate limits, and costs across multiple providers. Sits in your panel as a compact icon with a colored status badge and expands into a detailed popup with per-provider stats, usage history charts, and budget tracking. Also tracks subscription-based AI coding tool usage limits for Claude Code, Codex CLI, and GitHub Copilot.
 
-> **Current release:** `v5.4.0` expands support for April 2026 AI models (OpenAI GPT-5.4 series, Anthropic Claude 4.7/4.8, Google Gemini 3.1), adds deep environment preflight checks in the installation doctor, enhances Browser Sync with Flatpak/Snap profile support across major browsers, and hardens local subscription monitors against duplicate counting.
+> **Current release:** `v6.0.0` introduces a complete UI redesign using the new Kirigami/Plasma 6 visual language. It features a cleaner, premium operator-friendly experience with a refined Live dashboard, improved history controls, updated compare charts, and polished configuration screens with Basic/Advanced modes. It also expands support for April 2026 AI models (OpenAI GPT-5.4 series, Anthropic Claude 4.7/4.8, Google Gemini 3.1), adds deep environment preflight checks in the installation doctor, enhances Browser Sync with Flatpak/Snap profile support across major browsers, and hardens local subscription monitors against duplicate counting.
 
 ## Quick Links
 
@@ -689,7 +689,7 @@ Check that the History tab is enabled in configuration. Data is stored in `~/.lo
 
 ## Changelog
 
-### v5.4.0 — April 2026 Models & Environment Hardening
+### v6.0.0 — April 2026 Models & Environment Hardening
 
 - Add support for April 2026 models including OpenAI GPT-5.4 series, Anthropic Claude 4.7/4.8, Google Gemini 3.1 & Deep Research, and Gemma 4 31b
 - Add deep environment preflight checks in `install_doctor.sh` covering dependencies, KWallet health, and compiled plugin integrity

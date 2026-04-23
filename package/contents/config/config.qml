@@ -32,4 +32,9 @@ ConfigModel {
         icon: "office-chart-line"
         source: "configHistory.qml"
     }
+    ConfigCategory {
+        name: i18n("Diagnostics")
+        icon: "tools-report-bug"
+        source: "configDiagnostics.qml"
+    }
 }

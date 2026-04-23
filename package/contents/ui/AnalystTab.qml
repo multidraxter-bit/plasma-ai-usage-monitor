@@ -266,7 +266,7 @@ Kirigami.ScrollablePage {
 
                 header: Kirigami.Heading {
                     text: i18n("Week-over-Week Spend")
-                    level: 4
+                    level: 3
                 }
 
                 contentItem: ColumnLayout {
@@ -295,7 +295,7 @@ Kirigami.ScrollablePage {
 
                 header: Kirigami.Heading {
                     text: i18n("Volatility")
-                    level: 4
+                    level: 3
                 }
 
                 contentItem: ColumnLayout {
@@ -323,37 +323,33 @@ Kirigami.ScrollablePage {
         Kirigami.Card {
             Layout.fillWidth: true
 
-            header: Kirigami.Heading {
-                text: i18n("Activity Heatmap (Last 365 Days)")
-                level: 4
+            header: RowLayout {
+                Layout.fillWidth: true
+                Kirigami.Heading {
+                    text: i18n("Activity Heatmap (Last 365 Days)")
+                    level: 3
+                    Layout.fillWidth: true
+                }
+                Controls.ComboBox {
+                    model: [i18n("Cost Intensity"), i18n("Volume Intensity")]
+                    currentIndex: plasmoid.configuration.analystIntensityMode
+                    onActivated: function(index) {
+                        plasmoid.configuration.analystIntensityMode = index;
+                        refreshData();
+                    }
+                }
+                Controls.CheckBox {
+                    text: i18n("Normalize Outliers")
+                    checked: plasmoid.configuration.analystNormalization
+                    onToggled: {
+                        plasmoid.configuration.analystNormalization = checked;
+                        refreshData();
+                    }
+                }
             }
 
             contentItem: ColumnLayout {
                 spacing: Kirigami.Units.mediumSpacing
-
-                RowLayout {
-                    Layout.fillWidth: true
-                    spacing: Kirigami.Units.largeSpacing
-
-                    Controls.ComboBox {
-                        Layout.fillWidth: true
-                        model: [i18n("Cost Intensity"), i18n("Volume Intensity")]
-                        currentIndex: plasmoid.configuration.analystIntensityMode
-                        onActivated: function(index) {
-                            plasmoid.configuration.analystIntensityMode = index;
-                            refreshData();
-                        }
-                    }
-
-                    Controls.CheckBox {
-                        text: i18n("Normalize Outliers")
-                        checked: plasmoid.configuration.analystNormalization
-                        onToggled: {
-                            plasmoid.configuration.analystNormalization = checked;
-                            refreshData();
-                        }
-                    }
-                }
 
                 Controls.ScrollView {
                     Layout.fillWidth: true
@@ -395,7 +391,7 @@ Kirigami.ScrollablePage {
 
                 header: Kirigami.Heading {
                     text: i18n("Top Cost Drivers")
-                    level: 4
+                    level: 3
                 }
 
                 contentItem: ColumnLayout {
@@ -439,7 +435,7 @@ Kirigami.ScrollablePage {
 
                 header: Kirigami.Heading {
                     text: i18n("Model Exposure")
-                    level: 4
+                    level: 3
                 }
 
                 contentItem: ColumnLayout {
@@ -479,7 +475,7 @@ Kirigami.ScrollablePage {
 
             header: Kirigami.Heading {
                 text: i18n("Provider Diagnostics")
-                level: 4
+                level: 3
             }
 
             contentItem: ColumnLayout {
@@ -487,7 +483,7 @@ Kirigami.ScrollablePage {
 
                 RowLayout {
                     Layout.fillWidth: true
-                    spacing: Kirigami.Units.smallSpacing
+                    spacing: Kirigami.Units.largeSpacing
 
                     Controls.ComboBox {
                         id: diagnosticsProviderCombo
@@ -571,7 +567,7 @@ Kirigami.ScrollablePage {
 
             header: Kirigami.Heading {
                 text: i18n("Anomalies")
-                level: 4
+                level: 3
             }
 
             contentItem: ColumnLayout {
@@ -615,7 +611,7 @@ Kirigami.ScrollablePage {
 
             header: Kirigami.Heading {
                 text: i18n("Insights & Reports")
-                level: 4
+                level: 3
             }
 
             contentItem: ColumnLayout {

@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.0.0] — 2026-04-23
+
+### Added
+- **First-Run Guided Setup:** A simplified onboarding flow for new users, offering a "Recommended" path to quickly connect top providers.
+- **Basic / Advanced Settings Mode:** Hides complex configurations (like custom base URLs, tier selection, deployments) behind an Advanced Mode toggle to reduce visual clutter for everyday users.
+- **Data Trust & Confidence Labeling:** Provider cards now clearly indicate the type of data being displayed (Actual, Estimated, Rate-limit only, Local, Subscription-plan derived) and health status (Healthy, Degraded, Disconnected).
+- **Diagnostics Center:** A dedicated config tab showing KWallet health, Browser Sync readiness, installed CLI tools, and quick access to run the deep system doctor script.
+- **Config Portability:** Export and import non-secret configurations to share presets or backup UI settings safely.
+- **Configuration Presets:** Quick one-click setups for common scenarios: Solo Developer, Multi-Provider, Local-First, Budget Watch, and Loofi Operator.
+- **Compact Panel Upgrades:** Pin new key metrics directly in the compact Plasma panel view: Daily Cost, Remaining Requests, or Most Critical Provider.
+- **Analyst & History Redesign:** Refined history controls, updated compare mode to look like a first-class view, and improved ranking panels in TrendSummary.
+- **Config Screen Polish:** Updated all configuration screens to follow the new v6 visual language with improved spacing, grouping, and context hints.
+
+### Changed
+- **Dashboard Actionability:** Replaced static dashboard summaries with actionable insights: Top Risk, Budget Left Today, and Next Reset.
+- **Browser Sync to Labs:** Explicitly marked Browser Sync as an experimental Labs feature to set correct reliability expectations.
+
 ## [5.4.1] — 2026-04-22
 
 ### Fixed

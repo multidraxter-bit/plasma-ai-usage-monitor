@@ -30,7 +30,7 @@ Item {
         anchors.centerIn: parent
         visible: trendRoot.showEmptyState && !trendRoot.hasSummaryData
         text: i18n("No historical data available")
-        opacity: 0.5
+        color: Kirigami.Theme.disabledTextColor
         font.pointSize: Kirigami.Theme.smallFont.pointSize
     }
 
@@ -46,7 +46,7 @@ Item {
         PlasmaComponents.Label {
             text: i18n("Total Cost:")
             font.pointSize: Kirigami.Theme.smallFont.pointSize
-            opacity: 0.7
+            color: Kirigami.Theme.disabledTextColor
             Layout.alignment: Qt.AlignRight
         }
         PlasmaComponents.Label {
@@ -60,7 +60,7 @@ Item {
         PlasmaComponents.Label {
             text: i18n("Avg Daily Cost:")
             font.pointSize: Kirigami.Theme.smallFont.pointSize
-            opacity: 0.7
+            color: Kirigami.Theme.disabledTextColor
             Layout.alignment: Qt.AlignRight
         }
         PlasmaComponents.Label {
@@ -73,7 +73,7 @@ Item {
         PlasmaComponents.Label {
             text: i18n("Peak Daily Cost:")
             font.pointSize: Kirigami.Theme.smallFont.pointSize
-            opacity: 0.7
+            color: Kirigami.Theme.disabledTextColor
             Layout.alignment: Qt.AlignRight
         }
         PlasmaComponents.Label {
@@ -87,7 +87,7 @@ Item {
         PlasmaComponents.Label {
             text: i18n("Total Requests:")
             font.pointSize: Kirigami.Theme.smallFont.pointSize
-            opacity: 0.7
+            color: Kirigami.Theme.disabledTextColor
             Layout.alignment: Qt.AlignRight
         }
         PlasmaComponents.Label {
@@ -98,7 +98,7 @@ Item {
         PlasmaComponents.Label {
             text: i18n("Peak Tokens:")
             font.pointSize: Kirigami.Theme.smallFont.pointSize
-            opacity: 0.7
+            color: Kirigami.Theme.disabledTextColor
             Layout.alignment: Qt.AlignRight
         }
         PlasmaComponents.Label {
@@ -109,20 +109,20 @@ Item {
         PlasmaComponents.Label {
             text: i18n("Data Points:")
             font.pointSize: Kirigami.Theme.smallFont.pointSize
-            opacity: 0.7
+            color: Kirigami.Theme.disabledTextColor
             Layout.alignment: Qt.AlignRight
         }
         PlasmaComponents.Label {
             text: (summaryData.snapshotCount || 0).toString()
             font.pointSize: Kirigami.Theme.smallFont.pointSize
-            opacity: 0.7
+            color: Kirigami.Theme.disabledTextColor
         }
 
         // ── Trend indicator ──
         PlasmaComponents.Label {
             text: i18n("Trend:")
             font.pointSize: Kirigami.Theme.smallFont.pointSize
-            opacity: 0.7
+            color: Kirigami.Theme.disabledTextColor
             Layout.alignment: Qt.AlignRight
             visible: dailyCosts && dailyCosts.length >= 3
         }

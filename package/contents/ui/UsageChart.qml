@@ -37,23 +37,37 @@ Item {
         anchors.right: parent.right
         spacing: Kirigami.Units.smallSpacing
 
-        Repeater {
-            model: [
-                { label: i18n("Cost"), value: "cost" },
-                { label: i18n("Tokens"), value: "tokens" },
-                { label: i18n("Requests"), value: "requests" },
-                { label: i18n("Rate Limit"), value: "rateLimit" }
-            ]
+        Rectangle {
+            Layout.alignment: Qt.AlignLeft
+            color: Qt.alpha(Kirigami.Theme.textColor, 0.05)
+            radius: Kirigami.Units.cornerRadius
+            border.color: Qt.alpha(Kirigami.Theme.textColor, 0.15)
+            implicitHeight: Kirigami.Units.gridUnit * 1.5
 
-            PlasmaComponents.ToolButton {
-                text: modelData.label
-                checked: chartRoot.metric === modelData.value
-                onClicked: {
-                    chartRoot.metric = modelData.value;
-                    canvas.requestPaint();
+            RowLayout {
+                anchors.fill: parent
+                spacing: 0
+
+                Repeater {
+                    model: [
+                        { label: i18n("Cost"), value: "cost" },
+                        { label: i18n("Tokens"), value: "tokens" },
+                        { label: i18n("Requests"), value: "requests" },
+                        { label: i18n("Rate Limit"), value: "rateLimit" }
+                    ]
+
+                    PlasmaComponents.ToolButton {
+                        text: modelData.label
+                        checked: chartRoot.metric === modelData.value
+                        down: checked
+                        onClicked: {
+                            chartRoot.metric = modelData.value;
+                            canvas.requestPaint();
+                        }
+                        font.pointSize: Kirigami.Theme.smallFont.pointSize
+                        Layout.fillHeight: true
+                    }
                 }
-                font.pointSize: Kirigami.Theme.smallFont.pointSize
-                implicitHeight: Kirigami.Units.gridUnit * 1.5
             }
         }
 
