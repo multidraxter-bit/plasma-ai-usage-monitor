@@ -38,7 +38,7 @@ Item {
             spacing: Kirigami.Units.largeSpacing
 
             PlasmaComponents.Label {
-                text: i18n("Welcome to AI Usage Monitor v6.0.0. Let's get your integrations set up.")
+                text: i18n("Welcome to AI Usage Monitor v6.0.1. Let's get your integrations set up.")
                 wrapMode: Text.WordWrap
                 Layout.fillWidth: true
                 horizontalAlignment: Text.AlignHCenter

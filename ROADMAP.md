@@ -1,7 +1,7 @@
 # Roadmap — Plasma AI Usage Monitor
 
-> **Current version:** v5.4.1 (Link)
-> **Last updated:** 2026-04-22
+> **Current version:** v6.0.1 (Ground Truth)
+> **Last updated:** 2026-04-26
 > **Direction:** Keep the widget desktop-native and local-first. Prefer export, notifications, and loopback integrations over backend/server expansion.
 
 ## Analyst's Note on Feasibility
@@ -18,12 +18,22 @@ Chrome/Chromium cookie decryption and AWS Bedrock support remain in scope, but b
 
 | Version | Codename | Theme | Status |
 | ------- | -------- | ----- | ------ |
-| v5.2.0 | **Lighthouse** | Operator clarity and runtime consolidation | Released |
 | v5.3.0 | **Vanguard** | Distribution and local tools | Released |
 | v5.4.1 | **Link** | Advanced sync and enterprise API | Released |
-| v6.0.0 | **Nexus (Light)** | Integration and standard export | Planned |
+| v6.0.0 | **Nexus (Light)** | UI Redesign and integration | Released |
+| v6.0.1 | **Ground Truth** | Stabilization, trust, and metadata | Current stabilization |
 
-## v5.4.1 — "Link"
+## v6.0.1 — "Ground Truth"
+
+**Goal:** A focused stabilization update to fix version drift, build/runtime consistency, plugin wiring, docs drift, and packaging trust.
+
+| Feature | Description | Technical Risk |
+| ------- | ----------- | -------------- |
+| **Consistency** | Single source of truth for versions across the repository. | Low |
+| **Plugin Wiring** | Ensure all QML registered C++ types are properly compiled and linked. | Low |
+| **Metadata** | Update RPM spec, AppStream/metainfo, and package metadata. | Low |
+
+## v6.0.0 — "Nexus (Light)"
 
 **Goal:** extend browser sync beyond Firefox on Linux and add AWS Bedrock without turning the widget into a cloud control plane. Includes 5.4.1 hotfix for COPR test environments.
 

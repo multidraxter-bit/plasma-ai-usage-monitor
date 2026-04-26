@@ -1,0 +1,74 @@
+#!/usr/bin/env python3
+import os
+import sys
+import json
+import tarfile
+
+def main():
+    expected_version = "6.0.1"
+    
+    expected_files_in_source = [
+        "package/metadata.json",
+        "package/contents/ui/main.qml",
+        "package/contents/ui/SetupWizard.qml",
+        "plugin/qmldir",
+        "com.github.loofi.aiusagemonitor.metainfo.xml"
+    ]
+    
+    missing = False
+    
+    for f in expected_files_in_source:
+        if not os.path.exists(f):
+            print(f"Error: Missing expected source file {f}")
+            missing = True
+
+    if missing:
+        sys.exit(1)
+        
+    try:
+        with open("package/metadata.json", "r") as f:
+            metadata = json.load(f)
+            version = metadata.get("KPlugin", {}).get("Version", metadata.get("Version"))
+            if version != expected_version:
+                print(f"Error: package/metadata.json version is {version}, expected {expected_version}")
+                missing = True
+    except Exception as e:
+        print(f"Error reading package/metadata.json: {e}")
+        missing = True
+
+    # Look for a .tar.gz package in dist or root
+    package_name = f"plasma-ai-usage-monitor-{expected_version}.tar.gz"
+    package_path = os.path.join(os.getcwd(), package_name)
+    if not os.path.exists(package_path):
+        package_path = os.path.join("dist", package_name)
+        
+    if os.path.exists(package_path):
+        print(f"Found built package at {package_path}, verifying contents...")
+        try:
+            with tarfile.open(package_path, "r:gz") as tar:
+                names = tar.getnames()
+                
+                # Check for key files in the tarball
+                tar_expected = [
+                    f"plasma-ai-usage-monitor-{expected_version}/package/metadata.json",
+                    f"plasma-ai-usage-monitor-{expected_version}/plugin/qmldir",
+                    f"plasma-ai-usage-monitor-{expected_version}/CMakeLists.txt"
+                ]
+                
+                for expected in tar_expected:
+                    if expected not in names:
+                        print(f"Error: Tarball is missing {expected}")
+                        missing = True
+        except Exception as e:
+            print(f"Error reading tarball: {e}")
+            missing = True
+    else:
+        print(f"Note: No built package {package_name} found to verify payload. Run 'just package' to build one.")
+
+    if missing:
+        sys.exit(1)
+    else:
+        print("Package payload verification OK.")
+
+if __name__ == '__main__':
+    main()

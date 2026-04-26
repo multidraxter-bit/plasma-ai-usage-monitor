@@ -26,6 +26,7 @@ test: build-debug
 check:
     bash scripts/check_version_consistency.sh
     bash scripts/check_no_hardcoded_versions.sh
+    python3 scripts/check_qml_registered_types.py
 
 # Validate install prerequisites (dependencies + runtime commands)
 doctor:
@@ -43,9 +44,32 @@ versions:
 smoke:
     bash scripts/dev_smoke_check.sh
 
+# Strict release validation gate
+release-check:
+    @echo "=== Running strict release checks ==="
+    bash scripts/check_version_consistency.sh
+    bash scripts/check_no_hardcoded_versions.sh
+    python3 scripts/check_qml_registered_types.py
+    python3 scripts/smoke_test_qml_import.py --strict --expected-version 6.0.1
+    @if command -v appstreamcli >/dev/null 2>&1; then appstreamcli validate com.github.loofi.aiusagemonitor.metainfo.xml; else echo "Warning: appstreamcli not found, skipping validation. Run 'sudo dnf install appstream' on Fedora."; exit 1; fi
+    @if command -v rpmlint >/dev/null 2>&1; then rpmlint plasma-ai-usage-monitor.spec; else echo "Warning: rpmlint not found, skipping validation. Run 'sudo dnf install rpmlint' on Fedora."; exit 1; fi
+    python3 scripts/check_package_payload.py
+
+# Create a tarball package for distribution
+package:
+    bash scripts/package_source_tarball.sh
+
 # Clean the build directory
 clean:
     rm -rf build
+
+# Safely clean stale user-local installs
+clean-local:
+    bash scripts/clean_local_installs.sh
+
+# Safely clean stale user-local installs (dry run)
+clean-local-dry-run:
+    bash scripts/clean_local_installs.sh --dry-run
 
 # ── System-Wide Install (requires sudo) ───────────────────────────────────────
 

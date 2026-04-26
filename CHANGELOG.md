@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.0.1] — 2026-04-26
+
+### Fixed
+- Fixed version drift across the repository (updated to 6.0.1).
+- Ensured `plugin/CMakeLists.txt` is consistent with `qmlRegisterType` calls in `plugin/aiusageplugin.cpp`.
+- Updated documentation and roadmap to reflect 6.0.1 stabilization release.
+
 ## [6.0.0] — 2026-04-23
 
 ### Added

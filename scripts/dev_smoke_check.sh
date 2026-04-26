@@ -38,5 +38,9 @@ fi
 echo
 echo "If the widget still looks stale after reload:"
 echo "  - run: just versions"
-echo "  - if the user-local package shadows the system install, remove it with: just uninstall-user"
+echo "  - if the user-local package shadows the system install, remove it with: just clean-local"
 echo "  - if the plasmoid package is present but the compiled plugin is missing, rebuild/install the plugin before reloading Plasma"
+
+echo
+echo "Running QML module import smoke test..."
+python3 scripts/smoke_test_qml_import.py
