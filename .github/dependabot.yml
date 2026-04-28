@@ -7,7 +7,7 @@ updates:
     schedule:
       interval: "weekly"
       day: "monday"
-    labels:
+    labels: 
       - "ci/cd"
       - "dependencies"
     commit-message:
