@@ -14,8 +14,8 @@
         "License": "GPL-3.0-or-later",
         "Name": "AI Usage Monitor",
         "Version": "6.0.1",
-        "Website": "https://github.com/multidraxter-bit/plasma-ai-usage-monitor",
-        "BugReportUrl": "https://github.com/multidraxter-bit/plasma-ai-usage-monitor/issues"
+        "Website": "https://github.com/loofiboss-bit/plasma-ai-usage-monitor",
+        "BugReportUrl": "https://github.com/loofiboss-bit/plasma-ai-usage-monitor/issues"
     },
     "X-Plasma-API-Minimum-Version": "6.0",
     "KPackageStructure": "Plasma/Applet"

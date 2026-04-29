@@ -62,7 +62,7 @@ private:
     QTimer *m_timer = nullptr;
     QString m_currentVersion;
     QString m_latestVersion;
-    QString m_releaseApiUrl = QStringLiteral("https://api.github.com/repos/multidraxter-bit/plasma-ai-usage-monitor/releases/latest");
+    QString m_releaseApiUrl = QStringLiteral("https://api.github.com/repos/loofiboss-bit/plasma-ai-usage-monitor/releases/latest");
     int m_intervalHours = 12;
     bool m_checking = false;
 };

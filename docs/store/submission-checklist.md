@@ -71,7 +71,7 @@ curl -s 'https://copr.fedorainfracloud.org/api_3/package/?ownername=loofitheboss
 Expected fields:
 
 - `"source_type": "scm"`
-- `"clone_url": "https://github.com/multidraxter-bit/plasma-ai-usage-monitor.git"`
+- `"clone_url": "https://github.com/loofiboss-bit/plasma-ai-usage-monitor.git"`
 - `"committish": "main"`
 - `"source_build_method": "make_srpm"`
 - `"auto_rebuild": true`

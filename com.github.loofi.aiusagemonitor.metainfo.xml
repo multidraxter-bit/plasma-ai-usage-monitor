@@ -22,21 +22,21 @@
 
   <extends>org.kde.plasma.desktop</extends>
 
-  <url type="homepage">https://github.com/multidraxter-bit/plasma-ai-usage-monitor</url>
-  <url type="bugtracker">https://github.com/multidraxter-bit/plasma-ai-usage-monitor/issues</url>
+  <url type="homepage">https://github.com/loofiboss-bit/plasma-ai-usage-monitor</url>
+  <url type="bugtracker">https://github.com/loofiboss-bit/plasma-ai-usage-monitor/issues</url>
 
   <screenshots>
     <screenshot type="default">
       <caption>Live dashboard with connected provider cards and cost summaries</caption>
-      <image type="source">https://raw.githubusercontent.com/multidraxter-bit/plasma-ai-usage-monitor/main/assets/screenshots/main-window.png</image>
+      <image type="source">https://raw.githubusercontent.com/loofiboss-bit/plasma-ai-usage-monitor/main/assets/screenshots/main-window.png</image>
     </screenshot>
     <screenshot>
       <caption>Compact panel representation with status badge</caption>
-      <image type="source">https://raw.githubusercontent.com/multidraxter-bit/plasma-ai-usage-monitor/main/assets/screenshots/panel-view.png</image>
+      <image type="source">https://raw.githubusercontent.com/loofiboss-bit/plasma-ai-usage-monitor/main/assets/screenshots/panel-view.png</image>
     </screenshot>
     <screenshot>
       <caption>Configuration-oriented view used for provider and budget setup</caption>
-      <image type="source">https://raw.githubusercontent.com/multidraxter-bit/plasma-ai-usage-monitor/main/assets/screenshots/settings-view.png</image>
+      <image type="source">https://raw.githubusercontent.com/loofiboss-bit/plasma-ai-usage-monitor/main/assets/screenshots/settings-view.png</image>
     </screenshot>
   </screenshots>
 

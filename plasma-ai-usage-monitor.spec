@@ -3,7 +3,7 @@ Version:        6.0.1
 Release:        1%{?dist}
 Summary:        KDE Plasma 6 widget to monitor AI API token usage, rate limits, and costs
 License:        GPL-3.0-or-later
-URL:            https://github.com/multidraxter-bit/plasma-ai-usage-monitor
+URL:            https://github.com/loofiboss-bit/plasma-ai-usage-monitor
 Source0:        %{url}/archive/v%{version}/%{name}-%{version}.tar.gz
 
 BuildRequires:  cmake >= 3.16

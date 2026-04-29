@@ -169,7 +169,7 @@ void UpdateCheckerTest::testDefaultReleaseApiUrl()
 {
     UpdateChecker checker;
     QCOMPARE(checker.releaseApiUrl(),
-             QStringLiteral("https://api.github.com/repos/multidraxter-bit/plasma-ai-usage-monitor/releases/latest"));
+             QStringLiteral("https://api.github.com/repos/loofiboss-bit/plasma-ai-usage-monitor/releases/latest"));
 }
 
 void UpdateCheckerTest::testSetReleaseApiUrl()
@@ -194,7 +194,7 @@ void UpdateCheckerTest::testEmitsUpdateForNewerRelease()
                        200,
                        QByteArrayLiteral(R"JSON({
                            "tag_name": "v3.9.0-beta1",
-                           "html_url": "https://github.com/multidraxter-bit/plasma-ai-usage-monitor/releases/tag/v3.9.0"
+                           "html_url": "https://github.com/loofiboss-bit/plasma-ai-usage-monitor/releases/tag/v3.9.0"
                        })JSON"));
 
     UpdateChecker checker;
@@ -214,7 +214,7 @@ void UpdateCheckerTest::testEmitsUpdateForNewerRelease()
     const QList<QVariant> args = updateSpy.takeFirst();
     QCOMPARE(args.at(0).toString(), QStringLiteral("3.9.0"));
     QCOMPARE(args.at(1).toString(),
-             QStringLiteral("https://github.com/multidraxter-bit/plasma-ai-usage-monitor/releases/tag/v3.9.0"));
+             QStringLiteral("https://github.com/loofiboss-bit/plasma-ai-usage-monitor/releases/tag/v3.9.0"));
 }
 
 void UpdateCheckerTest::testDoesNotEmitUpdateForSameVersion()
@@ -226,7 +226,7 @@ void UpdateCheckerTest::testDoesNotEmitUpdateForSameVersion()
                        200,
                        QByteArrayLiteral(R"JSON({
                            "tag_name": "v3.8.1",
-                           "html_url": "https://github.com/multidraxter-bit/plasma-ai-usage-monitor/releases/tag/v3.8.1"
+                           "html_url": "https://github.com/loofiboss-bit/plasma-ai-usage-monitor/releases/tag/v3.8.1"
                        })JSON"));
 
     UpdateChecker checker;

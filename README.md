@@ -10,7 +10,7 @@
 
 <p align="center">
   <a href="#features">Features</a> •
-  <a href="https://github.com/multidraxter-bit/plasma-ai-usage-monitor/releases">Releases</a> •
+  <a href="https://github.com/loofiboss-bit/plasma-ai-usage-monitor/releases">Releases</a> •
   <a href="#installation">Installation</a> •
   <a href="#configuration">Configuration</a> •
   <a href="#api-key-requirements">API Keys</a> •
@@ -26,7 +26,7 @@ A native KDE Plasma 6 plasmoid that monitors AI API token usage, rate limits, an
 
 ## Quick Links
 
-- **Latest release:** [GitHub Releases](https://github.com/multidraxter-bit/plasma-ai-usage-monitor/releases)
+- **Latest release:** [GitHub Releases](https://github.com/loofiboss-bit/plasma-ai-usage-monitor/releases)
 - **Demo environment guide:** [docs/demo/fedora-kde-vm.md](docs/demo/fedora-kde-vm.md)
 - **Manual store handoff:** [docs/store/submission-checklist.md](docs/store/submission-checklist.md)
 - **Screenshot playbook:** [assets/screenshots/README.md](assets/screenshots/README.md)
@@ -300,7 +300,7 @@ Use the guided bootstrap script to run preflight checks and install with the
 right method:
 
 ```bash
-git clone https://github.com/multidraxter-bit/plasma-ai-usage-monitor.git
+git clone https://github.com/loofiboss-bit/plasma-ai-usage-monitor.git
 cd plasma-ai-usage-monitor
 ./scripts/install_bootstrap.sh
 ```
@@ -351,7 +351,7 @@ The included `install.sh` script now delegates to the guided bootstrap flow
 in source mode with Fedora dependency auto-fix enabled:
 
 ```bash
-git clone https://github.com/multidraxter-bit/plasma-ai-usage-monitor.git
+git clone https://github.com/loofiboss-bit/plasma-ai-usage-monitor.git
 cd plasma-ai-usage-monitor
 chmod +x install.sh
 ./install.sh
@@ -711,4 +711,4 @@ GPL-3.0-or-later. See [LICENSE](LICENSE) for the full text.
 
 ## Author
 
-**Loofi** — [github.com/multidraxter-bit](https://github.com/multidraxter-bit)
+**Loofi** — [github.com/loofiboss-bit](https://github.com/loofiboss-bit)

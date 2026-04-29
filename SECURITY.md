@@ -5,7 +5,7 @@
 If you discover a security vulnerability in AI Usage Monitor, please report it responsibly:
 
 1. **Email:** Send details to <loofi@github.com>
-2. **GitHub:** Open a [security advisory](https://github.com/multidraxter-bit/plasma-ai-usage-monitor/security/advisories/new) (private by default)
+2. **GitHub:** Open a [security advisory](https://github.com/loofiboss-bit/plasma-ai-usage-monitor/security/advisories/new) (private by default)
 
 Please include:
 

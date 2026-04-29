@@ -17,7 +17,7 @@ sudo dnf install cmake extra-cmake-modules gcc-c++ \
 ### Building
 
 ```bash
-git clone https://github.com/multidraxter-bit/plasma-ai-usage-monitor.git
+git clone https://github.com/loofiboss-bit/plasma-ai-usage-monitor.git
 cd plasma-ai-usage-monitor
 cmake -S . -B build -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTING=ON
 cmake --build build --parallel
@@ -209,7 +209,7 @@ If the provider has a completely different API:
 
 ## Reporting Issues
 
-Open an issue at [github.com/multidraxter-bit/plasma-ai-usage-monitor/issues](https://github.com/multidraxter-bit/plasma-ai-usage-monitor/issues) with:
+Open an issue at [github.com/loofiboss-bit/plasma-ai-usage-monitor/issues](https://github.com/loofiboss-bit/plasma-ai-usage-monitor/issues) with:
 
 - Your Plasma version (`plasmashell --version`)
 - Your distro and version
