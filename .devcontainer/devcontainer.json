@@ -1,0 +1,16 @@
+{
+  "name": "Plasma AI Usage Monitor Fedora 44",
+  "build": {
+    "dockerfile": "Dockerfile"
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-vscode.cpptools",
+        "ms-vscode.cmake-tools",
+        "ms-python.python"
+      ]
+    }
+  },
+  "postCreateCommand": "just check || true"
+}

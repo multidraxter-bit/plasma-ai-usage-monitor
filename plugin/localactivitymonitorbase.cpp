@@ -72,6 +72,11 @@ void LocalActivityMonitorBase::setLatestKnownModification(const QDateTime &time)
 
 void LocalActivityMonitorBase::checkToolInstalled()
 {
+    if (qEnvironmentVariableIsSet("PLASMA_AI_MONITOR_DEMO")) {
+        setInstalled(true);
+        return;
+    }
+
     bool found = false;
 
     for (const QString &name : std::as_const(m_installExecutableNames)) {

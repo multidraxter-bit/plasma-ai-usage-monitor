@@ -11,6 +11,7 @@
 #include <QTemporaryFile>
 #include <QUuid>
 #include <QProcess>
+#include <QVariantMap>
 #include <memory>
 
 #include <KWallet>
@@ -64,6 +65,8 @@ bool BrowserCookieExtractor::hasCurrentBrowserProfile() const
         return !chromeProfilePath().isEmpty();
     case Chromium:
         return !chromiumProfilePath().isEmpty();
+    case Brave:
+        return !chromiumSelectedProfilePath(braveProfileRoot()).isEmpty();
     }
     return false;
 }
@@ -82,6 +85,8 @@ QString BrowserCookieExtractor::cookieDbPath() const
         return chromeProfilePath() + QStringLiteral("/Cookies");
     case Chromium:
         return chromiumProfilePath() + QStringLiteral("/Cookies");
+    case Brave:
+        return chromiumSelectedProfilePath(braveProfileRoot()) + QStringLiteral("/Cookies");
     }
     return QString();
 }
@@ -234,7 +239,9 @@ QStringList BrowserCookieExtractor::browserProfiles() const
     }
 
     QStringList profiles;
-    const QString rootPath = (m_browserType == Chrome) ? chromeProfileRoot() : chromiumProfileRoot();
+    const QString rootPath = (m_browserType == Chrome)
+        ? chromeProfileRoot()
+        : (m_browserType == Brave ? braveProfileRoot() : chromiumProfileRoot());
     QDir root(rootPath);
     if (!root.exists()) {
         return profiles;
@@ -284,6 +291,16 @@ QString BrowserCookieExtractor::chromiumProfileRoot() const
     const QStringList candidates = {
         QDir::homePath() + QStringLiteral("/.config/chromium"),
         QDir::homePath() + QStringLiteral("/.var/app/org.chromium.Chromium/config/chromium"),
+    };
+    for (const QString &path : candidates) {
+        if (QDir(path).exists()) return path;
+    }
+    return candidates.first();
+}
+
+QString BrowserCookieExtractor::braveProfileRoot() const
+{
+    const QStringList candidates = {
         QDir::homePath() + QStringLiteral("/.config/BraveSoftware/Brave-Browser"),
         QDir::homePath() + QStringLiteral("/.var/app/com.brave.Browser/config/BraveSoftware/Brave-Browser"),
     };
@@ -497,7 +514,9 @@ QString BrowserCookieExtractor::chromiumSafeStoragePassword() const
 {
     const QString envName = (m_browserType == Chrome)
         ? QStringLiteral("PLASMA_AI_MONITOR_CHROME_SAFE_STORAGE")
-        : QStringLiteral("PLASMA_AI_MONITOR_CHROMIUM_SAFE_STORAGE");
+        : (m_browserType == Brave
+           ? QStringLiteral("PLASMA_AI_MONITOR_BRAVE_SAFE_STORAGE")
+           : QStringLiteral("PLASMA_AI_MONITOR_CHROMIUM_SAFE_STORAGE"));
     const QString envValue = QString::fromLocal8Bit(qgetenv(envName.toUtf8().constData())).trimmed();
     if (!envValue.isEmpty()) {
         return envValue;
@@ -507,8 +526,7 @@ QString BrowserCookieExtractor::chromiumSafeStoragePassword() const
     process.start(QStringLiteral("secret-tool"),
                   {QStringLiteral("lookup"),
                    QStringLiteral("application"),
-                   m_browserType == Chrome ? QStringLiteral("Chrome Safe Storage")
-                                           : QStringLiteral("Chromium Safe Storage")});
+                   currentChromiumSafeStorageName()});
     if (process.waitForFinished(1500) && process.exitStatus() == QProcess::NormalExit
         && process.exitCode() == 0) {
         const QString password = QString::fromUtf8(process.readAllStandardOutput()).trimmed();
@@ -535,10 +553,8 @@ QString BrowserCookieExtractor::chromiumSafeStoragePasswordFromKWallet() const
         QStringLiteral("Network Wallet")
     };
     const QStringList entries = {
-        m_browserType == Chrome ? QStringLiteral("Chrome Safe Storage")
-                                : QStringLiteral("Chromium Safe Storage"),
-        m_browserType == Chrome ? QStringLiteral("chrome_safe_storage")
-                                : QStringLiteral("chromium_safe_storage")
+        currentChromiumSafeStorageName(),
+        currentChromiumSafeStorageName().toLower().replace(QLatin1Char(' '), QLatin1Char('_'))
     };
 
     for (const QString &folder : folders) {
@@ -620,6 +636,82 @@ QString BrowserCookieExtractor::getCookie(const QString &domain, const QString &
         ? readFirefoxCookies(domain)
         : readChromiumCookies(domain);
     return cookies.value(name);
+}
+
+QString BrowserCookieExtractor::currentBrowserName() const
+{
+    switch (m_browserType) {
+    case Firefox: return QStringLiteral("Firefox");
+    case Chrome: return QStringLiteral("Chrome");
+    case Chromium: return QStringLiteral("Chromium");
+    case Brave: return QStringLiteral("Brave");
+    }
+    return QStringLiteral("Unknown");
+}
+
+QString BrowserCookieExtractor::currentChromiumSafeStorageName() const
+{
+    if (m_browserType == Chrome) return QStringLiteral("Chrome Safe Storage");
+    if (m_browserType == Brave) return QStringLiteral("Brave Safe Storage");
+    return QStringLiteral("Chromium Safe Storage");
+}
+
+bool BrowserCookieExtractor::hasSafeStorageAccess() const
+{
+    if (m_browserType == Firefox) {
+        return true;
+    }
+    return !chromiumSafeStoragePassword().isEmpty();
+}
+
+QString BrowserCookieExtractor::readinessSummary() const
+{
+    const QVariantMap report = readinessReport();
+    if (report.value(QStringLiteral("ready")).toBool()) {
+        return QStringLiteral("Ready");
+    }
+    return report.value(QStringLiteral("nextStep")).toString();
+}
+
+QVariantMap BrowserCookieExtractor::readinessReport(const QString &service) const
+{
+    QVariantMap report;
+    const QString dbPath = cookieDbPath();
+    const bool profileReady = hasCurrentBrowserProfile();
+    const bool dbReady = !dbPath.isEmpty() && QFileInfo::exists(dbPath) && QFileInfo(dbPath).isReadable();
+    const bool safeStorageReady = hasSafeStorageAccess();
+
+    report.insert(QStringLiteral("browser"), currentBrowserName());
+    report.insert(QStringLiteral("profileReady"), profileReady);
+    report.insert(QStringLiteral("cookieDatabaseReadable"), dbReady);
+    report.insert(QStringLiteral("safeStorageReady"), safeStorageReady);
+    report.insert(QStringLiteral("cookieDatabasePath"), dbPath);
+
+    QString serviceCode;
+    if (!service.isEmpty()) {
+        serviceCode = testConnection(service);
+        report.insert(QStringLiteral("serviceProbe"), serviceCode);
+    }
+
+    const bool ready = profileReady && dbReady && safeStorageReady
+        && (service.isEmpty() || serviceCode == QStringLiteral("connected"));
+    report.insert(QStringLiteral("ready"), ready);
+
+    QString nextStep;
+    if (!profileReady) {
+        nextStep = QStringLiteral("Choose a supported browser profile or open the browser once.");
+    } else if (!dbReady) {
+        nextStep = QStringLiteral("Open the browser, sign in to the service, then retry so the cookie database exists and is readable.");
+    } else if (!safeStorageReady) {
+        nextStep = QStringLiteral("Unlock KWallet/libsecret safe storage, or use local estimation instead of Browser Sync Labs.");
+    } else if (!service.isEmpty() && serviceCode != QStringLiteral("connected")) {
+        nextStep = connectionMessage(service, serviceCode) + QStringLiteral(" Local estimation remains available.");
+    } else {
+        nextStep = QStringLiteral("Browser Sync Labs can probe this profile. Local estimation remains available as fallback.");
+    }
+    report.insert(QStringLiteral("nextStep"), nextStep);
+
+    return report;
 }
 
 bool BrowserCookieExtractor::hasCookiesFor(const QString &domain) const

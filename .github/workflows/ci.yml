@@ -9,7 +9,7 @@ jobs:
   build-and-validate:
     runs-on: ubuntu-latest
     container:
-      image: fedora:43
+      image: fedora:44
 
     steps:
       - name: Install git
@@ -36,13 +36,16 @@ jobs:
             openssl-devel \
             python3 \
             appstream \
-            rpmlint
+            rpmlint \
+            python3-PyQt6 \
+            xorg-x11-server-Xvfb
 
       - name: Validate release consistency
         run: |
           bash scripts/check_version_consistency.sh
           bash scripts/check_no_hardcoded_versions.sh
           bash scripts/check_flatpak_scaffold.sh
+          python3 scripts/check_provider_catalog.py
           python3 scripts/check_qml_registered_types.py
 
       - name: Validate AppStream and RPM
@@ -60,7 +63,10 @@ jobs:
         run: ctest --test-dir build --output-on-failure
 
       - name: Package
-        run: bash scripts/package_source_tarball.sh
+        run: |
+          bash scripts/package_source_tarball.sh --check
+          bash scripts/package_plasmoid.sh --check
+          bash scripts/package_source_tarball.sh
 
       - name: Check Package Payload
         run: python3 scripts/check_package_payload.py

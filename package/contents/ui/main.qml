@@ -316,6 +316,8 @@ PlasmoidItem {
         enabled: plasmoid.configuration.copilotEnabled
         usageLimit: plasmoid.configuration.copilotCustomLimit
         orgName: plasmoid.configuration.copilotOrgName
+        billingMode: plasmoid.configuration.copilotBillingMode || "premium_requests"
+        monthlyResetDay: plasmoid.configuration.copilotResetDay || 1
 
         Component.onCompleted: {
             checkToolInstalled();
@@ -446,6 +448,7 @@ PlasmoidItem {
         codexCliMonitor: codexCliMonitor
         copilotMonitor: copilotMonitor
         usageDatabase: usageDatabase
+        popupOpen: !!plasmoid.expanded
     }
 
     RuntimeCoordinator {

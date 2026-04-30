@@ -45,6 +45,7 @@ private Q_SLOTS:
     void copilotDetectActivityIncrementsUsage();
     void browserSyncEmptyCookieDiagnostics();
     void browserSyncChromeEmptyCookieDiagnostics();
+    void copilotBillingModeLabels();
 };
 
 void SubscriptionToolsTest::planDefaults()
@@ -239,6 +240,21 @@ void SubscriptionToolsTest::browserSyncChromeEmptyCookieDiagnostics()
     const QList<QVariant> codexDiagnosticArgs = codexDiagnosticSpy.takeFirst();
     QCOMPARE(codexDiagnosticArgs.at(0).toString(), QStringLiteral("Codex CLI"));
     QCOMPARE(codexDiagnosticArgs.at(1).toString(), QStringLiteral("not_logged_in"));
+}
+
+void SubscriptionToolsTest::copilotBillingModeLabels()
+{
+    CopilotMonitor copilot;
+    QCOMPARE(copilot.billingMode(), QStringLiteral("premium_requests"));
+    QVERIFY(copilot.usageSourceLabel().contains(QStringLiteral("Premium request")));
+
+    copilot.setBillingMode(QStringLiteral("usage_based"));
+    QCOMPARE(copilot.billingMode(), QStringLiteral("usage_based"));
+    QVERIFY(copilot.usageSourceLabel().contains(QStringLiteral("Usage-based")));
+
+    copilot.setBillingMode(QStringLiteral("credits"));
+    QCOMPARE(copilot.billingMode(), QStringLiteral("credits"));
+    QVERIFY(copilot.usageSourceLabel().contains(QStringLiteral("Credits")));
 }
 
 QTEST_MAIN(SubscriptionToolsTest)

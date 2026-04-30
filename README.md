@@ -22,7 +22,7 @@
 
 A native KDE Plasma 6 plasmoid that monitors AI API token usage, rate limits, and costs across multiple providers. Sits in your panel as a compact icon with a colored status badge and expands into a detailed popup with per-provider stats, usage history charts, and budget tracking. Also tracks subscription-based AI coding tool usage limits for Claude Code, Codex CLI, and GitHub Copilot.
 
-> **Current release:** `v6.0.1` is a stabilization patch that fixes version drift, build/runtime consistency, plugin wiring, docs drift, and packaging trust. `v6.0.0` introduced a complete UI redesign using the new Kirigami/Plasma 6 visual language. It features a cleaner, premium operator-friendly experience with a refined Live dashboard, improved history controls, updated compare charts, and polished configuration screens with Basic/Advanced modes. It also expands support for April 2026 AI models (OpenAI GPT-5.4 series, Anthropic Claude 4.7/4.8, Google Gemini 3.1), adds deep environment preflight checks in the installation doctor, enhances Browser Sync with Flatpak/Snap profile support across major browsers, and hardens local subscription monitors against duplicate counting.
+> **Current release:** `v7.0.0` "Beacon" is a Fedora KDE 44 / Plasma 6.6 reliability, trust, and UX release. It makes Fedora 44 the primary CI, demo, validation, and release target; adds a strict `just fedora44-check` gate; expands Diagnostics into a Trust Center; adds Provider Catalog v2 validation; improves Browser Sync Labs readiness; and keeps the widget KDE Plasma native, local-first, and desktop-focused.
 
 ## Quick Links
 
@@ -31,8 +31,8 @@ A native KDE Plasma 6 plasmoid that monitors AI API token usage, rate limits, an
 - **Manual store handoff:** [docs/store/submission-checklist.md](docs/store/submission-checklist.md)
 - **Screenshot playbook:** [assets/screenshots/README.md](assets/screenshots/README.md)
 
-> **VS Code note:** use **Remote - SSH** for the real Fedora 43 KDE VM workflow, or **Dev Containers** for a headless Fedora 43 build/test environment. The container is great for build/test/mock-server work, but real Plasma UI validation still requires a Linux desktop session.
-> **Demo Mode:** Contributors can run the widget in a deterministic offline mode for testing and screenshots. In the Fedora KDE guest, run `bash scripts/demo/setup_fedora43_kde_test_env.sh --install-missing`, then start `python scripts/demo/mock_ai_usage_server.py` and reload Plasma with `PLASMA_AI_MONITOR_DEMO=1 plasmashell --replace &`.
+> **VS Code note:** use **Remote - SSH** for the real Fedora KDE 44 VM workflow, or **Dev Containers** for a headless Fedora 44 build/test environment. The container is useful for build/test/mock-server work, but real Plasma UI validation still requires a Linux desktop session.
+> **Demo Mode:** Contributors can run the widget in a deterministic offline mode for testing and screenshots. In the Fedora KDE 44 guest, run `bash scripts/demo/setup_fedora_kde_test_env.sh --fedora 44 --install-missing`, then start `python scripts/demo/mock_ai_usage_server.py` and launch with `PLASMA_AI_MONITOR_DEMO=1 plasmawindowed com.github.loofi.aiusagemonitor`. If port 8080 is occupied, run the mock server with `--port 18080` and set `PLASMA_AI_MONITOR_DEMO_BASE_URL=http://127.0.0.1:18080`.
 
 **Supported providers:** Loofi Server, OpenAI, Azure OpenAI, AWS Bedrock, Anthropic (Claude), Google Gemini, Mistral AI, DeepSeek, Groq, xAI (Grok), Ollama Cloud, OpenRouter, Together AI, Cohere, Google Veo
 
@@ -49,7 +49,7 @@ A native KDE Plasma 6 plasmoid that monitors AI API token usage, rate limits, an
 - **Interactive charts** — Canvas-based line/area charts showing cost, tokens, requests, and rate limit trends over 24h/7d/30d
 - **Compare analytics mode** — Multi-series history comparison across providers or subscription tools with ranking, delta trends, compact legend chips, and hover crosshair/tooltip
 - **Analyst view** — Yearly heatmap, week-over-week spend, volatility, anomaly detection, and top driver/model ranking in one operator-focused tab
-- **Provider diagnostics** — Auth/config health, endpoint visibility, refresh freshness, and cost-source quality for each enabled provider
+- **Trust Center and provider diagnostics** — Auth/config health, endpoint visibility, refresh freshness, failure counts, cost-source quality, KWallet state, Browser Sync Labs readiness, and Provider Catalog freshness
 - **Copyable reports** — Generate weekly or monthly Analyst summaries directly to the clipboard
 - **Trend summaries** — Total cost, average daily cost, peak usage, and snapshot counts per time range
 - **Rate limit visualization** — Progress bars with color-coded thresholds (green/yellow/red)
@@ -83,7 +83,8 @@ In addition to API providers, the widget tracks usage limits for subscription-ba
 
 ### GitHub Copilot
 
-- Tracks monthly premium request limits (resets 1st of each month UTC)
+- Tracks legacy monthly premium request limits with configurable reset day assumptions
+- Adds 2026 billing-mode scaffolding for usage-based billing and credits while labeling local activity as self-tracked
 - Plans: **Free** (50/mo), **Pro** (300/mo), **Pro+** (1500/mo), **Business** (300/mo), **Enterprise** (1000/mo)
 - Optional GitHub API integration for organization-level seat metrics (requires PAT with `manage_billing:copilot` scope)
 
@@ -158,7 +159,7 @@ Current canonical asset names live under `assets/screenshots/` and are intention
 - **KDE Plasma 6** (Plasma 6.0+)
 - **Qt 6** (Core, Qml, Quick, Network, Sql)
 - **KDE Frameworks 6** (KWallet, KNotifications, KI18n)
-- **Fedora 43 KDE** (tested) — should work on any distro with Plasma 6
+- **Fedora KDE 44 / Plasma 6.6** (primary validation target) — should work on any distro with Plasma 6
 
 ### Build Dependencies (Fedora)
 
@@ -195,6 +196,7 @@ sudo dnf install just   # Fedora
 | `just doctor-fix`         | Validate and auto-install missing Fedora deps                  |
 | `just versions`           | Show repo / user-local / system installed versions             |
 | `just smoke`              | Check active dev install, version shadowing, and next steps    |
+| `just fedora44-check`     | Strict Fedora KDE 44 release environment validation            |
 | `just clean`              | Remove the `build/` directory                                  |
 | **System-wide (sudo)**    |                                                                |
 | `just install`            | Build then `sudo cmake --install build`                        |
@@ -244,8 +246,9 @@ just smoke
 ```bash
 just bump VERSION=x.y.z
 # Update CHANGELOG.md, then:
-bash scripts/check_version_consistency.sh
-bash scripts/check_flatpak_scaffold.sh
+just check
+just release-check
+just fedora44-check
 bash scripts/package_source_tarball.sh --version x.y.z --output-dir .
 bash scripts/package_plasmoid.sh --output-dir .
 git commit -am "chore: release vx.y.z"

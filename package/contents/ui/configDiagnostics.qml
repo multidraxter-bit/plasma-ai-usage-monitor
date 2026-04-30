@@ -11,6 +11,7 @@ KCM.SimpleKCM {
 
     SecretsManager { id: secrets }
     BrowserCookieExtractor { id: syncDetector }
+    ProviderCatalog { id: providerCatalog }
 
     // Helpers to detect CLI tools
     ClaudeCodeMonitor { id: claudeDetector; Component.onCompleted: checkToolInstalled() }
@@ -79,6 +80,69 @@ KCM.SimpleKCM {
 
         Kirigami.Separator {
             Kirigami.FormData.isSection: true
+            Kirigami.FormData.label: i18n("Trust Center")
+        }
+
+        QQC2.Label {
+            Kirigami.FormData.label: i18n("Actual API Usage:")
+            text: i18n("Provider-reported usage or billing endpoints when available.")
+            wrapMode: Text.WordWrap
+            Layout.fillWidth: true
+        }
+
+        QQC2.Label {
+            Kirigami.FormData.label: i18n("Estimated Cost:")
+            text: i18n("Calculated locally from token counts and the shipped Provider Catalog.")
+            wrapMode: Text.WordWrap
+            Layout.fillWidth: true
+        }
+
+        QQC2.Label {
+            Kirigami.FormData.label: i18n("Rate Limit Only:")
+            text: i18n("Connectivity and quota headers without exact provider billing data.")
+            wrapMode: Text.WordWrap
+            Layout.fillWidth: true
+        }
+
+        QQC2.Label {
+            Kirigami.FormData.label: i18n("Local Tool Data:")
+            text: i18n("Filesystem-derived activity for subscription tools; self-tracked, not vendor billing truth.")
+            wrapMode: Text.WordWrap
+            Layout.fillWidth: true
+        }
+
+        QQC2.Label {
+            Kirigami.FormData.label: i18n("Browser Sync Labs:")
+            text: i18n("Experimental browser-session probes. Cookies and tokens are not logged; local estimation remains the fallback.")
+            wrapMode: Text.WordWrap
+            Layout.fillWidth: true
+        }
+
+        RowLayout {
+            Kirigami.FormData.label: i18n("Catalog:")
+            spacing: Kirigami.Units.smallSpacing
+
+            Kirigami.Icon {
+                source: providerCatalog.runtimeScraping ? "dialog-warning" : "dialog-ok"
+                Layout.preferredWidth: Kirigami.Units.iconSizes.small
+                Layout.preferredHeight: Kirigami.Units.iconSizes.small
+                color: providerCatalog.runtimeScraping ? Kirigami.Theme.neutralTextColor : Kirigami.Theme.positiveTextColor
+            }
+
+            QQC2.Label {
+                Layout.fillWidth: true
+                text: i18n("Provider Catalog v%1, reviewed %2, static local metadata", providerCatalog.schemaVersion, providerCatalog.lastReviewed)
+                wrapMode: Text.WordWrap
+            }
+        }
+
+        QQC2.Label {
+            Kirigami.FormData.label: i18n("Provider Health:")
+            text: i18n("%1 providers enabled", enabledProviderCount())
+        }
+
+        Kirigami.Separator {
+            Kirigami.FormData.isSection: true
             Kirigami.FormData.label: i18n("Wallet & Secrets")
         }
 
@@ -118,6 +182,42 @@ KCM.SimpleKCM {
             QQC2.Label {
                 text: syncDetector.hasCurrentBrowserProfile ? i18n("Found browser profiles for sync") : i18n("No supported browser profile found")
                 color: syncDetector.hasCurrentBrowserProfile ? Kirigami.Theme.positiveTextColor : Kirigami.Theme.neutralTextColor
+            }
+        }
+
+        RowLayout {
+            Kirigami.FormData.label: i18n("Cookie DB:")
+            spacing: Kirigami.Units.smallSpacing
+
+            Kirigami.Icon {
+                source: syncDetector.readinessReport("").cookieDatabaseReadable ? "dialog-ok" : "dialog-warning"
+                Layout.preferredWidth: Kirigami.Units.iconSizes.small
+                Layout.preferredHeight: Kirigami.Units.iconSizes.small
+                color: syncDetector.readinessReport("").cookieDatabaseReadable ? Kirigami.Theme.positiveTextColor : Kirigami.Theme.neutralTextColor
+            }
+
+            QQC2.Label {
+                Layout.fillWidth: true
+                text: syncDetector.readinessReport("").cookieDatabaseReadable ? i18n("Readable") : syncDetector.readinessReport("").nextStep
+                wrapMode: Text.WordWrap
+            }
+        }
+
+        RowLayout {
+            Kirigami.FormData.label: i18n("KWallet/libsecret:")
+            spacing: Kirigami.Units.smallSpacing
+
+            Kirigami.Icon {
+                source: syncDetector.hasSafeStorageAccess ? "dialog-ok" : "dialog-warning"
+                Layout.preferredWidth: Kirigami.Units.iconSizes.small
+                Layout.preferredHeight: Kirigami.Units.iconSizes.small
+                color: syncDetector.hasSafeStorageAccess ? Kirigami.Theme.positiveTextColor : Kirigami.Theme.neutralTextColor
+            }
+
+            QQC2.Label {
+                Layout.fillWidth: true
+                text: syncDetector.hasSafeStorageAccess ? i18n("Ready for selected browser") : i18n("Safe storage is locked or unavailable; use local estimation.")
+                wrapMode: Text.WordWrap
             }
         }
 
@@ -196,5 +296,21 @@ KCM.SimpleKCM {
                 Qt.openUrlExternally("konsole --hold -e sh -c 'cd " + AppInfo.pluginPath + "/../scripts && ./install_doctor.sh'");
             }
         }
+    }
+
+    function enabledProviderCount() {
+        var keys = [
+            "loofiEnabled", "openaiEnabled", "anthropicEnabled", "googleEnabled",
+            "mistralEnabled", "deepseekEnabled", "groqEnabled", "xaiEnabled",
+            "ollamaEnabled", "openrouterEnabled", "togetherEnabled", "cohereEnabled",
+            "googleveoEnabled", "azureEnabled", "bedrockEnabled"
+        ];
+        var count = 0;
+        for (var i = 0; i < keys.length; i++) {
+            if (plasmoid.configuration[keys[i]]) {
+                count++;
+            }
+        }
+        return count;
     }
 }

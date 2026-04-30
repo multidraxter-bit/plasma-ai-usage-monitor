@@ -16,9 +16,49 @@ Item {
     required property var codexCliMonitor
     required property var copilotMonitor
     required property var usageDatabase
+    required property bool popupOpen
+
+    onPopupOpenChanged: {
+        if (popupOpen) {
+            refreshAll();
+        }
+    }
 
     function effectiveInterval(providerInterval) {
-        return (providerInterval > 0 ? providerInterval : configuration.refreshInterval) * 1000;
+        var seconds = providerInterval > 0 ? providerInterval : configuration.refreshInterval;
+        if (!popupOpen) {
+            seconds = Math.max(seconds * 4, 900);
+        }
+        return seconds * 1000;
+    }
+
+    function providerJitter(configKey) {
+        var text = configKey || "";
+        var hash = 0;
+        for (var i = 0; i < text.length; i++) {
+            hash = (hash + text.charCodeAt(i) * (i + 1)) % 997;
+        }
+        return hash * 37;
+    }
+
+    function backoffMultiplier(provider) {
+        if (!provider || !provider.backend) {
+            return 1;
+        }
+        var errors = provider.backend.consecutiveErrors || 0;
+        if (errors <= 0) {
+            return 1;
+        }
+        var errorText = (provider.backend.error || "").toString();
+        var terminalBackoff = errorText.indexOf("403") >= 0
+            || errorText.indexOf("429") >= 0
+            || errorText.toLowerCase().indexOf("network") >= 0;
+        return terminalBackoff ? Math.min(8, Math.pow(2, Math.min(errors, 3))) : Math.min(4, errors + 1);
+    }
+
+    function scheduledInterval(provider) {
+        return effectiveInterval(provider.refreshInterval || 0) * backoffMultiplier(provider)
+            + providerJitter(provider.configKey);
     }
 
     function canRefreshBackend(backend, requiresApiKey) {
@@ -61,7 +101,9 @@ Item {
         model: scheduler.registry.allProviders
 
         delegate: Timer {
-            interval: scheduler.effectiveInterval(modelData.refreshInterval || 0)
+            required property var modelData
+
+            interval: scheduler.scheduledInterval(modelData)
             running: modelData.enabled
             repeat: true
             onTriggered: scheduler.refreshProvider(modelData)

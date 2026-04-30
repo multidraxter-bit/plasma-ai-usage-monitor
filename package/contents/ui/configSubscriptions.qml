@@ -36,6 +36,8 @@ KCM.SimpleKCM {
     property alias cfg_copilotEnabled: copilotSwitch.checked
     property alias cfg_copilotPlan: copilotPlanCombo.currentIndex
     property alias cfg_copilotCustomLimit: copilotLimitSpin.value
+    property string cfg_copilotBillingMode: plasmoid.configuration.copilotBillingMode || "premium_requests"
+    property alias cfg_copilotResetDay: copilotResetDaySpin.value
     property alias cfg_copilotNotifications: copilotNotifySwitch.checked
     property alias cfg_copilotOrgName: copilotOrgField.text
 
@@ -76,7 +78,7 @@ KCM.SimpleKCM {
     function syncGuidance(code, serviceLabel) {
         var normalized = normalizedSyncCode(code);
         if (normalized === "connected") return i18n("%1 session looks valid in Firefox.", serviceLabel);
-        if (normalized === "profile_missing") return i18n("Install Firefox or choose Firefox for Browser Sync.");
+        if (normalized === "profile_missing") return i18n("Choose a supported browser profile or open the browser once.");
         if (normalized === "cookie_db_missing") return i18n("Open Firefox once, sign in to %1, then retry so the cookie database exists.", serviceLabel);
         if (normalized === "cookies_not_found") return i18n("Open %1 in Firefox and sign in at least once.", serviceLabel);
         if (normalized === "session_missing_or_expired") return i18n("Log in to %1 again in Firefox, then retry.", serviceLabel);
@@ -490,6 +492,61 @@ KCM.SimpleKCM {
             }
         }
 
+        QQC2.ComboBox {
+            id: copilotBillingModeCombo
+            Kirigami.FormData.label: i18n("Billing mode:")
+            enabled: copilotSwitch.checked
+            visible: subscriptionsPage.advancedMode
+            Layout.fillWidth: true
+            textRole: "text"
+            valueRole: "value"
+            model: [
+                { text: i18n("Premium requests"), value: "premium_requests" },
+                { text: i18n("Usage-based billing"), value: "usage_based" },
+                { text: i18n("Credits"), value: "credits" }
+            ]
+            Component.onCompleted: {
+                for (var i = 0; i < model.length; i++) {
+                    if (model[i].value === subscriptionsPage.cfg_copilotBillingMode) {
+                        currentIndex = i;
+                        return;
+                    }
+                }
+                currentIndex = 0;
+            }
+            onActivated: {
+                subscriptionsPage.cfg_copilotBillingMode = currentValue;
+            }
+        }
+
+        QQC2.SpinBox {
+            id: copilotResetDaySpin
+            Kirigami.FormData.label: i18n("Reset day:")
+            enabled: copilotSwitch.checked
+            visible: subscriptionsPage.advancedMode
+            from: 1
+            to: 28
+            value: plasmoid.configuration.copilotResetDay || 1
+            editable: true
+        }
+
+        QQC2.Label {
+            visible: copilotSwitch.checked
+            Layout.fillWidth: true
+            wrapMode: Text.WordWrap
+            text: {
+                if (subscriptionsPage.cfg_copilotBillingMode === "usage_based") {
+                    return i18n("Usage-based billing mode keeps local activity estimates separate from exact GitHub billing data.");
+                }
+                if (subscriptionsPage.cfg_copilotBillingMode === "credits") {
+                    return i18n("Credits mode tracks local activity against your configured assumptions and does not claim exact credit balances.");
+                }
+                return i18n("Premium request mode keeps the legacy monthly request counter and configurable reset day.");
+            }
+            font.pointSize: Kirigami.Theme.smallFont.pointSize
+            color: Kirigami.Theme.disabledTextColor
+        }
+
         QQC2.Switch {
             id: copilotNotifySwitch
             Kirigami.FormData.label: i18n("Notifications:")
@@ -799,7 +856,8 @@ KCM.SimpleKCM {
             model: [
                 i18n("Firefox"),
                 i18n("Chrome"),
-                i18n("Chromium")
+                i18n("Chromium"),
+                i18n("Brave")
             ]
             currentIndex: plasmoid.configuration.browserSyncBrowser
 
@@ -812,9 +870,21 @@ KCM.SimpleKCM {
 
         QQC2.Label {
             visible: browserSyncSwitch.checked
-            text: i18n("Browser Sync supports Firefox plus Linux Chrome/Chromium profiles when readable cookies and safe-storage secrets are available.")
+            text: i18n("Browser Sync supports Firefox plus Linux Chrome, Chromium, and Brave profiles when readable cookies and safe-storage secrets are available. If Labs sync is not ready, local estimation still works.")
             font.pointSize: Kirigami.Theme.smallFont.pointSize
-            color: Kirigami.Theme.disabledTextColor5
+            color: Kirigami.Theme.disabledTextColor
+            wrapMode: Text.WordWrap
+            Layout.fillWidth: true
+        }
+
+        QQC2.Label {
+            visible: browserSyncSwitch.checked
+            Kirigami.FormData.label: i18n("Readiness:")
+            text: syncDetector.readinessSummary
+            font.pointSize: Kirigami.Theme.smallFont.pointSize
+            color: syncDetector.hasCurrentBrowserProfile && syncDetector.hasSafeStorageAccess
+                ? Kirigami.Theme.positiveTextColor
+                : Kirigami.Theme.neutralTextColor
             wrapMode: Text.WordWrap
             Layout.fillWidth: true
         }
@@ -916,7 +986,7 @@ KCM.SimpleKCM {
                 visible: false
                 wrapMode: Text.WordWrap
                 font.pointSize: Kirigami.Theme.smallFont.pointSize
-                color: Kirigami.Theme.disabledTextColor5
+                color: Kirigami.Theme.disabledTextColor
                 Layout.fillWidth: true
             }
         }
@@ -957,7 +1027,7 @@ KCM.SimpleKCM {
                 visible: false
                 wrapMode: Text.WordWrap
                 font.pointSize: Kirigami.Theme.smallFont.pointSize
-                color: Kirigami.Theme.disabledTextColor5
+                color: Kirigami.Theme.disabledTextColor
                 Layout.fillWidth: true
             }
         }

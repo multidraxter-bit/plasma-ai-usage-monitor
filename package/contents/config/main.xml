@@ -26,6 +26,14 @@
             <default>false</default>
             <label>Whether advanced settings mode is enabled in config</label>
         </entry>
+        <entry name="dashboardMode" type="String">
+            <default>operator</default>
+            <label>Popup mode: simple, operator, or analyst</label>
+        </entry>
+        <entry name="showOnlyProblems" type="Bool">
+            <default>false</default>
+            <label>Show only providers and tools that need attention</label>
+        </entry>
 
         <!-- Per-provider refresh intervals (0 = use global default) -->
         <entry name="openaiRefreshInterval" type="Int">
@@ -495,7 +503,7 @@
         </entry>
         <entry name="browserSyncBrowser" type="Int">
             <default>0</default>
-            <label>Browser type: 0=Firefox, 1=Chrome, 2=Chromium.</label>
+            <label>Browser type: 0=Firefox, 1=Chrome, 2=Chromium, 3=Brave.</label>
         </entry>
         <entry name="browserSyncProfile" type="String">
             <default></default>
@@ -549,6 +557,14 @@
         <entry name="copilotCustomLimit" type="Int">
             <default>0</default>
             <label>Custom monthly premium request limit (0 = use plan default)</label>
+        </entry>
+        <entry name="copilotBillingMode" type="String">
+            <default>premium_requests</default>
+            <label>Copilot billing mode: premium_requests, usage_based, or credits</label>
+        </entry>
+        <entry name="copilotResetDay" type="Int">
+            <default>1</default>
+            <label>Monthly reset day in UTC, clamped to 1-28</label>
         </entry>
         <entry name="copilotNotifications" type="Bool">
             <default>true</default>

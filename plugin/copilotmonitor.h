@@ -28,6 +28,8 @@ class CopilotMonitor : public LocalActivityMonitorBase
 
     Q_PROPERTY(QString githubToken READ githubToken WRITE setGithubToken NOTIFY githubTokenChanged)
     Q_PROPERTY(QString orgName READ orgName WRITE setOrgName NOTIFY orgNameChanged)
+    Q_PROPERTY(QString billingMode READ billingMode WRITE setBillingMode NOTIFY billingModeChanged)
+    Q_PROPERTY(QString usageSourceLabel READ usageSourceLabel NOTIFY billingModeChanged)
     Q_PROPERTY(bool hasOrgMetrics READ hasOrgMetrics NOTIFY orgMetricsUpdated)
     Q_PROPERTY(int orgActiveUsers READ orgActiveUsers NOTIFY orgMetricsUpdated)
     Q_PROPERTY(int orgTotalSeats READ orgTotalSeats NOTIFY orgMetricsUpdated)
@@ -61,6 +63,9 @@ public:
     void setGithubToken(const QString &token);
     QString orgName() const;
     void setOrgName(const QString &name);
+    QString billingMode() const;
+    void setBillingMode(const QString &mode);
+    QString usageSourceLabel() const;
     bool hasOrgMetrics() const;
     int orgActiveUsers() const;
     int orgTotalSeats() const;
@@ -70,6 +75,7 @@ public:
 Q_SIGNALS:
     void githubTokenChanged();
     void orgNameChanged();
+    void billingModeChanged();
     void orgMetricsUpdated();
 
 protected:
@@ -81,6 +87,7 @@ private Q_SLOTS:
 private:
     QString m_githubToken;
     QString m_orgName;
+    QString m_billingMode = QStringLiteral("premium_requests");
     bool m_loggedDetectionFallback = false;
 
     bool m_hasOrgMetrics = false;

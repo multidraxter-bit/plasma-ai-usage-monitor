@@ -1,5 +1,5 @@
 Name:           plasma-ai-usage-monitor
-Version:        6.0.1
+Version:        7.0.0
 Release:        1%{?dist}
 Summary:        KDE Plasma 6 widget to monitor AI API token usage, rate limits, and costs
 License:        GPL-3.0-or-later
@@ -69,6 +69,11 @@ appstream-util validate-relax --nonet %{buildroot}%{_datadir}/metainfo/com.githu
 %{_datadir}/metainfo/com.github.loofi.aiusagemonitor.metainfo.xml
 
 %changelog
+* Thu Apr 30 2026 Loofi <loofi@github.com> - 7.0.0-1
+- Prepare Beacon as the Fedora KDE 44 native reliability release
+- Add Fedora 44 validation, Provider Catalog v2 checks, and Trust Center UX
+- Improve Browser Sync Labs readiness, Copilot billing assumptions, and refresh diagnostics
+
 * Fri Apr 10 2026 Loofi <loofi@github.com> - 5.3.0-1
 - Add Cursor, Windsurf, and JetBrains AI local quota monitors
 - Add AWS Bedrock provider scaffolding and AWS SigV4 signing support

@@ -160,7 +160,7 @@ Item {
         for (var i = 0; i < tools.length; i++) {
             var monitor = tools[i].monitor;
             monitor.limitWarning.connect(notificationController.handleToolLimitWarning);
-            monitor.limitReached.connect(notificationController.handleToolLimitReached);
+            monitor.usageLimitReached.connect(notificationController.handleToolLimitReached);
             monitor.syncDiagnostic.connect(notificationController.handleToolSyncDiagnostic);
             monitor.usageUpdated.connect(makeToolSnapshotHandler(monitor));
         }

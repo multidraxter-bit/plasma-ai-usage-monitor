@@ -44,6 +44,8 @@ PlasmaExtras.Representation {
     readonly property bool detailHistoryHasSelection: selectedDetailProviderDbName() !== ""
     readonly property bool detailHistoryReady: detailHistoryState() === "ready"
     readonly property bool compareHistoryReady: compareHistoryState() === "ready"
+    readonly property string dashboardMode: plasmoid.configuration.dashboardMode || "operator"
+    readonly property bool showOnlyProblems: plasmoid.configuration.showOnlyProblems || false
     readonly property bool onboardingVisible: !hasAnyProvider()
         && !plasmoid.configuration.setupWizardCompleted
         && !plasmoid.configuration.setupWizardDismissed
@@ -95,12 +97,48 @@ PlasmaExtras.Representation {
                 visible: !fullRoot.onboardingVisible
                 iconName: "preferences-desktop-notification"
                 text: i18n("Welcome to AI Usage Monitor")
-                explanation: i18n("Track your AI API usage, costs, and rate limits across multiple providers.\nOpen settings to add your first API key and get started.")
+                explanation: i18n("Start with a provider, local tool tracking, diagnostics, demo mode, or a preset.")
 
                 helpfulAction: QQC2.Action {
                     icon.name: "configure"
-                    text: i18n("Configure Providers")
+                    text: i18n("Add Provider")
                     onTriggered: plasmoid.internalAction("configure").trigger()
+                }
+            }
+
+            RowLayout {
+                anchors.horizontalCenter: parent.horizontalCenter
+                anchors.bottom: parent.bottom
+                anchors.bottomMargin: Kirigami.Units.largeSpacing
+                visible: !fullRoot.onboardingVisible
+                spacing: Kirigami.Units.smallSpacing
+
+                PlasmaComponents.ToolButton {
+                    icon.name: "tools-report-bug"
+                    text: i18n("Diagnostics")
+                    onClicked: plasmoid.internalAction("configure").trigger()
+                    PlasmaComponents.ToolTip { text: i18n("Run diagnostics") }
+                }
+
+                PlasmaComponents.ToolButton {
+                    icon.name: "utilities-terminal"
+                    text: i18n("Local Tools")
+                    onClicked: plasmoid.internalAction("configure").trigger()
+                    PlasmaComponents.ToolTip { text: i18n("Enable local tool tracking") }
+                }
+
+                PlasmaComponents.ToolButton {
+                    icon.name: "media-playback-start"
+                    text: i18n("Demo")
+                    onClicked: Qt.openUrlExternally(Qt.resolvedUrl("../../../docs/demo/fedora-kde-vm.md"))
+                    PlasmaComponents.ToolTip { text: i18n("Use demo mode") }
+                }
+
+                PlasmaComponents.ToolButton {
+                    icon.name: "document-import"
+                    text: i18n("Preset")
+                    onClicked: plasmoid.internalAction("configure").trigger()
+                    PlasmaComponents.ToolTip { text: i18n("Import preset") }
                 }
             }
 
@@ -368,6 +406,48 @@ PlasmaExtras.Representation {
                             }
                         }
 
+                        RowLayout {
+                            Layout.fillWidth: true
+                            Layout.leftMargin: Kirigami.Units.smallSpacing
+                            Layout.rightMargin: Kirigami.Units.smallSpacing
+                            spacing: Kirigami.Units.smallSpacing
+
+                            QQC2.ComboBox {
+                                id: dashboardModeCombo
+                                activeFocusOnTab: true
+                                textRole: "text"
+                                valueRole: "value"
+                                model: [
+                                    { text: i18n("Simple"), value: "simple" },
+                                    { text: i18n("Operator"), value: "operator" },
+                                    { text: i18n("Analyst"), value: "analyst" }
+                                ]
+                                Component.onCompleted: {
+                                    var mode = fullRoot.dashboardMode;
+                                    for (var i = 0; i < model.length; i++) {
+                                        if (model[i].value === mode) {
+                                            currentIndex = i;
+                                            return;
+                                        }
+                                    }
+                                    currentIndex = 1;
+                                }
+                                onActivated: {
+                                    plasmoid.configuration.dashboardMode = currentValue;
+                                    tabBar.currentIndex = currentValue === "analyst" ? 2 : 0;
+                                }
+                            }
+
+                            QQC2.CheckBox {
+                                activeFocusOnTab: true
+                                text: i18n("Only Problems")
+                                checked: fullRoot.showOnlyProblems
+                                onToggled: plasmoid.configuration.showOnlyProblems = checked
+                            }
+
+                            Item { Layout.fillWidth: true }
+                        }
+
                         ColumnLayout {
                             Layout.fillWidth: true
                             Layout.leftMargin: Kirigami.Units.smallSpacing
@@ -424,7 +504,7 @@ PlasmaExtras.Representation {
                                         spacing: Kirigami.Units.smallSpacing
 
                                         Kirigami.Icon {
-                                            source: modelData.backend?.iconName ?? "dialog-warning"
+                                            source: modelData.iconSource || modelData.backend?.iconName || "dialog-warning"
                                             Layout.preferredWidth: Kirigami.Units.iconSizes.small
                                             Layout.preferredHeight: Kirigami.Units.iconSizes.small
                                         }
@@ -478,7 +558,7 @@ PlasmaExtras.Representation {
                                         spacing: Kirigami.Units.smallSpacing
 
                                         Kirigami.Icon {
-                                            source: modelData.monitor?.iconName ?? "dialog-warning"
+                                            source: modelData.iconSource || modelData.monitor?.iconName || "dialog-warning"
                                             Layout.preferredWidth: Kirigami.Units.iconSizes.small
                                             Layout.preferredHeight: Kirigami.Units.iconSizes.small
                                         }
@@ -516,7 +596,7 @@ PlasmaExtras.Representation {
                         CostSummaryCard {
                             Layout.fillWidth: true
                             Layout.margins: Kirigami.Units.smallSpacing
-                            visible: hasCostData()
+                            visible: hasCostData() && fullRoot.dashboardMode !== "simple"
                             providers: root.allProviders ?? []
                             subscriptionTools: root.allSubscriptionTools ?? []
                         }
@@ -577,9 +657,9 @@ PlasmaExtras.Representation {
 
                             ProviderCard {
                                 Layout.fillWidth: true
-                                visible: modelData.enabled
+                                visible: fullRoot.providerVisibleInLive(modelData)
                                 providerName: modelData.name
-                                providerIcon: modelData.backend?.iconName ?? "globe"
+                                providerIcon: modelData.iconSource || modelData.backend?.iconName || "globe"
                                 providerColor: modelData.color
                                 backend: modelData.backend ?? null
                                 showCost: true
@@ -635,9 +715,9 @@ PlasmaExtras.Representation {
                                 Layout.fillWidth: true
                                 Layout.leftMargin: Kirigami.Units.smallSpacing
                                 Layout.rightMargin: Kirigami.Units.smallSpacing
-                                visible: modelData.enabled
+                                visible: fullRoot.toolVisibleInLive(modelData)
                                 toolName: modelData.name
-                                toolIcon: modelData.monitor?.iconName ?? "utilities-terminal"
+                                toolIcon: modelData.iconSource || modelData.monitor?.iconName || "utilities-terminal"
                                 toolColor: modelData.monitor?.toolColor ?? Kirigami.Theme.textColor
                                 monitor: modelData.monitor ?? null
                                 collapsed: fullRoot.shouldCollapseToolCard(modelData)
@@ -654,6 +734,16 @@ PlasmaExtras.Representation {
                                     }
                                 }
                             }
+                        }
+
+                        PlasmaExtras.PlaceholderMessage {
+                            Layout.fillWidth: true
+                            Layout.leftMargin: Kirigami.Units.smallSpacing
+                            Layout.rightMargin: Kirigami.Units.smallSpacing
+                            visible: fullRoot.showOnlyProblems && attentionItemCount() === 0
+                            iconName: "dialog-ok"
+                            text: i18n("No Problems")
+                            explanation: i18n("All enabled providers and local tools are currently clear.")
                         }
 
                         Item { Layout.fillHeight: true }
@@ -1071,15 +1161,20 @@ PlasmaExtras.Representation {
             opacity: 0.6
             text: {
                 var interval = plasmoid.configuration.refreshInterval;
+                var dbSize = root.usageDb ? root.usageDb.databaseSize() : 0;
+                var dbText = dbSize > 0 ? i18n(" · DB %1 KB", Math.round(dbSize / 1024)) : "";
                 if (interval >= 60) {
-                    return i18n("Auto-refresh every %1 min", Math.floor(interval / 60));
+                    return i18n("Auto-refresh every %1 min", Math.floor(interval / 60)) + dbText;
                 }
-                return i18n("Auto-refresh every %1 sec", interval);
+                return i18n("Auto-refresh every %1 sec", interval) + dbText;
             }
         }
     }
 
     function hasAnyProvider() {
+        if (AppInfo.demoMode) {
+            return true;
+        }
         return plasmoid.configuration.loofiEnabled
             || plasmoid.configuration.openaiEnabled
             || plasmoid.configuration.anthropicEnabled
@@ -1095,7 +1190,10 @@ PlasmaExtras.Representation {
             || plasmoid.configuration.googleveoEnabled
             || plasmoid.configuration.claudeCodeEnabled
             || plasmoid.configuration.codexEnabled
-            || plasmoid.configuration.copilotEnabled;
+            || plasmoid.configuration.copilotEnabled
+            || plasmoid.configuration.cursorEnabled
+            || plasmoid.configuration.windsurfEnabled
+            || plasmoid.configuration.jetbrainsAiEnabled;
     }
 
     function providerRateLimitPercent(backend) {
@@ -1160,6 +1258,7 @@ PlasmaExtras.Representation {
 
     function shouldCollapseProviderCard(provider) {
         if (!provider || !provider.enabled) return true;
+        if (fullRoot.dashboardMode === "simple") return providerAttentionReason(provider) === "";
         if (providerAttentionReason(provider) !== "") return false;
         return fullRoot.lastExpandedProviderName === ""
             ? true
@@ -1168,6 +1267,7 @@ PlasmaExtras.Representation {
 
     function shouldCollapseToolCard(tool) {
         if (!tool || !tool.enabled) return true;
+        if (fullRoot.dashboardMode === "simple") return toolAttentionReason(tool) === "";
         if (toolAttentionReason(tool) !== "") return false;
         return fullRoot.lastExpandedToolName === ""
             ? true
@@ -1188,6 +1288,18 @@ PlasmaExtras.Representation {
             }
         }
         return false;
+    }
+
+    function providerVisibleInLive(provider) {
+        if (!provider || !provider.enabled) return false;
+        if (!fullRoot.showOnlyProblems) return true;
+        return providerAttentionReason(provider) !== "";
+    }
+
+    function toolVisibleInLive(tool) {
+        if (!tool || !tool.enabled) return false;
+        if (!fullRoot.showOnlyProblems) return true;
+        return toolAttentionReason(tool) !== "";
     }
 
     function getEnabledProviderEntries() {

@@ -24,6 +24,11 @@ QString AppInfo::pluginPath() const
     return QCoreApplication::applicationDirPath();
 }
 
+bool AppInfo::demoMode() const
+{
+    return qEnvironmentVariableIsSet("PLASMA_AI_MONITOR_DEMO");
+}
+
 bool AppInfo::exportConfig(const QString &jsonConfig, const QString &filePath) const
 {
     QString localPath = filePath;

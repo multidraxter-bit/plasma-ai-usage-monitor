@@ -90,8 +90,15 @@ void CodexCliMonitor::syncFromBrowser(const QString &cookieHeader, int browserTy
 void CodexCliMonitor::fetchAccountCheck(const QString &cookieHeader)
 {
     // ChatGPT internal API for account/usage info
+    QString demoUrl = QString::fromLocal8Bit(qgetenv("PLASMA_AI_MONITOR_DEMO_BASE_URL")).trimmed();
+    if (demoUrl.isEmpty()) {
+        demoUrl = QStringLiteral("http://localhost:8080");
+    }
+    while (demoUrl.endsWith(QLatin1Char('/'))) {
+        demoUrl.chop(1);
+    }
     QUrl url = qEnvironmentVariableIsSet("PLASMA_AI_MONITOR_DEMO")
-        ? QUrl(QStringLiteral("http://localhost:8080/chatgpt/backend-api/accounts/check/v4-2023-04-27"))
+        ? QUrl(QStringLiteral("%1/chatgpt/backend-api/accounts/check/v4-2023-04-27").arg(demoUrl))
         : QUrl(QStringLiteral("https://chatgpt.com/backend-api/accounts/check/v4-2023-04-27"));
 
     QNetworkRequest request(url);

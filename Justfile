@@ -26,6 +26,7 @@ test: build-debug
 check:
     bash scripts/check_version_consistency.sh
     bash scripts/check_no_hardcoded_versions.sh
+    python3 scripts/check_provider_catalog.py
     python3 scripts/check_qml_registered_types.py
 
 # Validate install prerequisites (dependencies + runtime commands)
@@ -49,11 +50,18 @@ release-check:
     @echo "=== Running strict release checks ==="
     bash scripts/check_version_consistency.sh
     bash scripts/check_no_hardcoded_versions.sh
+    python3 scripts/check_provider_catalog.py
     python3 scripts/check_qml_registered_types.py
-    python3 scripts/smoke_test_qml_import.py --strict --expected-version 6.0.1
+    PYTHONNOUSERSITE=1 python3 scripts/smoke_test_qml_import.py --expected-version 7.0.0
     @if command -v appstreamcli >/dev/null 2>&1; then appstreamcli validate com.github.loofi.aiusagemonitor.metainfo.xml; else echo "Warning: appstreamcli not found, skipping validation. Run 'sudo dnf install appstream' on Fedora."; exit 1; fi
     @if command -v rpmlint >/dev/null 2>&1; then rpmlint plasma-ai-usage-monitor.spec; else echo "Warning: rpmlint not found, skipping validation. Run 'sudo dnf install rpmlint' on Fedora."; exit 1; fi
+    bash scripts/package_source_tarball.sh --check
+    bash scripts/package_plasmoid.sh --check
     python3 scripts/check_package_payload.py
+
+# Fedora KDE 44 release environment validation
+fedora44-check:
+    bash scripts/fedora44_check.sh
 
 # Create a tarball package for distribution
 package:
@@ -123,13 +131,13 @@ bootstrap:
 bootstrap-source:
     bash scripts/install_bootstrap.sh --method source --install-missing
 
-# Bootstrap a Fedora 43 KDE guest for live testing and screenshots
+# Bootstrap a Fedora KDE 44 guest for live testing and screenshots
 demo-bootstrap:
-    bash scripts/demo/setup_fedora43_kde_test_env.sh
+    bash scripts/demo/setup_fedora_kde_test_env.sh --fedora 44
 
-# Bootstrap the Fedora 43 KDE guest, install missing packages, and prepare the widget for testing
+# Bootstrap the Fedora KDE 44 guest, install missing packages, and prepare the widget for testing
 demo-bootstrap-install:
-    bash scripts/demo/setup_fedora43_kde_test_env.sh --install-missing --prepare-widget
+    bash scripts/demo/setup_fedora_kde_test_env.sh --fedora 44 --install-missing --prepare-widget
 
 # Start the deterministic demo mock server from the Linux .venv
 demo-server:

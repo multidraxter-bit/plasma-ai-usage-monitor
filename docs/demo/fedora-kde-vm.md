@@ -10,7 +10,7 @@ Use this workflow when you need a real Plasma session for live testing, polished
 
 ## Can VS Code run the VM?
 
-Not directly in a portable repo-owned way. VS Code can **attach to** the Fedora 43 KDE guest and orchestrate the workflow, but the guest itself still needs to be started by Hyper-V, VMware, or VirtualBox.
+Not directly in a portable repo-owned way. VS Code can **attach to** the Fedora KDE 44 guest and orchestrate the workflow, but the guest itself still needs to be started by Hyper-V, VMware, or VirtualBox.
 
 Use the two modes below:
 
@@ -21,7 +21,7 @@ Repo support for both is now included:
 
 - `.vscode/tasks.json` — Remote-friendly tasks for bootstrap, build, test, demo server, and demo plasmoid launch
 - `.vscode/extensions.json` — recommended VS Code extensions (`Remote - SSH`, `Dev Containers`, `CMake Tools`, `C/C++`, `Python`)
-- `.devcontainer/` — Fedora 43 headless build/test container definition
+- `.devcontainer/` — Fedora 44 headless build/test container definition
 - `scripts/demo/install_fedora_ssh_key.ps1` — Windows helper to install your existing `~/.ssh/id_ed25519.pub` on the Fedora laptop for passwordless reuse
 - `scripts/demo/copy_windows_ssh_public_key.ps1` + `scripts/demo/install_fedora_ssh_key_locally.sh` — clipboard/local fallback when password-authenticated remote key install is awkward
 
@@ -29,7 +29,7 @@ Repo support for both is now included:
 
 ### Option A — real VM via Remote SSH
 
-1. start the Fedora 43 KDE VM with your hypervisor
+1. start the Fedora KDE 44 VM with your hypervisor
 1. from Windows, install your SSH key once:
 
   ```powershell
@@ -73,7 +73,7 @@ This is the preferred path for real widget testing.
 ### Option B — headless Fedora container via Dev Containers
 
 1. in VS Code, run **Dev Containers: Reopen in Container**
-2. let the Fedora 43 container build from `.devcontainer/Dockerfile`
+2. let the Fedora 44 container build from `.devcontainer/Dockerfile`
 3. run build/test/demo server tasks inside the container
 
 This is useful for compile/test/mock-server work, but it does **not** replace a real KDE Plasma session.
@@ -81,7 +81,7 @@ This is useful for compile/test/mock-server work, but it does **not** replace a 
 ## Recommended host setup
 
 - Windows 11 host with Hyper-V, VMware, or VirtualBox
-- Fedora 43 KDE guest with a shared folder that points at this repository
+- Fedora KDE 44 guest with a shared folder that points at this repository
 - Firefox installed in the guest if you want to exercise Browser Sync diagnostics manually
 - a clean user profile in the guest for screenshot capture
 
@@ -98,11 +98,11 @@ sudo dnf install \
 
 ## Fast path
 
-From inside the Fedora 43 KDE guest, the quickest reproducible setup is:
+From inside the Fedora KDE 44 guest, the quickest reproducible setup is:
 
 ```bash
 cd /path/to/shared/plasma-ai-usage-monitor
-bash scripts/demo/setup_fedora43_kde_test_env.sh --install-missing
+bash scripts/demo/setup_fedora_kde_test_env.sh --fedora 44 --install-missing
 source .venv/bin/activate
 ```
 
@@ -138,7 +138,7 @@ With the Linux `.venv` active:
 python scripts/demo/mock_ai_usage_server.py
 ```
 
-By default the mock server listens on `http://127.0.0.1:8080` so it matches the hardcoded `PLASMA_AI_MONITOR_DEMO=1` routes inside the widget. It also serves the `scripts/demo/showcase_preset.json` values.
+By default the mock server listens on `http://127.0.0.1:8080` so it matches the default `PLASMA_AI_MONITOR_DEMO=1` routes inside the widget. It also serves the `scripts/demo/showcase_preset.json` values. If port 8080 is occupied, start the server with `--port 18080` and launch the widget with `PLASMA_AI_MONITOR_DEMO_BASE_URL=http://127.0.0.1:18080`.
 
 ## Install the widget inside the VM
 

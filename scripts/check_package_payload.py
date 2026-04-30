@@ -1,16 +1,30 @@
 #!/usr/bin/env python3
 import os
+import re
 import sys
 import json
 import tarfile
 
+def expected_version_from_cmake():
+    try:
+        with open("CMakeLists.txt", "r", encoding="utf-8") as f:
+            match = re.search(r"project\(plasma-ai-usage-monitor VERSION ([0-9]+\.[0-9]+\.[0-9]+)\)", f.read())
+            if match:
+                return match.group(1)
+    except OSError:
+        pass
+    return "7.0.0"
+
 def main():
-    expected_version = "6.0.1"
+    expected_version = expected_version_from_cmake()
     
     expected_files_in_source = [
         "package/metadata.json",
         "package/contents/ui/main.qml",
         "package/contents/ui/SetupWizard.qml",
+        "package/contents/catalog/providers-v2.json",
+        "package/contents/icons/providers/openai.svg",
+        "package/contents/icons/tools/copilot.svg",
         "plugin/qmldir",
         "com.github.loofi.aiusagemonitor.metainfo.xml"
     ]
@@ -51,6 +65,9 @@ def main():
                 # Check for key files in the tarball
                 tar_expected = [
                     f"plasma-ai-usage-monitor-{expected_version}/package/metadata.json",
+                    f"plasma-ai-usage-monitor-{expected_version}/package/contents/catalog/providers-v2.json",
+                    f"plasma-ai-usage-monitor-{expected_version}/package/contents/icons/providers/openai.svg",
+                    f"plasma-ai-usage-monitor-{expected_version}/package/contents/icons/tools/copilot.svg",
                     f"plasma-ai-usage-monitor-{expected_version}/plugin/qmldir",
                     f"plasma-ai-usage-monitor-{expected_version}/CMakeLists.txt"
                 ]

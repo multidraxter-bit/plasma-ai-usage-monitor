@@ -63,6 +63,7 @@ private Q_SLOTS:
     void testCalculatePeriodEndDaily();
     void testCalculatePeriodEndWeekly();
     void testCalculatePeriodEndMonthly();
+    void testCalculatePeriodEndMonthlyCustomResetDay();
     void testCalculatePeriodEndInvalidStart();
     void testSecondaryUsageTracking();
     void testCheckAndResetPeriod();
@@ -140,7 +141,7 @@ void SubscriptionToolBackendTest::testLimitReachedSignal()
     t.setUsageLimit(3);
     t.setPeriodStart(QDateTime::currentDateTimeUtc());
 
-    QSignalSpy limitSpy(&t, &SubscriptionToolBackend::limitReached);
+    QSignalSpy limitSpy(&t, &SubscriptionToolBackend::usageLimitReached);
 
     t.incrementUsage(); // 1
     t.incrementUsage(); // 2
@@ -206,6 +207,23 @@ void SubscriptionToolBackendTest::testCalculatePeriodEndMonthly()
     // Should be 1st of next month at 00:00 UTC
     QDateTime expected(QDate(2026, 2, 1), QTime(0, 0, 0), QTimeZone::utc());
     QCOMPARE(end, expected);
+}
+
+void SubscriptionToolBackendTest::testCalculatePeriodEndMonthlyCustomResetDay()
+{
+    TestToolBackend t;
+    t.setMonthlyResetDay(15);
+
+    QDateTime beforeReset(QDate(2026, 1, 10), QTime(10, 0, 0), QTimeZone::utc());
+    QCOMPARE(t.calculatePeriodEnd(SubscriptionToolBackend::Monthly, beforeReset),
+             QDateTime(QDate(2026, 1, 15), QTime(0, 0, 0), QTimeZone::utc()));
+
+    QDateTime afterReset(QDate(2026, 1, 20), QTime(10, 0, 0), QTimeZone::utc());
+    QCOMPARE(t.calculatePeriodEnd(SubscriptionToolBackend::Monthly, afterReset),
+             QDateTime(QDate(2026, 2, 15), QTime(0, 0, 0), QTimeZone::utc()));
+
+    t.setMonthlyResetDay(31);
+    QCOMPARE(t.monthlyResetDay(), 28);
 }
 
 void SubscriptionToolBackendTest::testCalculatePeriodEndInvalidStart()

@@ -215,3 +215,4 @@ add_test(NAME usagedatabase_analyst COMMAND test_usagedatabase_analyst)
 # --- Script-based tests ---
 add_test(NAME version_consistency COMMAND ${CMAKE_SOURCE_DIR}/scripts/check_version_consistency.sh)
 add_test(NAME no_hardcoded_versions COMMAND ${CMAKE_SOURCE_DIR}/scripts/check_no_hardcoded_versions.sh)
+add_test(NAME provider_catalog COMMAND python3 ${CMAKE_SOURCE_DIR}/scripts/check_provider_catalog.py)

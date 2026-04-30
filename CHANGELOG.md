@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [7.0.0] — 2026-04-30
+
+### Added
+- Add Fedora KDE 44 / Plasma 6.6 as the primary development, CI, demo, validation, and release target.
+- Add `just fedora44-check` with actionable checks for Fedora version, Plasma tools, Qt6/KF6 dependencies, KWallet/libsecret, QML import paths, install shadowing, AppStream, rpmlint, source packaging, plasmoid packaging, and payload validation.
+- Add Provider Catalog v2 static metadata plus `scripts/check_provider_catalog.py` to keep provider/model/pricing metadata maintainable without runtime scraping.
+- Expand Diagnostics into a Trust Center for actual API usage, estimated cost, rate-limit-only data, local filesystem-derived data, Browser Sync Labs, catalog freshness, KWallet status, and provider health.
+- Add Simple / Operator / Analyst popup modes, show-only-problems filtering, direct empty-state actions, adaptive refresh scheduling, and visible refresh/failure/database diagnostics.
+
+### Changed
+- Move CI to `fedora:44` and validate source/plasmoid package checks in CI.
+- Generalize Fedora KDE demo setup to `scripts/demo/setup_fedora_kde_test_env.sh --fedora 44`.
+- Update Copilot tracking language and configuration for premium requests, usage-based billing, credits mode, and configurable monthly reset assumptions.
+- Improve Browser Sync Labs readiness for Firefox, Chrome, Chromium, Brave, KWallet/libsecret safe storage, cookie DB readability, and safe local-estimation fallback messaging.
+- Keep v7.0.0 explicitly Plasma-native and local-first; backend services, web dashboards, PostgreSQL, and multi-user features remain out of scope.
+
 ## [6.0.1] — 2026-04-26
 
 ### Fixed
@@ -166,7 +182,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Enhance keyboard navigation with explicit `KeyNavigation` and `activeFocusOnTab` across primary interactive elements
 - Update AppStream metadata (`metainfo.xml`) with updated screenshot URLs and feature lists for KDE Store publication
 - Refine `README.md` and walkthrough documentation with polished assets and demo mode instructions
-- Add VS Code Remote/Dev Container workflow support for Fedora 43 build/test/demo-server setup without changing the requirement for a real KDE session during UI validation
+- Add VS Code Remote/Dev Container workflow support for Fedora KDE build/test/demo-server setup without changing the requirement for a real KDE session during UI validation
 
 ## [3.8.1] — 2026-03-15
 

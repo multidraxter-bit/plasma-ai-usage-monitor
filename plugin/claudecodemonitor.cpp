@@ -104,8 +104,15 @@ void ClaudeCodeMonitor::syncFromBrowser(const QString &cookieHeader, int browser
 void ClaudeCodeMonitor::fetchAccountInfo(const QString &cookieHeader)
 {
     // Use /api/bootstrap to get account info and organization UUID
+    QString demoUrl = QString::fromLocal8Bit(qgetenv("PLASMA_AI_MONITOR_DEMO_BASE_URL")).trimmed();
+    if (demoUrl.isEmpty()) {
+        demoUrl = QStringLiteral("http://localhost:8080");
+    }
+    while (demoUrl.endsWith(QLatin1Char('/'))) {
+        demoUrl.chop(1);
+    }
     QUrl url = qEnvironmentVariableIsSet("PLASMA_AI_MONITOR_DEMO") 
-        ? QUrl(QStringLiteral("http://localhost:8080/claude/api/bootstrap"))
+        ? QUrl(QStringLiteral("%1/claude/api/bootstrap").arg(demoUrl))
         : QUrl(QStringLiteral("https://claude.ai/api/bootstrap"));
 
     QNetworkRequest request(url);
@@ -225,8 +232,15 @@ void ClaudeCodeMonitor::fetchAccountInfo(const QString &cookieHeader)
 
 void ClaudeCodeMonitor::fetchUsageData(const QString &orgUuid, const QString &cookieHeader)
 {
+    QString demoUrl = QString::fromLocal8Bit(qgetenv("PLASMA_AI_MONITOR_DEMO_BASE_URL")).trimmed();
+    if (demoUrl.isEmpty()) {
+        demoUrl = QStringLiteral("http://localhost:8080");
+    }
+    while (demoUrl.endsWith(QLatin1Char('/'))) {
+        demoUrl.chop(1);
+    }
     QUrl url = qEnvironmentVariableIsSet("PLASMA_AI_MONITOR_DEMO")
-        ? QUrl(QStringLiteral("http://localhost:8080/claude/api/organizations/%1/usage").arg(orgUuid))
+        ? QUrl(QStringLiteral("%1/claude/api/organizations/%2/usage").arg(demoUrl, orgUuid))
         : QUrl(QStringLiteral("https://claude.ai/api/organizations/%1/usage").arg(orgUuid));
 
     QNetworkRequest request(url);

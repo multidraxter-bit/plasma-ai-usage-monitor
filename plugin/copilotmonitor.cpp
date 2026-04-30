@@ -96,6 +96,33 @@ void CopilotMonitor::setOrgName(const QString &name)
     }
 }
 
+QString CopilotMonitor::billingMode() const
+{
+    return m_billingMode;
+}
+
+void CopilotMonitor::setBillingMode(const QString &mode)
+{
+    const QString normalized = mode.trimmed().isEmpty()
+        ? QStringLiteral("premium_requests")
+        : mode.trimmed();
+    if (m_billingMode != normalized) {
+        m_billingMode = normalized;
+        Q_EMIT billingModeChanged();
+    }
+}
+
+QString CopilotMonitor::usageSourceLabel() const
+{
+    if (m_billingMode == QStringLiteral("usage_based")) {
+        return QStringLiteral("Usage-based billing mode: local activity is an estimate unless GitHub org metrics are configured.");
+    }
+    if (m_billingMode == QStringLiteral("credits")) {
+        return QStringLiteral("Credits mode: local activity is self-tracked and does not claim exact billing credits.");
+    }
+    return QStringLiteral("Premium request mode: local activity is self-tracked against plan assumptions.");
+}
+
 bool CopilotMonitor::hasOrgMetrics() const { return m_hasOrgMetrics; }
 int CopilotMonitor::orgActiveUsers() const { return m_orgActiveUsers; }
 int CopilotMonitor::orgTotalSeats() const { return m_orgTotalSeats; }
@@ -108,8 +135,15 @@ void CopilotMonitor::fetchOrgMetrics()
     int gen = m_fetchGeneration;
 
     // GET /orgs/{org}/copilot/billing
+    QString demoUrl = QString::fromLocal8Bit(qgetenv("PLASMA_AI_MONITOR_DEMO_BASE_URL")).trimmed();
+    if (demoUrl.isEmpty()) {
+        demoUrl = QStringLiteral("http://localhost:8080");
+    }
+    while (demoUrl.endsWith(QLatin1Char('/'))) {
+        demoUrl.chop(1);
+    }
     QUrl url = qEnvironmentVariableIsSet("PLASMA_AI_MONITOR_DEMO")
-        ? QUrl(QStringLiteral("http://localhost:8080/copilot/orgs/%1/copilot/billing").arg(m_orgName))
+        ? QUrl(QStringLiteral("%1/copilot/orgs/%2/copilot/billing").arg(demoUrl, m_orgName))
         : QUrl(QStringLiteral("https://api.github.com/orgs/%1/copilot/billing").arg(m_orgName));
 
     QNetworkRequest request(url);

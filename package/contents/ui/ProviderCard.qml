@@ -389,19 +389,32 @@ ColumnLayout {
             }
 
             // Footer
-            RowLayout {
+            ColumnLayout {
                 Layout.fillWidth: true
-                visible: !card.collapsed && (card.backend?.connected ?? false)
-                PlasmaComponents.Label {
+                visible: !card.collapsed && card.backend
+                spacing: 2
+
+                RowLayout {
                     Layout.fillWidth: true
-                    horizontalAlignment: Text.AlignRight
-                    text: {
-                        var lr = card.backend?.lastRefreshed;
-                        if (!lr) return "";
-                        return i18n("Updated: %1", formatRelativeTime(lr));
+
+                    PlasmaComponents.Label {
+                        Layout.fillWidth: true
+                        text: {
+                            var lr = card.backend?.lastRefreshed;
+                            if (!lr) return i18n("Last refresh: never");
+                            return i18n("Last refresh: %1", formatRelativeTime(lr));
+                        }
+                        font.pointSize: Kirigami.Theme.smallFont.pointSize
+                        opacity: 0.5
                     }
-                    font.pointSize: Kirigami.Theme.smallFont.pointSize
-                    opacity: 0.4
+
+                    PlasmaComponents.Label {
+                        text: i18n("Failures: %1/%2", card.backend?.consecutiveErrors ?? 0, card.backend?.errorCount ?? 0)
+                        font.pointSize: Kirigami.Theme.smallFont.pointSize
+                        color: (card.backend?.consecutiveErrors ?? 0) > 0
+                            ? Kirigami.Theme.neutralTextColor
+                            : Kirigami.Theme.disabledTextColor
+                    }
                 }
             }
         }

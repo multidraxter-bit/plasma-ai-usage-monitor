@@ -1,4 +1,5 @@
 import QtQuick
+import com.github.loofi.aiusagemonitor 1.0
 
 QtObject {
     id: registry
@@ -29,6 +30,7 @@ QtObject {
     required property var jetbrainsAiMonitor
 
     property ProviderCatalog providerCatalog: ProviderCatalog {}
+    readonly property bool demoMode: AppInfo.demoMode
 
     function backendForConfigKey(configKey) {
         switch (configKey) {
@@ -68,6 +70,10 @@ QtObject {
     }
 
     function providerEnabled(configKey) {
+        if (demoMode) {
+            return ["openai", "google", "mistral", "deepseek", "groq", "openrouter"].indexOf(configKey) >= 0;
+        }
+
         switch (configKey) {
         case "loofi":
             return configuration.loofiEnabled;
@@ -191,6 +197,7 @@ QtObject {
                 backend: backendForConfigKey(descriptor.configKey),
                 enabled: providerEnabled(descriptor.configKey),
                 color: descriptor.color,
+                iconSource: Qt.resolvedUrl("../icons/providers/" + descriptor.configKey + ".svg"),
                 requiresApiKey: descriptor.requiresApiKey,
                 refreshInterval: providerRefreshInterval(descriptor.configKey),
                 notificationsEnabled: providerNotificationsEnabled(descriptor.configKey)
@@ -203,38 +210,44 @@ QtObject {
         {
             name: "Claude Code",
             monitor: claudeCodeMonitor,
-            enabled: configuration.claudeCodeEnabled,
-            notify: configuration.claudeCodeNotifications
+            enabled: demoMode || configuration.claudeCodeEnabled,
+            notify: configuration.claudeCodeNotifications,
+            iconSource: Qt.resolvedUrl("../icons/tools/claude-code.svg")
         },
         {
             name: "Codex CLI",
             monitor: codexCliMonitor,
-            enabled: configuration.codexEnabled,
-            notify: configuration.codexNotifications
+            enabled: demoMode || configuration.codexEnabled,
+            notify: configuration.codexNotifications,
+            iconSource: Qt.resolvedUrl("../icons/tools/codex-cli.svg")
         },
         {
             name: "GitHub Copilot",
             monitor: copilotMonitor,
-            enabled: configuration.copilotEnabled,
-            notify: configuration.copilotNotifications
+            enabled: demoMode || configuration.copilotEnabled,
+            notify: configuration.copilotNotifications,
+            iconSource: Qt.resolvedUrl("../icons/tools/copilot.svg")
         },
         {
             name: "Cursor",
             monitor: cursorMonitor,
             enabled: configuration.cursorEnabled,
-            notify: configuration.cursorNotifications
+            notify: configuration.cursorNotifications,
+            iconSource: Qt.resolvedUrl("../icons/tools/cursor.svg")
         },
         {
             name: "Windsurf",
             monitor: windsurfMonitor,
             enabled: configuration.windsurfEnabled,
-            notify: configuration.windsurfNotifications
+            notify: configuration.windsurfNotifications,
+            iconSource: Qt.resolvedUrl("../icons/tools/windsurf.svg")
         },
         {
             name: "JetBrains AI",
             monitor: jetbrainsAiMonitor,
             enabled: configuration.jetbrainsAiEnabled,
-            notify: configuration.jetbrainsAiNotifications
+            notify: configuration.jetbrainsAiNotifications,
+            iconSource: Qt.resolvedUrl("../icons/tools/jetbrains.svg")
         }
     ]
 

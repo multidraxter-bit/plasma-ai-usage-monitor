@@ -126,6 +126,21 @@ QDateTime SubscriptionToolBackend::periodEnd() const
     return calculatePeriodEnd(primaryPeriodType(), m_periodStart);
 }
 
+int SubscriptionToolBackend::monthlyResetDay() const
+{
+    return m_monthlyResetDay;
+}
+
+void SubscriptionToolBackend::setMonthlyResetDay(int day)
+{
+    const int normalized = qBound(1, day, 28);
+    if (m_monthlyResetDay != normalized) {
+        m_monthlyResetDay = normalized;
+        Q_EMIT usageLimitChanged();
+        Q_EMIT usageUpdated();
+    }
+}
+
 int SubscriptionToolBackend::secondsUntilReset() const
 {
     QDateTime end = periodEnd();
@@ -191,11 +206,15 @@ QDateTime SubscriptionToolBackend::calculatePeriodEnd(UsagePeriod period, const 
     case Weekly:
         return start.addDays(7);
     case Monthly: {
-        // Reset on 1st of next month at 00:00 UTC
         QDate d = start.date();
-        QDate firstOfNext = d.addMonths(1);
-        firstOfNext = QDate(firstOfNext.year(), firstOfNext.month(), 1);
-        return QDateTime(firstOfNext, QTime(0, 0), QTimeZone::utc());
+        QDate resetThisMonth(d.year(), d.month(), m_monthlyResetDay);
+        if (d < resetThisMonth) {
+            return QDateTime(resetThisMonth, QTime(0, 0), QTimeZone::utc());
+        }
+
+        QDate nextMonth = d.addMonths(1);
+        QDate resetNextMonth(nextMonth.year(), nextMonth.month(), m_monthlyResetDay);
+        return QDateTime(resetNextMonth, QTime(0, 0), QTimeZone::utc());
     }
     }
     return QDateTime();
@@ -233,7 +252,7 @@ void SubscriptionToolBackend::checkLimitWarnings()
     double pct = percentUsed();
 
     if (m_usageCount >= m_usageLimit) {
-        Q_EMIT limitReached(toolName());
+        Q_EMIT usageLimitReached(toolName());
     } else if (pct >= 80.0) {
         Q_EMIT limitWarning(toolName(), static_cast<int>(pct));
     }
@@ -241,7 +260,7 @@ void SubscriptionToolBackend::checkLimitWarnings()
     // Check secondary limit too
     if (hasSecondaryLimit() && m_secondaryUsageLimit > 0) {
         if (m_secondaryUsageCount >= m_secondaryUsageLimit) {
-            Q_EMIT limitReached(toolName());
+            Q_EMIT usageLimitReached(toolName());
         }
     }
 }

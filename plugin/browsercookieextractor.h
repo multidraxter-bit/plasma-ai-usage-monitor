@@ -5,6 +5,7 @@
 #include <QString>
 #include <QMap>
 #include <QDateTime>
+#include <QVariantMap>
 
 /**
  * Utility class to extract session cookies from the user's web browser.
@@ -13,11 +14,8 @@
  * with internal APIs of Claude.ai, ChatGPT, and GitHub.
  *
  * Supported browsers:
- * - Firefox: reads cookies from ~/.mozilla/firefox/<profile>/cookies.sqlite
- *   (plain SQLite, no encryption)
- *
- * Legacy browser enum values are retained only for config compatibility.
- * Non-Firefox runtimes are intentionally unsupported in this release.
+ * - Firefox: reads cookies from cookies.sqlite snapshots.
+ * - Chrome, Chromium, and Brave on Linux when safe-storage secrets are available.
  *
  * WARNING: This feature uses internal/undocumented APIs of third-party services.
  * It may violate Terms of Service and can break without notice. Users must
@@ -30,13 +28,16 @@ class BrowserCookieExtractor : public QObject
     Q_PROPERTY(int browserType READ browserType WRITE setBrowserType NOTIFY browserTypeChanged)
     Q_PROPERTY(bool hasFirefoxProfile READ hasFirefoxProfile NOTIFY profilesChanged)
     Q_PROPERTY(bool hasCurrentBrowserProfile READ hasCurrentBrowserProfile NOTIFY profilesChanged)
+    Q_PROPERTY(bool hasSafeStorageAccess READ hasSafeStorageAccess NOTIFY profilesChanged)
+    Q_PROPERTY(QString readinessSummary READ readinessSummary NOTIFY profilesChanged)
     Q_PROPERTY(QString selectedFirefoxProfile READ selectedFirefoxProfile WRITE setSelectedFirefoxProfile NOTIFY selectedFirefoxProfileChanged)
 
 public:
     enum BrowserType {
         Firefox = 0,
         Chrome = 1,
-        Chromium = 2
+        Chromium = 2,
+        Brave = 3
     };
     Q_ENUM(BrowserType)
 
@@ -93,6 +94,9 @@ public:
      */
     Q_INVOKABLE QStringList firefoxProfiles() const;
     Q_INVOKABLE QStringList browserProfiles() const;
+    Q_INVOKABLE QVariantMap readinessReport(const QString &service = QString()) const;
+    bool hasSafeStorageAccess() const;
+    QString readinessSummary() const;
 
 Q_SIGNALS:
     void browserTypeChanged();
@@ -107,6 +111,9 @@ private:
     QString chromiumProfilePath() const;
     QString chromeProfileRoot() const;
     QString chromiumProfileRoot() const;
+    QString braveProfileRoot() const;
+    QString currentBrowserName() const;
+    QString currentChromiumSafeStorageName() const;
 
     // Read cookies from Firefox SQLite database (unencrypted)
     QMap<QString, QString> readFirefoxCookies(const QString &domain) const;

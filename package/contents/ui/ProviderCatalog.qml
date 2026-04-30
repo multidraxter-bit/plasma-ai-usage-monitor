@@ -3,6 +3,11 @@ import QtQuick
 QtObject {
     id: catalog
 
+    readonly property int schemaVersion: 2
+    readonly property string catalogVersion: "2026.04.30"
+    readonly property string lastReviewed: "2026-04-30"
+    readonly property bool runtimeScraping: false
+
     readonly property var providers: [
         {
             name: "Loofi Server",

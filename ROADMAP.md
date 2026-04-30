@@ -1,7 +1,7 @@
 # Roadmap — Plasma AI Usage Monitor
 
-> **Current version:** v6.0.1 (Ground Truth)
-> **Last updated:** 2026-04-26
+> **Current version:** v7.0.0 (Beacon)
+> **Last updated:** 2026-04-30
 > **Direction:** Keep the widget desktop-native and local-first. Prefer export, notifications, and loopback integrations over backend/server expansion.
 
 ## Analyst's Note on Feasibility
@@ -21,7 +21,21 @@ Chrome/Chromium cookie decryption and AWS Bedrock support remain in scope, but b
 | v5.3.0 | **Vanguard** | Distribution and local tools | Released |
 | v5.4.1 | **Link** | Advanced sync and enterprise API | Released |
 | v6.0.0 | **Nexus (Light)** | UI Redesign and integration | Released |
-| v6.0.1 | **Ground Truth** | Stabilization, trust, and metadata | Current stabilization |
+| v6.0.1 | **Ground Truth** | Stabilization, trust, and metadata | Released |
+| v7.0.0 | **Beacon** | Fedora KDE 44 reliability, trust, and UX | Current |
+
+## v7.0.0 — "Beacon"
+
+**Goal:** make Fedora KDE 44 / Plasma 6.6 the native release target while improving trust, validation, Browser Sync Labs readiness, provider metadata maintenance, Copilot billing assumptions, and popup actionability.
+
+| Feature | Description | Technical Risk |
+| ------- | ----------- | -------------- |
+| **Fedora 44 release gate** | CI, demo docs, release scripts, and `just fedora44-check` target Fedora KDE 44 as required. | Low |
+| **Trust Center** | Diagnostics explain actual API usage, estimated cost, rate-limit-only data, local tool data, Browser Sync Labs, catalog freshness, KWallet, and provider health. | Low |
+| **Provider Catalog v2** | Static local provider/model/pricing metadata plus validation; no runtime website scraping. | Medium |
+| **Copilot 2026 billing scaffolding** | Premium request tracking remains, with usage-based/credits mode labels and configurable reset assumptions. | Medium |
+| **Browser Sync Labs readiness** | Clear profile, cookie DB, safe-storage, and service-probe states for Firefox, Chrome, Chromium, and Brave. | Medium |
+| **Adaptive polling** | Slower closed-popup refresh, open-popup/manual refresh, jitter, and error backoff diagnostics. | Medium |
 
 ## v6.0.1 — "Ground Truth"
 

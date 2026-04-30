@@ -56,6 +56,7 @@ class SubscriptionToolBackend : public QObject
     // Time tracking
     Q_PROPERTY(QDateTime periodStart READ periodStart NOTIFY usageUpdated)
     Q_PROPERTY(QDateTime periodEnd READ periodEnd NOTIFY usageUpdated)
+    Q_PROPERTY(int monthlyResetDay READ monthlyResetDay WRITE setMonthlyResetDay NOTIFY usageLimitChanged)
     Q_PROPERTY(int secondsUntilReset READ secondsUntilReset NOTIFY usageUpdated)
     Q_PROPERTY(QString timeUntilReset READ timeUntilReset NOTIFY usageUpdated)
     Q_PROPERTY(QDateTime lastActivity READ lastActivity NOTIFY usageUpdated)
@@ -139,6 +140,8 @@ public:
     // Time — primary
     QDateTime periodStart() const;
     QDateTime periodEnd() const;
+    int monthlyResetDay() const;
+    void setMonthlyResetDay(int day);
     int secondsUntilReset() const;
     QString timeUntilReset() const;
     QDateTime lastActivity() const;
@@ -205,7 +208,7 @@ Q_SIGNALS:
     void syncCompleted(bool success, const QString &message);
     void syncDiagnostic(const QString &toolName, const QString &code, const QString &message);
     void limitWarning(const QString &tool, int percentUsed);
-    void limitReached(const QString &tool);
+    void usageLimitReached(const QString &tool);
     void activityDetected(const QString &tool);
 
 protected:
@@ -255,6 +258,7 @@ private:
     QDateTime m_periodStart;
     QDateTime m_secondaryPeriodStart;
     QDateTime m_lastActivity;
+    int m_monthlyResetDay = 1;
 
     // Session & extra usage (from sync)
     double m_sessionPercentUsed = 0.0;

@@ -63,7 +63,14 @@ void AzureOpenAIProvider::setApiVersion(const QString &apiVersion)
 QString AzureOpenAIProvider::endpointBaseUrl() const
 {
     if (qEnvironmentVariableIsSet("PLASMA_AI_MONITOR_DEMO")) {
-        return QStringLiteral("http://localhost:8080");
+        QString demoUrl = QString::fromLocal8Bit(qgetenv("PLASMA_AI_MONITOR_DEMO_BASE_URL")).trimmed();
+        if (demoUrl.isEmpty()) {
+            demoUrl = QStringLiteral("http://localhost:8080");
+        }
+        while (demoUrl.endsWith(QLatin1Char('/'))) {
+            demoUrl.chop(1);
+        }
+        return demoUrl;
     }
 
     QString endpoint = customBaseUrl().trimmed();
