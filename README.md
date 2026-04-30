@@ -146,13 +146,13 @@ Current canonical asset names live under `assets/screenshots/` and are intention
 
 ![Plasma AI Usage Monitor main window](assets/screenshots/main-window.png)
 
-### Panel/compact view
+### Analyst view
 
-![Plasma AI Usage Monitor panel view](assets/screenshots/panel-view.png)
+![Plasma AI Usage Monitor analyst view](assets/screenshots/analyst-view.png)
 
-### Settings-oriented view
+### Settings
 
-![Plasma AI Usage Monitor settings-oriented view](assets/screenshots/settings-view.png)
+![Plasma AI Usage Monitor settings](assets/screenshots/settings-view.png)
 
 ## Requirements
 
